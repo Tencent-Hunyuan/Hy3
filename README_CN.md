@@ -138,6 +138,12 @@ print(response.choices[0].message.content)
 
 Hy3 总参数量为 295B，当使用 8 张 GPU 时，建议使用 H20-3e 或其他有更大显存的卡型。
 
+对于生产环境部署，我们建议使用 vLLM 或 SGLang，这两个框架都为 Hy3 提供了专门的配置方案：
+
+- [vLLM](https://github.com/vllm-project/vllm) - 请查阅 [vLLM recipes](https://recipes.vllm.ai/tencent/Hy3)
+
+- [SGLang](https://docs.sglang.io/) - 请查阅 [SGLang cookbook](https://lmsysorg.mintlify.app/cookbook/autoregressive/Tencent/Hy3)
+
 ### vLLM
 
 从源码构建 vLLM：

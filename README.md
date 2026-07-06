@@ -141,6 +141,12 @@ See the [Deployment](#deployment) section below for how to start the API server.
 
 Hy3 has 295B parameters in total. To serve it on 8 GPUs, we recommend using H20-3e or other GPUs with larger memory capacity.
 
+For production serving, we recommend using vLLM or SGLang, both of which provide dedicated recipes for Hy3:
+
+- [vLLM](https://github.com/vllm-project/vllm) - see [vLLM recipes](https://recipes.vllm.ai/tencent/Hy3)
+
+- [SGLang](https://docs.sglang.io/) - see [SGLang cookbook](https://lmsysorg.mintlify.app/cookbook/autoregressive/Tencent/Hy3)
+
 ### vLLM
 
 Build vLLM from source:
