@@ -31,8 +31,8 @@
 ## Table of Contents
 
 - [Model Introduction](#model-introduction)
-- [Stronger Agent Performance](#stronger-agent-performance)
-- [Product Experience: More Reliable, More Cost-Effective](#product-experience-more-reliable-more-cost-effective)
+- [Stronger Agent Capabilities](#stronger-agent-capabilities)
+- [More Reliable Product Experiences](#more-reliable-product-experiences)
 - [Benchmark Appendix](#benchmark-appendix)
 - [News](#news)
 - [Model Links](#model-links)
@@ -49,7 +49,7 @@
 
 ## Model Introduction
 
-**Hy3** is a 295B-parameter Mixture-of-Experts (MoE) model with 21B active parameters and 3.8B MTP layer parameters, developed by the Tencent Hy Team. Following the Hy3 Preview launch in late April, we gathered feedback from 50+ product teams. We fixed various issues in task execution and interaction, and improved both the quality and scale of our post-training pipeline. Today, we are launching Hy3. It significantly outperforms similar-size models and rivals flagship open-source models with 2-5x the parameters. It also shows solid gains in utility across productivity tasks and real-world applications.
+**Hy3** is a 295B-parameter Mixture-of-Experts (MoE) model with 21B active parameters and 3.8B MTP layer parameters, developed by the Tencent Hy Team. Following the Hy3 Preview launch in late April, we gathered feedback from 50+ products and scaled up post-training with higher quality data. Today, we introduce Hy3, which outperforms similar-size models and rivals flagship open-source models with 2-5x parameters. It also shows significant gains in utility across various products and productivity tasks.
 
 
 | Property | Value |
@@ -68,27 +68,27 @@
 | Number of Experts | 192 experts, top-8 activated |
 | Supported Precisions | BF16 |
 
-## Stronger Agent Performance
+## Stronger Agent Capabilities
 
-Building on Hy3 Preview, we improved post-training data quality and diversity while scaling up RL training. Hy3 shows solid gains across reasoning, agentic workflows, and long-context tasks. Its performance is close to leading flagship models, both domestic and international.
+Building on Hy3 Preview, we further improved the quality and diversity of post-training data while scaling up RL training. Hy3 shows solid gains across reasoning, agentic, and long-context tasks, competitive with much larger flagship models.
 
 <p align="center">
   <img src="assets/benchmark.png" width="100%"/>
 </p>
 
-In productivity scenarios such as coding, document processing, financial analysis, game development, and frontend design, Hy3 has made solid gains, positioning it as a reliable, cost-effective option.
+In productivity scenarios such as coding, office work, financial modeling, frontend design, and game development, Hy3 has made remarkable progress and can now serve as a reliable, cost-effective model option.
 
-We don't think public benchmark scores tell the full story. So we ran a blind test with 270 experts from various disciplines, working on real-world workflows, and collected 312 valid comparisons. Hy3 scored 2.67/4, outperforming GLM-5.1 at 2.51/4. The advantage was clearest in frontend development, CI/CD, and data & storage.
+We don't think public benchmark scores tell the full story. So we ran a blind evaluation with 270 experts using tasks from their work, and Hy3 scored 2.67/4, outperforming GLM-5.1 at 2.51/4. The advantage was most substantial in frontend development, data & storage, and CI/CD tasks.
 
-## Product Experience: More Reliable, More Cost-Effective
+## More Reliable Product Experiences
 
-Utility in production is not fully captured by benchmarks. Based on extensive user feedback and product telemetry, we identified real-world behavior issues that break product experience and improved the model's capabilities in those areas, earning uniformly positive feedback from product teams.
+Model usefulness is not fully captured by benchmarks. Based on extensive product feedback, we identified and fixed the following issues, receiving consistently positive feedback from product teams.
 
-**Output Formatting and Tool Calling Stability**: We fixed multiple baseline reliability issues, bringing the model to production-grade standards across tool configurations and output constraints. Tool-call success rates and error recovery improved, and invalid calls that trigger infinite loops dropped. Hy3 also generalizes across different agent scaffoldings. On SWE-Bench Verified, accuracy variance across scaffoldings like CodeBuddy, Cline, and KiloCode remains within 4%.
+**Stability of tool calls and output formats**: We fixed multiple baseline reliability issues, bringing the model to production-grade standards across tool configurations and output constraints. Tool-call error recovery and overall efficiency improved. Hy3 also generalizes across different agent scaffoldings. On SWE-Bench Verified, accuracy variance across scaffoldings like CodeBuddy, Cline, and KiloCode remains within 4%.
 
-**World Knowledge and Anti-Hallucination**: Internal knowledge and external hallucination are interconnected and critical to real-world product experience. Guided by the ideal behavior pattern: "answer when grounded, state when evidence is missing, do not conflate sources, do not fabricate data," we implemented fine-grained data cleaning and specific training constraints. In internal evaluations on real-world scenarios, Hy3's hallucination rate dropped from 12.5% to 5.4%, and commonsense error rates fell from 25.4% to 12.7%. These improvements materially reduce fact conflation, fabrication, and logical contradiction.
+**Knowledge and anti-hallucination**: Guided by the ideal of "answer when grounded, state when evidence is missing, do not conflate sources or fabricate data," we implemented fine-grained data cleaning and training constraints. In internal evaluations based on real-world scenarios, Hy3's hallucination rate dropped from 12.5% to 5.4%, and commonsense error rates fell from 25.4% to 12.7%. These improvements materially reduce fact conflation, fabrication, and logical contradiction.
 
-**Complex Context Retention and Multi-turn Intent Tracking**: Through joint optimization of SFT and RL, Hy3 improved on operational pain points like coreference resolution, ellipsis recovery, and multi-turn constraint inheritance. On internal comprehensive multi-turn tests, the issue rate dropped from 17.4% to 7.9%. It also posted significant gains on open-source long-dialogue benchmarks like MRCR, from 42.9% to 75.1%. Overall outputs are more concise while ensuring complex intents do not decay or drift over long-horizon interactions.
+**Complex context retention and multi-turn intent tracking**: Through joint optimization of SFT and RL, Hy3 improved on operational pain points like coreference resolution, ellipsis recovery, and multi-turn constraint inheritance. On internal comprehensive multi-turn tests, the issue rate dropped from 17.4% to 7.9%. Hy3 also improved markedly on long-dialogue evals like MRCR. Its outputs are more concise while ensuring complex intents do not decay or drift over long-horizon interactions.
 
 ## Benchmark Appendix
 
