@@ -2,6 +2,10 @@
 .huggingface/
 .modelscope/
 .ms*
+.env
+.env.local
+.env.*.local
+!.env.example
 *.swp
 *.log
 .DS_Store

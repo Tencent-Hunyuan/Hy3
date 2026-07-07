@@ -137,6 +137,8 @@ print(response.choices[0].message.content)
 
 See the [Deployment](#deployment) section below for how to start the API server.
 
+For a developer-focused API walkthrough with curl, Python SDK usage, parameters, troubleshooting, and runnable examples, see [Hy3 API Quickstart](./quickstart.md) and [API Examples](./examples/api/README.md).
+
 ## Deployment
 
 Hy3 has 295B parameters in total. To serve it on 8 GPUs, we recommend using H20-3e or other GPUs with larger memory capacity.
