@@ -2,6 +2,13 @@
 .huggingface/
 .modelscope/
 .ms*
+.env
+.env.local
+.env.*.local
+!.env.example
+.pytest_cache
+mcp_servers/code_review/demo/*.mp4
+mcp_servers/code_review/demo/*.mov
 *.swp
 *.log
 .DS_Store
