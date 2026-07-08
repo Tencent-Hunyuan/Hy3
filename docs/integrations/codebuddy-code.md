@@ -19,6 +19,8 @@ Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without se
 
 See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
 
+The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). CodeBuddy Code-specific setup remains TODO: verify manually.
+
 | Setting | Value |
 |:---|:---|
 | Base URL | `https://tokenhub.tencentmaas.com/v1` |

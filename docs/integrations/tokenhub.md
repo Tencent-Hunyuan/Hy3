@@ -4,7 +4,7 @@
 
 TokenHub cloud API mode is a setup option for using Hy3 without self-hosting the model.
 
-Verification status: TODO: verify manually.
+Verification status: basic TokenHub Hy3 Chat Completions API smoke test verified. Client tool integrations are still TODO: verify manually.
 
 ## TokenHub API Settings
 
@@ -19,11 +19,68 @@ Use these TokenHub settings when configuring an OpenAI-compatible provider:
 
 If the TokenHub API key access scope is limited, Hy3 must be included in that scope.
 
+## Smoke Test
+
+The basic TokenHub Hy3 Chat Completions API path has been manually smoke-tested.
+
+Verified request settings:
+
+| Setting | Value |
+|:---|:---|
+| Setup mode | Tencent Cloud TokenHub cloud API mode |
+| API protocol | OpenAI-compatible Chat Completions API |
+| Base URL | `https://tokenhub.tencentmaas.com/v1` |
+| Endpoint | `/chat/completions` |
+| Model | `hy3` |
+| API key | User-created TokenHub API key, not committed |
+| Test prompt | `Hello Hy3. Reply in one short English sentence.` |
+
+Safe PowerShell example:
+
+```powershell
+$SecureApiKey = Read-Host "TokenHub API key" -AsSecureString
+$ApiKey = [System.Net.NetworkCredential]::new("", $SecureApiKey).Password
+
+try {
+    $Body = @{
+        model = "hy3"
+        messages = @(
+            @{
+                role = "user"
+                content = "Hello Hy3. Reply in one short English sentence."
+            }
+        )
+    } | ConvertTo-Json -Depth 10
+
+    Invoke-RestMethod `
+        -Method Post `
+        -Uri "https://tokenhub.tencentmaas.com/v1/chat/completions" `
+        -Headers @{ Authorization = "Bearer $ApiKey" } `
+        -ContentType "application/json" `
+        -Body $Body
+}
+finally {
+    Remove-Variable ApiKey -ErrorAction SilentlyContinue
+}
+```
+
+Observed response summary:
+
+| Field | Observed value |
+|:---|:---|
+| Response object | `chat.completion` |
+| Response model | `hy3` |
+| Response content | `Hello! How can I help you today?` |
+| Usage fields | Included `prompt_tokens`, `completion_tokens`, `total_tokens`, and `reasoning_tokens` |
+| Verification environment | Windows 10 CMD + PowerShell `Invoke-RestMethod` |
+| Verification date | 2026-07-08 |
+
 ## Account and Availability
 
 - Account signup: TODO: verify manually.
 - Billing requirements: TODO: verify manually.
 - Regional availability: TODO: verify manually.
+- Exact free quota details: TODO: verify manually.
 - Hy3 model availability in TokenHub: TODO: verify manually.
 
 Do not add unsupported pricing claims.

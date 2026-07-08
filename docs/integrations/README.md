@@ -13,7 +13,7 @@ No client integration in this directory has been manually verified yet.
 
 | Mode | Setup | Status |
 |:---|:---|:---|
-| TokenHub cloud API | [tokenhub.md](tokenhub.md) | TODO: verify manually |
+| TokenHub cloud API | [tokenhub.md](tokenhub.md) | Basic Chat Completions smoke test verified; tool integrations still TODO |
 | Local self-hosted server | [local-server.md](local-server.md) | Repo-documented server facts only |
 
 ## TokenHub Cloud API Mode
