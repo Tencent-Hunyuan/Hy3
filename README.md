@@ -109,31 +109,50 @@ Model usefulness is not fully captured by benchmarks. Based on extensive product
 | Hy3 | Instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3) | [Model](https://cnb.cool/ai-models/tencent/Hy3) |
 | Hy3-FP8 | FP8 quantized instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3-FP8) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3-FP8) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3-FP8) | [Model](https://cnb.cool/ai-models/tencent/Hy3-FP8) |
 
-## Quickstart
+## Quickstart & Examples
 
-Deploy Hy3 with [vLLM](#vllm) or [SGLang](#sglang) first, then call the OpenAI-compatible API:
+A collection of quickstart guides and runnable code examples for the Hy3 API.
 
-```python
-from openai import OpenAI
+### Quick Links
 
-client = OpenAI(base_url="http://127.0.0.1:8000/v1", api_key="EMPTY")
+- [Quickstart Guide](./quickstart.md) — API basics, minimal runnable examples, parameter reference, troubleshooting
 
-response = client.chat.completions.create(
-    model="hy3",
-    messages=[
-        {"role": "user", "content": "Hello! Can you briefly introduce yourself?"},
-    ],
-    temperature=0.9,
-    top_p=1.0,
-    # reasoning_effort: "no_think" (default, direct response), "low", "high" (deep chain-of-thought)
-    extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
-)
-print(response.choices[0].message.content)
+### Examples
+
+| # | Topic | File | Description |
+|---|---|---|---|
+| 01 | Basic Chat | [01_basic_chat.py](./examples/01_basic_chat.py) | Single-turn chat, multi-turn chat, system prompt |
+| 02 | Streaming | [02_streaming.py](./examples/02_streaming.py) | Chunk-by-chunk processing, first-token latency measurement |
+| 03 | Latency Compare | [03_latency_compare.py](./examples/03_latency_compare.py) | Streaming vs non-streaming performance benchmark |
+| 04 | Tool Calling | [04_tool_calling.py](./examples/04_tool_calling.py) | Single call, multi-turn loop, forced tool selection |
+| 05 | Reasoning Mode | [05_reasoning_mode.py](./examples/05_reasoning_mode.py) | Three-level comparison: no_think / low / high |
+| 06 | Error Handling | [06_error_handling.py](./examples/06_error_handling.py) | Retry strategies, exponential backoff, production-grade manager |
+
+### Quick Start
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Configure environment variables
+cp .env.example .env
+# Edit .env and fill in your API endpoint and key
+
+# 3. Run an example
+python examples/01_basic_chat.py
 ```
 
-> **Recommended parameters**: `temperature=0.9`, `top_p=1.0`.
->
-> **Reasoning mode**: Set `reasoning_effort` to `"high"` for complex tasks (math, coding, reasoning) or `"no_think"` for direct responses.
+### Configuration
+
+All examples support environment variable configuration:
+
+| Variable | Default | Description |
+|---|---|---|
+| `HY3_BASE_URL` | `http://127.0.0.1:8000/v1` | API endpoint |
+| `HY3_API_KEY` | `EMPTY` | API key |
+| `HY3_MODEL` | `hy3` | Model identifier |
+
+Multiple deployment options are supported: local vLLM/SGLang, Tencent Cloud Hunyuan, OpenRouter, or a custom gateway. See[.env.example](./.env.example) for details.
 
 See the [Deployment](#deployment) section below for how to start the API server.
 
