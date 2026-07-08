@@ -4,14 +4,18 @@
 
 This guide shows how to configure OpenCode to use Hy3 through an OpenAI-compatible provider.
 
-Verification status: TODO: verify manually.
+Verification status: OpenCode with Hy3 through Tencent Cloud TokenHub mode was manually verified with screenshots.
 
 ## Prerequisites
 
-- OpenCode installation and version: TODO: verify manually.
+- Install package: `npm install -g opencode-ai`.
+- OpenCode version: `1.17.15`.
+- Observed command paths:
+  - `C:\Users\smallfish\AppData\Roaming\npm\opencode`
+  - `C:\Users\smallfish\AppData\Roaming\npm\opencode.cmd`
 - Choose one Hy3 setup mode:
-  - TokenHub cloud API mode.
-  - Local self-hosted mode.
+  - TokenHub cloud API mode: manually verified.
+  - Local self-hosted mode: TODO: verify manually.
 
 ## Option A: TokenHub Cloud API Mode
 
@@ -19,13 +23,14 @@ Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without se
 
 See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
 
-The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). OpenCode-specific setup remains TODO: verify manually.
+The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). OpenCode through TokenHub was also manually verified.
 
 | Setting | Value |
 |:---|:---|
 | Base URL | `https://tokenhub.tencentmaas.com/v1` |
-| Model | `hy3` |
-| API key | User-created TokenHub API key |
+| Provider ID | `hy3-tokenhub` |
+| Model | `hy3-tokenhub/hy3` |
+| API key | Entered into OpenCode local credential storage, not committed and not documented |
 | Protocol | OpenAI-compatible |
 
 If the TokenHub API key access scope is limited, Hy3 must be included in that scope.
@@ -49,61 +54,124 @@ For TokenHub cloud API mode, no local Hy3 server is required.
 
 For local self-hosted mode, follow [local-server.md](local-server.md).
 
-OpenCode-specific connectivity with either endpoint: TODO: verify manually.
+OpenCode connectivity with TokenHub mode was manually verified. Local self-hosted connectivity remains TODO: verify manually.
 
 ## Configure the Tool
 
-Tool-specific command-line flags or configuration file path: TODO: verify manually.
+Credential setup:
 
-Use either TokenHub cloud API mode or local self-hosted mode when configuring the provider. Do not commit API keys.
+```text
+OpenCode TUI -> /connect -> Other
+Provider ID: hy3-tokenhub
+```
 
-Any OpenCode-specific provider name, custom model field, secret storage, or advanced option: TODO: verify manually.
+The TokenHub API key was entered into OpenCode local credential storage. No API key was committed or documented.
+
+A root `opencode.json` file was used during local verification only. Do not commit this local test config file in this PR.
+
+Verified `opencode.json` shape:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "hy3-tokenhub/hy3",
+  "small_model": "hy3-tokenhub/hy3",
+  "provider": {
+    "hy3-tokenhub": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Hy3 TokenHub",
+      "options": {
+        "baseURL": "https://tokenhub.tencentmaas.com/v1"
+      },
+      "models": {
+        "hy3": {
+          "name": "hy3",
+          "limit": {
+            "context": 128000,
+            "output": 4096
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+OpenCode model display in the TUI:
+
+```text
+Build · hy3 Hy3 TokenHub
+```
+
+Exact local credential storage behavior beyond the observed `/connect` flow and advanced options: TODO: verify manually.
 
 ## First Chat
 
 Prompt:
 
 ```text
-Hello Hy3. Please introduce yourself in two sentences.
+Hello Hy3. Please introduce yourself in two sentences. Do not inspect the repository or call tools.
 ```
 
-Observed response: TODO: verify manually.
+Result: OpenCode replied directly without repository exploration or tool calls.
+
+Observed response included:
+
+```text
+I'm Hy3, an AI assistant powered by the hy3 model, here to help you with software engineering tasks like coding, debugging, and refactoring.
+```
 
 ## Real Task Demo
 
 Task:
 
 ```text
-Ask Hy3 through OpenCode to summarize a small repository change and propose one follow-up test.
+Please inspect README.md in this workspace and summarize what Hy3 is in three bullet points. Do not edit, create, delete, or modify any files.
 ```
 
-Demo steps and result: TODO: verify manually.
+Result: OpenCode read `README.md` and returned three bullet points.
+
+No tracked files were edited by OpenCode; `git status -sb` after the demo only showed the local `opencode.json` test config and the new screenshots as untracked files.
 
 ## Screenshots / GIF
 
-- First chat screenshot: TODO: verify manually.
-- Real task demo screenshot or GIF: TODO: verify manually.
+- First chat screenshot:
 
-Add verified media under `docs/integrations/assets/opencode/`.
+![OpenCode first chat with Hy3 through TokenHub](assets/opencode/opencode-first-chat-tokenhub.png)
 
-Screenshots and GIFs must be captured from real runs before this PR is marked ready for review.
+- Real task demo screenshot:
+
+![OpenCode README demo with Hy3 through TokenHub](assets/opencode/opencode-readme-demo-tokenhub.png)
+
+Screenshots are included under `docs/integrations/assets/opencode/`. GIFs are optional and were not added.
+
+Screenshots and GIFs must not reveal API keys.
 
 ## Troubleshooting
 
-- TokenHub API key handling: TODO: verify manually.
+- TokenHub API key handling: verified by entering the API key through `OpenCode TUI -> /connect -> Other`; the key is stored in OpenCode local credential storage and must not be committed or documented.
 - TokenHub API key access scope for Hy3: TODO: verify manually.
 - Local endpoint connection issue: TODO: verify manually.
-- Model selection issue: TODO: verify manually.
+- Local self-hosted authentication or API key handling: TODO: verify manually.
+- Local `opencode.json`: used for local verification only and must not be committed in this PR.
+- Model selection issue: TokenHub mode verified with provider/model `hy3-tokenhub/hy3`.
 - Streaming or tool-use behavior: TODO: verify manually.
 
 ## Verified Environment
 
 | Item | Value |
 |:---|:---|
-| OS | TODO: verify manually |
-| OpenCode version | TODO: verify manually |
-| Setup mode | TODO: verify manually |
-| Hy3 server backend | TODO: verify manually |
-| Base URL | TODO: verify manually |
-| Model | `hy3` |
-| Verification date | TODO: verify manually |
+| OS | Windows 10.0.26200 |
+| Interface | OpenCode TUI |
+| Node.js | `v24.14.1` |
+| npm | `11.11.0` |
+| Package | `opencode-ai` |
+| Install command | `npm install -g opencode-ai` |
+| OpenCode version | `1.17.15` |
+| Setup mode | Tencent Cloud TokenHub cloud API mode |
+| Hy3 server backend | TokenHub cloud API |
+| Provider ID | `hy3-tokenhub` |
+| Base URL | `https://tokenhub.tencentmaas.com/v1` |
+| Model | `hy3-tokenhub/hy3` |
+| Model display | Build · hy3 Hy3 TokenHub |
+| Verification date | 2026-07-08 |
