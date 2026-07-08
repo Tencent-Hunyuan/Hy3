@@ -50,7 +50,7 @@ For shared local server setup, see [local-server.md](local-server.md). The repos
 
 | Tool | Guide | Verification status |
 |:---|:---|:---|
-| Cline | [cline.md](cline.md) | TODO: verify manually |
+| Cline | [cline.md](cline.md) | TokenHub mode verified; screenshot/GIF pending |
 | Roo Code | [roo-code.md](roo-code.md) | TODO: verify manually |
 | Kilo Code | [kilo-code.md](kilo-code.md) | TODO: verify manually |
 | OpenCode | [opencode.md](opencode.md) | TODO: verify manually |

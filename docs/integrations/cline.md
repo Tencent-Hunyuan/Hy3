@@ -4,14 +4,15 @@
 
 This guide shows how to configure Cline to use Hy3 through an OpenAI-compatible provider.
 
-Verification status: TODO: verify manually.
+Verification status: Cline with Hy3 through Tencent Cloud TokenHub mode was manually verified. Screenshots/GIFs are still TODO.
 
 ## Prerequisites
 
-- Cline installation and version: TODO: verify manually.
+- Cline version: `4.0.6`.
+- VS Code extension identifier: `saoudrizwan.claude-dev`.
 - Choose one Hy3 setup mode:
-  - TokenHub cloud API mode.
-  - Local self-hosted mode.
+  - TokenHub cloud API mode: manually verified.
+  - Local self-hosted mode: TODO: verify manually.
 
 ## Option A: TokenHub Cloud API Mode
 
@@ -19,14 +20,16 @@ Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without se
 
 See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
 
-The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). Cline-specific setup remains TODO: verify manually.
+The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). Cline-specific setup through TokenHub was also manually verified.
 
 | Setting | Value |
 |:---|:---|
 | Base URL | `https://tokenhub.tencentmaas.com/v1` |
-| Model | `hy3` |
-| API key | User-created TokenHub API key |
+| Model ID | `hy3` |
+| API provider selected in Cline | OpenAI Compatible |
+| API key | User-created TokenHub API key, not committed and not documented |
 | Protocol | OpenAI-compatible |
+| Provider display after setup | `openai-compat:hy3` |
 
 If the TokenHub API key access scope is limited, Hy3 must be included in that scope.
 
@@ -49,15 +52,23 @@ For TokenHub cloud API mode, no local Hy3 server is required.
 
 For local self-hosted mode, follow [local-server.md](local-server.md).
 
-Cline-specific connectivity with either endpoint: TODO: verify manually.
+Cline-specific connectivity with TokenHub mode was manually verified. Local self-hosted connectivity remains TODO: verify manually.
 
 ## Configure the Tool
 
-Tool-specific configuration path: TODO: verify manually.
+Cline setup path: **Cline sidebar -> How will you use Cline? -> Bring my own API key -> Configure your provider**.
 
-Use either TokenHub cloud API mode or local self-hosted mode when configuring the provider. Do not commit API keys.
+For the verified TokenHub configuration:
 
-Any Cline-specific provider name, custom model field, secret storage, or advanced option: TODO: verify manually.
+| Field | Verified value |
+|:---|:---|
+| API provider | OpenAI Compatible |
+| Base URL | `https://tokenhub.tencentmaas.com/v1` |
+| Model ID | `hy3` |
+| API key | User-created TokenHub API key, not committed and not documented |
+| Provider display after setup | `openai-compat:hy3` |
+
+Exact Cline UI path, secret storage behavior, and advanced options: TODO: verify manually.
 
 ## First Chat
 
@@ -67,44 +78,68 @@ Prompt:
 Hello Hy3. Please introduce yourself in two sentences.
 ```
 
-Observed response: TODO: verify manually.
+Result: completed successfully.
+
+Observed response included:
+
+```text
+I'm Cline (also known as Hy3 in this context), a highly skilled software engineer AI assistant...
+```
 
 ## Real Task Demo
 
 Task:
 
 ```text
-Review this small function, identify one bug or edge case, and suggest a concise fix.
+Please inspect README.md in this workspace and summarize what Hy3 is in three bullet points. Do not edit any files.
 ```
 
-Demo steps and result: TODO: verify manually.
+Result: Cline read `README.md` lines 1-227 and completed the task. No files were edited.
+
+Observed summary:
+
+1. Hy3 is a large Mixture-of-Experts language model developed by the Tencent Hy Team, with 295B total parameters, 21B active parameters, 3.8B MTP layer parameters, 256K context length, and BF16 precision.
+2. Hy3 is agent-focused, with strong tool-calling and reasoning capabilities.
+3. Hy3 is a product-grade model that reduces hallucination, improves multi-turn intent tracking and complex context retention, and supports deployment, finetuning, and quantization.
 
 ## Screenshots / GIF
 
-- First chat screenshot: TODO: verify manually.
-- Real task demo screenshot or GIF: TODO: verify manually.
+- First chat screenshot: TODO: add sanitized real screenshot.
+- Real task demo screenshot or GIF: TODO: add sanitized real screenshot/GIF.
 
 Add verified media under `docs/integrations/assets/cline/`.
 
-Screenshots and GIFs must be captured from real local runs before this PR is marked ready for review.
+Screenshots and GIFs must be captured from real runs and must not reveal API keys.
 
 ## Troubleshooting
 
-- TokenHub API key handling: TODO: verify manually.
+- Workspace directory error observed before opening the actual repository folder:
+
+```text
+Cannot access workspace directory. Error: ENOENT: no such file or directory, access 'C:\Users\smallfish\Desktop'
+```
+
+Fix: in VS Code, use **File -> Open Folder** and open `C:\Users\smallfish\open-source\Hy3` or another real workspace folder.
+
+- TokenHub API key handling: verified by using a user-created TokenHub API key without committing or documenting it.
 - TokenHub API key access scope for Hy3: TODO: verify manually.
-- Endpoint connection issue: TODO: verify manually.
-- Authentication or API key handling: TODO: verify manually.
-- Model selection issue: TODO: verify manually.
+- Local endpoint connection issue: TODO: verify manually.
+- Local self-hosted authentication or API key handling: TODO: verify manually.
+- Model selection issue: TokenHub mode verified with `hy3`.
 - Streaming or tool-use behavior: TODO: verify manually.
 
 ## Verified Environment
 
 | Item | Value |
 |:---|:---|
-| OS | TODO: verify manually |
-| Cline version | TODO: verify manually |
-| Setup mode | TODO: verify manually |
-| Hy3 server backend | TODO: verify manually |
-| Base URL | TODO: verify manually |
+| OS | Windows 10.0.26200 |
+| Editor | VS Code |
+| Extension | Cline (`saoudrizwan.claude-dev`) |
+| Cline version | `4.0.6` |
+| Setup mode | Tencent Cloud TokenHub cloud API mode |
+| Hy3 server backend | TokenHub cloud API |
+| API provider | OpenAI Compatible |
+| Base URL | `https://tokenhub.tencentmaas.com/v1` |
 | Model | `hy3` |
-| Verification date | TODO: verify manually |
+| Provider display | `openai-compat:hy3` |
+| Verification date | 2026-07-08 |
