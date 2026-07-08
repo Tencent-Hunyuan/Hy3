@@ -12,7 +12,7 @@ Verification status: Cline with Hy3 through Tencent Cloud TokenHub mode was manu
 - VS Code extension identifier: `saoudrizwan.claude-dev`.
 - Choose one Hy3 setup mode:
   - TokenHub cloud API mode: manually verified.
-  - Local self-hosted mode: TODO: verify manually.
+  - Local self-hosted mode: Not verified in this PR.
 
 ## Option A: TokenHub Cloud API Mode
 
@@ -52,7 +52,7 @@ For TokenHub cloud API mode, no local Hy3 server is required.
 
 For local self-hosted mode, follow [local-server.md](local-server.md).
 
-Cline-specific connectivity with TokenHub mode was manually verified. Local self-hosted connectivity remains TODO: verify manually.
+Cline-specific connectivity with TokenHub mode was manually verified. Local self-hosted connectivity was not verified in this PR.
 
 ## Configure the Tool
 
@@ -68,7 +68,7 @@ For the verified TokenHub configuration:
 | API key | User-created TokenHub API key, not committed and not documented |
 | Provider display after setup | `openai-compat:hy3` |
 
-Exact Cline UI path, secret storage behavior, and advanced options: TODO: verify manually.
+Exact Cline secret storage behavior and advanced options are future verification items.
 
 ## First Chat
 
@@ -127,11 +127,11 @@ Cannot access workspace directory. Error: ENOENT: no such file or directory, acc
 Fix: in VS Code, use **File -> Open Folder** and open `C:\Users\smallfish\open-source\Hy3` or another real workspace folder.
 
 - TokenHub API key handling: verified by using a user-created TokenHub API key without committing or documenting it.
-- TokenHub API key access scope for Hy3: TODO: verify manually.
-- Local endpoint connection issue: TODO: verify manually.
-- Local self-hosted authentication or API key handling: TODO: verify manually.
+- TokenHub API key access scope for Hy3: Future verification item.
+- Local endpoint connection issue: Not verified in this PR.
+- Local self-hosted authentication or API key handling: Not verified in this PR.
 - Model selection issue: TokenHub mode verified with `hy3`.
-- Streaming or tool-use behavior: TODO: verify manually.
+- Streaming or tool-use behavior: Not verified in this PR.
 
 ## Verified Environment
 

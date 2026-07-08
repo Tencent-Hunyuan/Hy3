@@ -15,7 +15,7 @@ Verification status: CodeBuddy Code CLI print mode with Hy3 through Tencent Clou
   - `C:\Users\smallfish\AppData\Roaming\npm\codebuddy.cmd`
 - Choose one Hy3 setup mode:
   - TokenHub cloud API mode: manually verified for CLI print mode.
-  - Local self-hosted mode: TODO: verify manually.
+  - Local self-hosted mode: Not verified in this PR.
 
 ## Option A: TokenHub Cloud API Mode
 
@@ -61,7 +61,7 @@ For TokenHub cloud API mode, no local Hy3 server is required.
 
 For local self-hosted mode, follow [local-server.md](local-server.md).
 
-CodeBuddy Code CLI print mode with TokenHub was manually verified. Local self-hosted connectivity remains TODO: verify manually.
+CodeBuddy Code CLI print mode with TokenHub was manually verified. Local self-hosted connectivity was not verified in this PR.
 
 ## Configure the Tool
 
@@ -161,9 +161,9 @@ Screenshots and GIFs must not reveal API keys.
 ## Troubleshooting
 
 - TokenHub API key handling: verified by using `${TOKENHUB_API_KEY}` in `%USERPROFILE%\.codebuddy\models.json`; the API key itself was entered into the current PowerShell session and not committed.
-- TokenHub API key access scope for Hy3: TODO: verify manually.
-- Local endpoint connection issue: TODO: verify manually.
-- Local self-hosted authentication or API key handling: TODO: verify manually.
+- TokenHub API key access scope for Hy3: Future verification item.
+- Local endpoint connection issue: Not verified in this PR.
+- Local self-hosted authentication or API key handling: Not verified in this PR.
 - Model selection issue: the model ID in `models.json` must be `hy3`. Using `hy3-tokenhub` caused TokenHub to return:
 
 ```text
@@ -172,7 +172,7 @@ Screenshots and GIFs must not reveal API keys.
 
 TokenHub expects model `hy3`.
 - Interactive mode: `codebuddy --model hy3` opened the interactive UI but prompted for CodeBuddy login; interactive login mode was not used for this verification flow.
-- Streaming or tool-use behavior: TODO: verify manually.
+- Streaming or tool-use behavior: Not verified in this PR.
 
 ## Verified Environment
 

@@ -15,7 +15,7 @@ Verification status: OpenCode with Hy3 through Tencent Cloud TokenHub mode was m
   - `C:\Users\smallfish\AppData\Roaming\npm\opencode.cmd`
 - Choose one Hy3 setup mode:
   - TokenHub cloud API mode: manually verified.
-  - Local self-hosted mode: TODO: verify manually.
+  - Local self-hosted mode: Not verified in this PR.
 
 ## Option A: TokenHub Cloud API Mode
 
@@ -54,7 +54,7 @@ For TokenHub cloud API mode, no local Hy3 server is required.
 
 For local self-hosted mode, follow [local-server.md](local-server.md).
 
-OpenCode connectivity with TokenHub mode was manually verified. Local self-hosted connectivity remains TODO: verify manually.
+OpenCode connectivity with TokenHub mode was manually verified. Local self-hosted connectivity was not verified in this PR.
 
 ## Configure the Tool
 
@@ -103,7 +103,7 @@ OpenCode model display in the TUI:
 Build · hy3 Hy3 TokenHub
 ```
 
-Exact local credential storage behavior beyond the observed `/connect` flow and advanced options: TODO: verify manually.
+Exact local credential storage behavior beyond the observed `/connect` flow and advanced options are future verification items.
 
 ## First Chat
 
@@ -150,12 +150,12 @@ Screenshots and GIFs must not reveal API keys.
 ## Troubleshooting
 
 - TokenHub API key handling: verified by entering the API key through `OpenCode TUI -> /connect -> Other`; the key is stored in OpenCode local credential storage and must not be committed or documented.
-- TokenHub API key access scope for Hy3: TODO: verify manually.
-- Local endpoint connection issue: TODO: verify manually.
-- Local self-hosted authentication or API key handling: TODO: verify manually.
+- TokenHub API key access scope for Hy3: Future verification item.
+- Local endpoint connection issue: Not verified in this PR.
+- Local self-hosted authentication or API key handling: Not verified in this PR.
 - Local `opencode.json`: used for local verification only and must not be committed in this PR.
 - Model selection issue: TokenHub mode verified with provider/model `hy3-tokenhub/hy3`.
-- Streaming or tool-use behavior: TODO: verify manually.
+- Streaming or tool-use behavior: Not verified in this PR.
 
 ## Verified Environment
 

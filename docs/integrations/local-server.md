@@ -51,5 +51,5 @@ python3 -m sglang.launch_server \
 ## Notes
 
 - Follow the root README for hardware, backend, and dependency details.
-- The tool guides in this directory have not yet been manually verified.
-- Client-specific UI paths, exact versions, first-chat output, real task demo results, and screenshots/GIFs must be verified manually.
+- Local self-hosted tool-by-tool verification is not part of this PR.
+- TokenHub client integrations are covered in the tool-specific guides.

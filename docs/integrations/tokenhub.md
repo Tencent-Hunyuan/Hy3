@@ -4,7 +4,7 @@
 
 TokenHub cloud API mode is a setup option for using Hy3 without self-hosting the model.
 
-Verification status: basic TokenHub Hy3 Chat Completions API smoke test verified. Client tool integrations are still TODO: verify manually.
+Verification status: the basic TokenHub Hy3 Chat Completions API smoke test is verified. Five TokenHub client integrations in this PR are verified with screenshots. Remaining unverified items are documented as future verification items.
 
 ## TokenHub API Settings
 
@@ -77,11 +77,11 @@ Observed response summary:
 
 ## Account and Availability
 
-- Account signup: TODO: verify manually.
-- Billing requirements: TODO: verify manually.
-- Regional availability: TODO: verify manually.
-- Exact free quota details: TODO: verify manually.
-- Hy3 model availability in TokenHub: TODO: verify manually.
+- Account signup: Future verification item.
+- Billing requirements: Future verification item.
+- Regional availability: Future verification item.
+- Exact free quota details: Future verification item.
+- Hy3 model availability in TokenHub: Future verification item.
 
 Do not add unsupported pricing claims.
 
@@ -90,7 +90,7 @@ Do not add unsupported pricing claims.
 - Never commit TokenHub API keys.
 - Never paste API keys into documentation examples.
 - Never add screenshots or GIFs that reveal API keys.
-- Use environment variables or the target tool's secret storage when available: TODO: verify manually per tool.
+- Use environment variables or the target tool's secret storage when available; exact behavior is documented in verified tool guides where observed.
 
 ## Client Configuration
 
@@ -103,4 +103,4 @@ API key: <user-created TokenHub API key>
 Protocol: OpenAI-compatible
 ```
 
-Tool-specific UI paths and exact configuration steps: TODO: verify manually.
+Tool-specific UI paths and exact configuration steps are documented in the verified tool guides where observed.

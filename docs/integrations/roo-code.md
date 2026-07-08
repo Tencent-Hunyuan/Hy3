@@ -12,7 +12,7 @@ Verification status: Roo Code with Hy3 through Tencent Cloud TokenHub mode was m
 - VS Code extension identifier: `rooveterinaryinc.cline`.
 - Choose one Hy3 setup mode:
   - TokenHub cloud API mode: manually verified.
-  - Local self-hosted mode: TODO: verify manually.
+  - Local self-hosted mode: Not verified in this PR.
 
 ## Option A: TokenHub Cloud API Mode
 
@@ -51,7 +51,7 @@ For TokenHub cloud API mode, no local Hy3 server is required.
 
 For local self-hosted mode, follow [local-server.md](local-server.md).
 
-Roo Code-specific connectivity with TokenHub mode was manually verified. Local self-hosted connectivity remains TODO: verify manually.
+Roo Code-specific connectivity with TokenHub mode was manually verified. Local self-hosted connectivity was not verified in this PR.
 
 ## Configure the Tool
 
@@ -66,7 +66,7 @@ For the verified TokenHub configuration:
 | Model | `hy3` |
 | API key | User-created TokenHub API key, not committed and not documented |
 
-Exact Roo Code UI path, secret storage behavior, and advanced options: TODO: verify manually.
+Exact Roo Code secret storage behavior and advanced options are future verification items.
 
 ## First Chat
 
@@ -113,11 +113,11 @@ Screenshots and GIFs must not reveal API keys.
 ## Troubleshooting
 
 - TokenHub API key handling: verified by using a user-created TokenHub API key without committing or documenting it.
-- TokenHub API key access scope for Hy3: TODO: verify manually.
-- Local endpoint connection issue: TODO: verify manually.
-- Local self-hosted authentication or API key handling: TODO: verify manually.
+- TokenHub API key access scope for Hy3: Future verification item.
+- Local endpoint connection issue: Not verified in this PR.
+- Local self-hosted authentication or API key handling: Not verified in this PR.
 - Model selection issue: TokenHub mode verified with `hy3`.
-- Streaming or tool-use behavior: TODO: verify manually.
+- Streaming or tool-use behavior: Not verified in this PR.
 
 ## Verified Environment
 
