@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hy3-research-mcp"
+version = "0.1.0"
+description = "A stdio MCP server that turns Hy3 into a deep research assistant with web search and page reading."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+  { name = "Tencent Hunyuan Hy3 contributors" }
+]
+dependencies = [
+  "mcp>=1.27,<2",
+  "openai>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "pytest-asyncio>=0.23",
+]
+
+[project.scripts]
+hy3-research-mcp = "hy3_research_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hy3_research_mcp"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["src"]
+testpaths = ["tests"]
