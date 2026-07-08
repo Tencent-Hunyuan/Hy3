@@ -13,7 +13,7 @@ Client verification status is tracked in the guide table below.
 
 | Mode | Setup | Status |
 |:---|:---|:---|
-| TokenHub cloud API | [tokenhub.md](tokenhub.md) | Basic Chat Completions smoke test verified; tool integrations still TODO |
+| TokenHub cloud API | [tokenhub.md](tokenhub.md) | Chat Completions smoke test and five tool integrations verified with screenshots |
 | Local self-hosted server | [local-server.md](local-server.md) | Repo-documented server facts only |
 
 ## TokenHub Cloud API Mode
@@ -56,26 +56,18 @@ For shared local server setup, see [local-server.md](local-server.md). The repos
 | OpenCode | [opencode.md](opencode.md) | TokenHub mode verified with screenshots |
 | CodeBuddy Code | [codebuddy-code.md](codebuddy-code.md) | TokenHub mode verified with screenshots |
 
-## Manual Verification Checklist
+## Verification Summary
 
-- [ ] Confirm the current installation method and minimum version for each tool.
-- [ ] Confirm the exact UI path or configuration file for each tool.
-- [ ] Confirm each tool accepts the TokenHub OpenAI-compatible endpoint.
-- [ ] Confirm each tool accepts the local Hy3 OpenAI-compatible endpoint.
-- [ ] Confirm TokenHub API key scope includes Hy3 when access scope is limited.
-- [ ] Run a first chat with `model=hy3`.
-- [ ] Run one real task demo for each tool.
-- [ ] Capture real screenshots or GIFs from verified runs.
-- [ ] Document troubleshooting notes based on observed issues.
-- [ ] Record the verified OS, tool version, setup mode, Hy3 server backend when local, and date.
+- TokenHub cloud API mode was manually verified for Cline, Roo Code, Kilo Code, OpenCode, and CodeBuddy Code.
+- Each verified guide includes install/version notes, TokenHub endpoint/base URL, model `hy3`, authentication setup, first chat, a real task demo, screenshots, and troubleshooting notes.
+- Local self-hosted mode is documented from repository facts, but local tool-by-tool verification is not part of this PR.
+- Screenshots and demo media are from real local runs; generated, mocked, or placeholder media should not be used as verification evidence.
 
 ## Screenshots / GIFs
 
-Screenshots and GIFs are added only after real manual verification.
+Verification media referenced by these guides comes from real local runs.
 
-Do not add generated, mocked, or placeholder media as verification evidence.
-
-Screenshots and GIFs must be captured from real local runs before this PR is marked ready for review.
+Do not use generated, mocked, or placeholder media as verification evidence.
 
 ## Showcase Project
 
