@@ -37,6 +37,7 @@
 - [News](#news)
 - [Model Links](#model-links)
 - [Quickstart](#quickstart)
+- [API Guides and Examples](#api-guides-and-examples)
 - [Deployment](#deployment)
   - [vLLM](#vllm)
   - [SGLang](#sglang)
@@ -136,6 +137,12 @@ print(response.choices[0].message.content)
 > **Reasoning mode**: Set `reasoning_effort` to `"high"` for complex tasks (math, coding, reasoning) or `"no_think"` for direct responses.
 
 See the [Deployment](#deployment) section below for how to start the API server.
+
+## API Guides and Examples
+
+For a complete walkthrough of OpenAI-compatible API usage, see the [API Quickstart Guide](./quickstart.md). It covers client setup, request parameters, reasoning mode, tool calling, and troubleshooting. A Chinese version is available at [API 快速开始](./quickstart_CN.md).
+
+Runnable examples are available in the [Examples Index](./examples/README.md), with paired notes for basic chat, streaming, latency comparison, tool calling, reasoning mode, and retry handling.
 
 ## Deployment
 
