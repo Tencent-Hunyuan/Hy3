@@ -62,13 +62,15 @@ export function isMockMode() {
 }
 
 export async function generateResearchBrief(input) {
+  const thinkingMode = normalizeThinkingMode(input.thinkingMode);
   const prompt = [
-    "Create a practical research brief as JSON.",
+    "Create a practical research brief as JSON for Hy3 Research Canvas.",
     `Topic: ${input.topic}`,
     `Audience: ${input.audience}`,
     `Depth: ${input.depth}`,
+    `Hy3 thinking mode: ${thinkingMode}`,
     `Known context: ${input.context || "none"}`,
-    "Return fields: title, plan array, report markdown, citations array of {label,url,note}, risks array, nextActions array."
+    "Return fields: title, plan array, report markdown, citations array of {label,url,note,confidence}, risks array, nextActions array, trace array of {stage,status,note}, confidence string, summaryCards array of {label,value,note}."
   ].join("\n");
 
   const content = await callHy3([
@@ -77,17 +79,19 @@ export async function generateResearchBrief(input) {
       content: "You are Hy3 in a product research assistant. Return concise valid JSON with grounded caveats."
     },
     { role: "user", content: prompt }
-  ]);
+  ], { reasoningEffort: reasoningEffortFor(thinkingMode) });
 
-  return parseJsonOrFallback(content, "research");
+  return enrichResearchResult(parseJsonOrFallback(content, "research"), thinkingMode);
 }
 
 export async function rewriteContent(input) {
+  const thinkingMode = normalizeThinkingMode(input.thinkingMode || "fast");
   const prompt = [
     "Rewrite the text while preserving factual claims.",
     `Target language: ${input.language}`,
     `Tone: ${input.tone}`,
     `Audience: ${input.audience}`,
+    `Hy3 thinking mode: ${thinkingMode}`,
     "Text:",
     input.text
   ].join("\n");
@@ -98,9 +102,9 @@ export async function rewriteContent(input) {
       content: "You are Hy3 in a multilingual writing assistant. Return JSON with rewritten, rationale, and cautions."
     },
     { role: "user", content: prompt }
-  ], { reasoningEffort: "no_think" });
+  ], { reasoningEffort: reasoningEffortFor(thinkingMode) });
 
-  return parseJsonOrFallback(content, "rewrite");
+  return enrichRewriteResult(parseJsonOrFallback(content, "rewrite"), thinkingMode);
 }
 
 function parseJsonOrFallback(content, type) {
@@ -111,7 +115,8 @@ function parseJsonOrFallback(content, type) {
       return {
         rewritten: content,
         rationale: "Hy3 returned free-form text instead of JSON, so the app preserved it as the rewritten result.",
-        cautions: ["Review factual claims before publishing."]
+        cautions: ["Review factual claims before publishing."],
+        trace: defaultTrace("fast")
       };
     }
     return {
@@ -120,7 +125,10 @@ function parseJsonOrFallback(content, type) {
       report: content,
       citations: [],
       risks: ["Hy3 returned free-form text instead of JSON."],
-      nextActions: ["Review the report and rerun with stricter formatting if needed."]
+      nextActions: ["Review the report and rerun with stricter formatting if needed."],
+      trace: defaultTrace("deep"),
+      confidence: "Needs review",
+      summaryCards: []
     };
   }
 }
@@ -131,32 +139,37 @@ function stripJsonFence(content) {
 
 function mockHy3(messages) {
   const user = messages.at(-1)?.content || "";
+  const thinkingMode = user.includes("Hy3 thinking mode: fast") ? "fast" : "deep";
   if (user.includes("Rewrite the text")) {
     return JSON.stringify({
       rewritten: "Team update: Hy3 now coordinates planning, evidence review, and final wording in one guided workflow. The release is ready for a concise bilingual launch note.",
       rationale: "The rewrite keeps the factual claims, simplifies the sentence structure, and uses a confident product-update tone.",
-      cautions: ["Confirm release dates and benchmark numbers before publishing."]
+      cautions: ["Confirm release dates and benchmark numbers before publishing."],
+      trace: defaultTrace(thinkingMode),
+      confidence: "High"
     });
   }
 
   return JSON.stringify({
-    title: "Hy3 Research Canvas: Product Research Brief",
+    title: "Hy3 Research Canvas: Dual-Speed Research Brief",
     plan: [
       "Frame the decision and target audience.",
       "Collect first-party notes, public evidence, and measurable constraints.",
-      "Use Hy3 to synthesize options, risks, and next actions."
+      "Run Hy3 in deep mode for synthesis, then fast mode for stakeholder-ready polish."
     ],
     report: "## Executive Summary\nHy3 can act as the reasoning layer for a research assistant that turns scattered context into an actionable brief. The strongest fit is early product discovery, where teams need a plan, cited synthesis, and crisp follow-up questions.\n\n## Recommended Workflow\n1. Capture the topic, audience, depth, and known context.\n2. Ask Hy3 to produce a plan and identify evidence gaps.\n3. Review citations and export the final brief for stakeholders.\n\n## Why Hy3\nHy3's long-context and agent-oriented training make it suitable for structured synthesis, multi-step planning, and controlled writing.",
     citations: [
       {
         label: "Hy3 README",
         url: "https://github.com/Tencent-Hunyuan/Hy3",
-        note: "Describes Hy3's agent, long-context, and OpenAI-compatible API capabilities."
+        note: "Describes Hy3's agent, long-context, and OpenAI-compatible API capabilities.",
+        confidence: "High"
       },
       {
         label: "Rhino-Bird Issue #4",
         url: "https://github.com/Tencent-Hunyuan/Hy3/issues/4",
-        note: "Requires an end-to-end interactive application powered by Hy3."
+        note: "Requires an end-to-end interactive application powered by Hy3.",
+        confidence: "High"
       }
     ],
     risks: [
@@ -167,8 +180,56 @@ function mockHy3(messages) {
       "Run the app against a live Hy3 endpoint.",
       "Record the two demo flows as a short GIF or video.",
       "Add real source collection if the app is extended beyond this example."
+    ],
+    trace: defaultTrace(thinkingMode),
+    confidence: "High",
+    summaryCards: [
+      { label: "Mode", value: thinkingMode === "fast" ? "Fast" : "Deep", note: "Maps to Hy3 reasoning_effort." },
+      { label: "Evidence", value: "2 sources", note: "Citations are surfaced in the evidence dock." },
+      { label: "Output", value: "Brief + actions", note: "Ready to copy or export." }
     ]
   });
+}
+
+function normalizeThinkingMode(mode) {
+  return String(mode || "deep").toLowerCase() === "fast" ? "fast" : "deep";
+}
+
+function reasoningEffortFor(mode) {
+  return normalizeThinkingMode(mode) === "fast" ? "no_think" : "high";
+}
+
+function defaultTrace(mode) {
+  const normalized = normalizeThinkingMode(mode);
+  return [
+    { stage: "Plan", status: "Done", note: normalized === "fast" ? "Compressed task framing." : "Expanded goals, audience, and constraints." },
+    { stage: "Synthesize", status: "Done", note: "Hy3 combined context into a structured answer." },
+    { stage: "Ground", status: "Review", note: "Evidence and missing assumptions are surfaced for checking." },
+    { stage: "Polish", status: "Done", note: normalized === "fast" ? "Direct response mode." : "Deep mode summary polished for stakeholders." }
+  ];
+}
+
+function enrichResearchResult(result, thinkingMode) {
+  return {
+    ...result,
+    thinkingMode,
+    trace: result.trace?.length ? result.trace : defaultTrace(thinkingMode),
+    confidence: result.confidence || "Medium",
+    summaryCards: result.summaryCards?.length ? result.summaryCards : [
+      { label: "Mode", value: thinkingMode === "fast" ? "Fast" : "Deep", note: "Hy3 reasoning mode selected by the user." },
+      { label: "Sources", value: `${result.citations?.length || 0}`, note: "Review before publishing." },
+      { label: "Actions", value: `${result.nextActions?.length || 0}`, note: "Follow-up steps generated by Hy3." }
+    ]
+  };
+}
+
+function enrichRewriteResult(result, thinkingMode) {
+  return {
+    ...result,
+    thinkingMode,
+    trace: result.trace?.length ? result.trace : defaultTrace(thinkingMode),
+    confidence: result.confidence || "Medium"
+  };
 }
 
 async function readJson(request) {

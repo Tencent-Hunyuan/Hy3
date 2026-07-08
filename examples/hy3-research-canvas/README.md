@@ -7,6 +7,12 @@ Hy3 Research Canvas is an end-to-end Web application powered by the Hy3 OpenAI-c
 
 The app has a real interactive frontend and a small Node.js backend. The backend calls Hy3 when `HY3_BASE_URL`, `HY3_API_KEY`, and `HY3_MODEL` are configured. `HY3_MOCK=1` enables deterministic demo output for local review without credentials.
 
+The upgraded interface highlights a Hy3-specific dual-speed workflow:
+
+- `Fast` mode maps to `reasoning_effort=no_think` for quick rewrites and direct summaries.
+- `Deep` mode maps to `reasoning_effort=high` for grounded research synthesis.
+- The workspace shows a Hy3 trace timeline, evidence confidence chips, summary cards, copy-to-clipboard, and JSON export.
+
 ## Run
 
 ```bash
@@ -47,7 +53,7 @@ npm run demo
 
 ## Hy3 Role
 
-Hy3 is the reasoning and language generation layer. The app sends structured prompts to Hy3 for planning, grounded synthesis, citation drafting, translation, and tone control. The frontend only orchestrates user interaction and renders the returned structured content.
+Hy3 is the reasoning and language generation layer. The app sends structured prompts to Hy3 for planning, grounded synthesis, citation drafting, translation, tone control, and final report polish. The frontend orchestrates user interaction, mode selection, trace visualization, copy/export actions, and rendering of the returned structured content.
 
 ## CodeBuddy Collaboration Notes
 

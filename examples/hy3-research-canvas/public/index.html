@@ -17,9 +17,34 @@
           </div>
         </div>
 
+        <div class="signal-card" aria-label="Hy3 signal">
+          <span class="signal-dot"></span>
+          <div>
+            <strong>Hy3 dual-speed cockpit</strong>
+            <p>Fast for concise rewrites. Deep for grounded briefs.</p>
+          </div>
+        </div>
+
         <div class="tabs" role="tablist" aria-label="Workflow">
           <button class="tab active" data-tab="research" type="button">Research</button>
           <button class="tab" data-tab="rewrite" type="button">Rewrite</button>
+        </div>
+
+        <fieldset class="mode-switch">
+          <legend>Hy3 Thinking Mode</legend>
+          <label>
+            <input type="radio" name="thinkingMode" value="fast">
+            <span>Fast</span>
+          </label>
+          <label>
+            <input type="radio" name="thinkingMode" value="deep" checked>
+            <span>Deep</span>
+          </label>
+        </fieldset>
+
+        <div class="seed-row">
+          <button class="seed-button" data-seed="product" type="button">Product demo</button>
+          <button class="seed-button" data-seed="release" type="button">Release demo</button>
         </div>
 
         <form id="researchForm" class="panel-form">
@@ -43,7 +68,7 @@
             Known context
             <textarea name="context">The team needs a repeatable way to turn notes into cited plans and stakeholder-ready summaries.</textarea>
           </label>
-          <button class="primary-action" type="submit">Generate Brief</button>
+          <button class="primary-action" type="submit">Run Hy3 Brief</button>
         </form>
 
         <form id="rewriteForm" class="panel-form hidden">
@@ -73,7 +98,7 @@
             Audience
             <input name="audience" value="External developers">
           </label>
-          <button class="primary-action" type="submit">Rewrite</button>
+          <button class="primary-action" type="submit">Run Hy3 Rewrite</button>
         </form>
       </aside>
 
@@ -83,34 +108,55 @@
             <p class="eyebrow">Live Workspace</p>
             <h2 id="resultTitle">Ready for a Hy3 run</h2>
           </div>
-          <button id="loadDemo" class="secondary-action" type="button">Load Demo</button>
+          <div class="command-bar" aria-label="Result actions">
+            <button id="loadDemo" class="secondary-action" type="button">Load Demo</button>
+            <button id="copyMarkdown" class="secondary-action" type="button">Copy Markdown</button>
+            <button id="exportJson" class="secondary-action" type="button">Export JSON</button>
+          </div>
         </div>
 
-        <div id="loading" class="loading hidden">Hy3 is thinking...</div>
+        <div id="actionToast" class="action-toast hidden" role="status" aria-live="polite"></div>
+
+        <div id="loading" class="loading hidden">
+          <span class="spinner"></span>
+          <span>Hy3 is running the selected thinking mode...</span>
+        </div>
+
+        <div id="summaryStrip" class="summary-strip" aria-label="Run summary"></div>
 
         <div class="result-grid">
           <section class="result-panel report-panel">
-            <h3>Report</h3>
+            <div class="panel-title-row">
+              <h3>Report Canvas</h3>
+              <span id="confidencePill" class="confidence-pill">No run yet</span>
+            </div>
             <article id="reportOutput" class="markdown-output">
               <p>Choose a workflow and run it. Mock mode gives deterministic output; live mode sends the same request to Hy3.</p>
             </article>
           </section>
 
-          <section class="result-panel">
-            <h3>Plan</h3>
-            <ol id="planOutput" class="steps"></ol>
-          </section>
+          <aside class="insight-rail">
+            <section class="result-panel trace-panel">
+              <h3>Hy3 Trace</h3>
+              <ol id="traceOutput" class="trace-list"></ol>
+            </section>
 
-          <section class="result-panel">
-            <h3>Citations</h3>
-            <div id="citationOutput" class="citation-list"></div>
-          </section>
+            <section class="result-panel">
+              <h3>Plan</h3>
+              <ol id="planOutput" class="steps"></ol>
+            </section>
 
-          <section class="result-panel">
-            <h3>Risks & Actions</h3>
-            <ul id="riskOutput" class="compact-list"></ul>
-            <ul id="actionOutput" class="compact-list action-list"></ul>
-          </section>
+            <section class="result-panel">
+              <h3>Evidence Dock</h3>
+              <div id="citationOutput" class="citation-list"></div>
+            </section>
+
+            <section class="result-panel">
+              <h3>Risks & Actions</h3>
+              <ul id="riskOutput" class="compact-list"></ul>
+              <ul id="actionOutput" class="compact-list action-list"></ul>
+            </section>
+          </aside>
         </div>
       </section>
     </main>
