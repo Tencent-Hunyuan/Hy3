@@ -60,4 +60,4 @@ print(response.choices[0].message.content)
 
 ## 截图
 
-> 待补充：OpenRouter 模型选择页面截图 + 首次对话截图
+详见 [截图指南](../../screenshots/README.md#1-openrouter)。

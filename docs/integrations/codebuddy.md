@@ -51,4 +51,4 @@ CodeBuddy 的 Agent 模式利用 tool calling 能力，可以：
 
 ## 截图
 
-> 待补充：CodeBuddy 配置截图 + 对话截图
+详见 [截图指南](../../screenshots/README.md#5-codebuddy)。 注意：CodeBuddy 需要从官网下载安装，当前环境未安装。

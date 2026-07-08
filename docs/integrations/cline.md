@@ -4,13 +4,18 @@
 
 ## 安装
 
-1. 在 VS Code 扩展市场搜索 "Cline" 并安装
-2. 安装后点击侧边栏 Cline 图标打开面板
+```bash
+code --install-extension saoudrizwan.claude-dev
+```
+
+或从 VS Code 扩展市场搜索 "Cline" 并安装（当前版本 v4.0.6）。
 
 ## 配置
 
-1. 点击 Cline 面板顶部的 **API Provider** 下拉菜单
-2. 选择 **OpenAI Compatible**
+### 方式一：VS Code UI
+
+1. 点击侧边栏 Cline 图标打开面板
+2. 点击顶部 **API Provider** 下拉菜单，选择 **OpenAI Compatible**
 3. 填入以下参数：
 
 | 配置项 | 值 |
@@ -22,6 +27,19 @@
 | Context Window | `256000`（Hy3 的 256K 上下文） |
 
 4. 点击 **Done** 保存
+
+### 方式二：settings.json（已配置）
+
+或者在 VS Code 的 `settings.json` 中直接写入：
+
+```json
+{
+  "cline.apiProvider": "openai",
+  "cline.openAiBaseUrl": "http://127.0.0.1:8000/v1",
+  "cline.openAiApiKey": "EMPTY",
+  "cline.openAiModelId": "hy3"
+}
+```
 
 ## 验证
 
@@ -64,4 +82,4 @@ Cline 会通过 tool calling 自动创建文件和目录。
 
 ## 截图
 
-> 待补充：Cline 配置页面截图 + 对话截图
+详见 [截图指南](../../screenshots/README.md#3-cline-vs-code)。

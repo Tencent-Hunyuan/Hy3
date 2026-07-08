@@ -63,4 +63,4 @@
 
 ## 截图
 
-> 待补充：Dify 模型配置截图 + Agent App 运行截图
+详见 [截图指南](../../screenshots/README.md#7-dify)。

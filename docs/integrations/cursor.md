@@ -46,4 +46,4 @@ Hy3 会自动生成代码并可以 Apply 到编辑器中。
 
 ## 截图
 
-> 待补充：Cursor Settings 页面配置截图 + Chat 使用截图
+详见 [截图指南](../../screenshots/README.md#2-cursor)。

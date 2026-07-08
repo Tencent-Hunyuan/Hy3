@@ -8,6 +8,8 @@
 pip install aider-chat
 ```
 
+当前版本：aider-chat 0.86.2。
+
 ## 配置
 
 ### 方式一：环境变量
@@ -76,4 +78,4 @@ Aider 会调用 Hy3 生成代码并自动编辑文件。
 
 ## 截图
 
-> 待补充：Aider 终端对话截图
+详见 [截图指南](../../screenshots/README.md#6-aider-终端)。
