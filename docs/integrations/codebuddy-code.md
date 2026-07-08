@@ -1,17 +1,21 @@
-# Use Hy3 with CodeBuddy Code
+# Use Hy3 with CodeBuddy Code CLI
 
 ## Overview
 
-This guide shows how to configure CodeBuddy Code to use Hy3 through an OpenAI-compatible provider.
+This guide shows how to configure CodeBuddy Code CLI to use Hy3 through an OpenAI-compatible provider.
 
-Verification status: TODO: verify manually.
+Verification status: CodeBuddy Code CLI print mode with Hy3 through Tencent Cloud TokenHub mode was manually verified with screenshots.
 
 ## Prerequisites
 
-- CodeBuddy Code installation and version: TODO: verify manually.
+- Install package: `npm install -g @tencent-ai/codebuddy-code`.
+- CodeBuddy Code CLI version: `2.117.2`.
+- Observed command paths:
+  - `C:\Users\smallfish\AppData\Roaming\npm\codebuddy`
+  - `C:\Users\smallfish\AppData\Roaming\npm\codebuddy.cmd`
 - Choose one Hy3 setup mode:
-  - TokenHub cloud API mode.
-  - Local self-hosted mode.
+  - TokenHub cloud API mode: manually verified for CLI print mode.
+  - Local self-hosted mode: TODO: verify manually.
 
 ## Option A: TokenHub Cloud API Mode
 
@@ -19,13 +23,21 @@ Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without se
 
 See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
 
-The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). CodeBuddy Code-specific setup remains TODO: verify manually.
+The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). CodeBuddy Code CLI print mode through TokenHub was also manually verified.
 
 | Setting | Value |
 |:---|:---|
-| Base URL | `https://tokenhub.tencentmaas.com/v1` |
-| Model | `hy3` |
-| API key | User-created TokenHub API key |
+| Config file | `%USERPROFILE%\.codebuddy\models.json` |
+| URL | `https://tokenhub.tencentmaas.com/v1/chat/completions` |
+| Model ID | `hy3` |
+| Model name | Hy3 TokenHub |
+| Vendor | Tencent Cloud TokenHub |
+| API key | Referenced through `${TOKENHUB_API_KEY}`, not committed and not documented |
+| `maxInputTokens` | `128000` |
+| `maxOutputTokens` | `4096` |
+| `supportsToolCall` | `true` |
+| `supportsImages` | `false` |
+| `supportsReasoning` | `false` |
 | Protocol | OpenAI-compatible |
 
 If the TokenHub API key access scope is limited, Hy3 must be included in that scope.
@@ -49,61 +61,134 @@ For TokenHub cloud API mode, no local Hy3 server is required.
 
 For local self-hosted mode, follow [local-server.md](local-server.md).
 
-CodeBuddy Code-specific connectivity with either endpoint: TODO: verify manually.
+CodeBuddy Code CLI print mode with TokenHub was manually verified. Local self-hosted connectivity remains TODO: verify manually.
 
 ## Configure the Tool
 
-Tool-specific configuration path: TODO: verify manually.
+CodeBuddy Code CLI reads a user-level model configuration file from:
 
-Use either TokenHub cloud API mode or local self-hosted mode when configuring the provider. Do not commit API keys.
+```text
+%USERPROFILE%\.codebuddy\models.json
+```
 
-Any CodeBuddy Code-specific provider name, custom model field, secret storage, or advanced option: TODO: verify manually.
+This file is user-level configuration and must not be committed.
+
+Reference the API key through the `TOKENHUB_API_KEY` environment variable. Do not write the API key directly into `models.json`.
+
+Safe PowerShell pattern for the current session:
+
+```powershell
+$SecureApiKey = Read-Host "TokenHub API key" -AsSecureString
+$env:TOKENHUB_API_KEY = [System.Net.NetworkCredential]::new("", $SecureApiKey).Password
+```
+
+Verified `models.json` shape:
+
+```json
+{
+  "models": [
+    {
+      "id": "hy3",
+      "name": "Hy3 TokenHub",
+      "vendor": "Tencent Cloud TokenHub",
+      "apiKey": "${TOKENHUB_API_KEY}",
+      "url": "https://tokenhub.tencentmaas.com/v1/chat/completions",
+      "maxInputTokens": 128000,
+      "maxOutputTokens": 4096,
+      "supportsToolCall": true,
+      "supportsImages": false,
+      "supportsReasoning": false
+    }
+  ],
+  "availableModels": [
+    "hy3"
+  ]
+}
+```
+
+This guide verifies CLI print mode (`-p`). Interactive login mode is not verified.
 
 ## First Chat
 
-Prompt:
+Command:
 
 ```text
-Hello Hy3. Please introduce yourself in two sentences.
+codebuddy --model hy3 -p "Hello Hy3. Please introduce yourself in two sentences."
 ```
 
-Observed response: TODO: verify manually.
+Result: completed successfully.
+
+Observed response included:
+
+```text
+Hello! I'm Hy3, an AI assistant powered by CodeBuddy Code, designed to help you with software engineering tasks like coding, debugging, refactoring, and explaining code.
+```
 
 ## Real Task Demo
 
-Task:
+Command:
 
 ```text
-Ask Hy3 through CodeBuddy Code to explain a small code change and list one possible risk.
+codebuddy --model hy3 -p "Please inspect README.md in this workspace and summarize what Hy3 is in three bullet points. Do not edit, create, delete, or modify any files."
 ```
 
-Demo steps and result: TODO: verify manually.
+Result: CodeBuddy Code summarized `README.md` in three bullet points.
+
+No files were edited; this was confirmed with `git status -sb` after the demo.
+
+Interactive mode was also tried with:
+
+```text
+codebuddy --model hy3
+```
+
+It opened the CodeBuddy Code interactive UI but prompted for CodeBuddy login. This verification covers CLI print mode (`-p`), not interactive login mode.
 
 ## Screenshots / GIF
 
-- First chat screenshot: TODO: verify manually.
-- Real task demo screenshot or GIF: TODO: verify manually.
+- First chat screenshot:
 
-Add verified media under `docs/integrations/assets/codebuddy-code/`.
+![CodeBuddy Code first chat with Hy3 through TokenHub](assets/codebuddy-code/codebuddy-code-first-chat-tokenhub.png)
 
-Screenshots and GIFs must be captured from real runs before this PR is marked ready for review.
+- Real task demo screenshot:
+
+![CodeBuddy Code README demo with Hy3 through TokenHub](assets/codebuddy-code/codebuddy-code-readme-demo-tokenhub.png)
+
+Screenshots are included under `docs/integrations/assets/codebuddy-code/`. GIFs are optional and were not added.
+
+Screenshots and GIFs must not reveal API keys.
 
 ## Troubleshooting
 
-- TokenHub API key handling: TODO: verify manually.
+- TokenHub API key handling: verified by using `${TOKENHUB_API_KEY}` in `%USERPROFILE%\.codebuddy\models.json`; the API key itself was entered into the current PowerShell session and not committed.
 - TokenHub API key access scope for Hy3: TODO: verify manually.
 - Local endpoint connection issue: TODO: verify manually.
-- Model selection issue: TODO: verify manually.
+- Local self-hosted authentication or API key handling: TODO: verify manually.
+- Model selection issue: the model ID in `models.json` must be `hy3`. Using `hy3-tokenhub` caused TokenHub to return:
+
+```text
+400 The model or service ID 'hy3-tokenhub' does not exist.
+```
+
+TokenHub expects model `hy3`.
+- Interactive mode: `codebuddy --model hy3` opened the interactive UI but prompted for CodeBuddy login; interactive login mode was not used for this verification flow.
 - Streaming or tool-use behavior: TODO: verify manually.
 
 ## Verified Environment
 
 | Item | Value |
 |:---|:---|
-| OS | TODO: verify manually |
-| CodeBuddy Code version | TODO: verify manually |
-| Setup mode | TODO: verify manually |
-| Hy3 server backend | TODO: verify manually |
-| Base URL | TODO: verify manually |
+| OS | Windows 10.0.26200 |
+| Shell | PowerShell |
+| Node.js | `v24.14.1` |
+| npm | `11.11.0` |
+| Package | `@tencent-ai/codebuddy-code` |
+| Install command | `npm install -g @tencent-ai/codebuddy-code` |
+| CodeBuddy Code CLI version | `2.117.2` |
+| Setup mode | Tencent Cloud TokenHub cloud API mode |
+| Hy3 server backend | TokenHub cloud API |
+| Config file | `%USERPROFILE%\.codebuddy\models.json` |
+| URL | `https://tokenhub.tencentmaas.com/v1/chat/completions` |
 | Model | `hy3` |
-| Verification date | TODO: verify manually |
+| Verification mode | CLI print mode (`-p`) |
+| Verification date | 2026-07-08 |
