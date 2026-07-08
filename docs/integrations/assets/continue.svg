@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#f6f8fa"/>
+  <rect x="76" y="52" width="808" height="436" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="108" y="102" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#24292f">Continue + Hy3</text>
+  <rect x="108" y="134" width="350" height="280" rx="8" fill="#0d1117"/>
+  <text x="132" y="170" font-family="Consolas, monospace" font-size="15" fill="#c9d1d9">models:</text>
+  <text x="132" y="198" font-family="Consolas, monospace" font-size="15" fill="#c9d1d9">  - name: Hy3</text>
+  <text x="132" y="226" font-family="Consolas, monospace" font-size="15" fill="#c9d1d9">    provider: openai</text>
+  <text x="132" y="254" font-family="Consolas, monospace" font-size="15" fill="#c9d1d9">    model: hy3-preview</text>
+  <text x="132" y="282" font-family="Consolas, monospace" font-size="15" fill="#c9d1d9">    apiBase: .../v1</text>
+  <rect x="496" y="134" width="340" height="280" rx="8" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="524" y="178" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#24292f">Review current diff</text>
+  <text x="524" y="216" font-family="Arial, sans-serif" font-size="15" fill="#57606a">Prompt: 只列出可能导致 bug 的问题</text>
+  <text x="524" y="266" font-family="Arial, sans-serif" font-size="15" fill="#116329">Hy3: 高 / 中 / 低风险清单</text>
+</svg>

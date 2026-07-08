@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#f6f8fa"/>
+  <rect x="76" y="52" width="808" height="436" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="108" y="102" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#24292f">Roo Code + Hy3</text>
+  <rect x="108" y="138" width="330" height="238" rx="8" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="132" y="178" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#24292f">Configuration</text>
+  <text x="132" y="218" font-family="Arial, sans-serif" font-size="15" fill="#57606a">Provider: OpenAI Compatible</text>
+  <text x="132" y="250" font-family="Arial, sans-serif" font-size="15" fill="#57606a">Base URL: tokenhub.../v1</text>
+  <text x="132" y="282" font-family="Arial, sans-serif" font-size="15" fill="#57606a">Model: hy3-preview</text>
+  <rect x="490" y="138" width="330" height="238" rx="8" fill="#dafbe1"/>
+  <text x="514" y="178" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#116329">Demo task</text>
+  <text x="514" y="218" font-family="Arial, sans-serif" font-size="15" fill="#116329">检查登录表单校验逻辑</text>
+  <text x="514" y="250" font-family="Arial, sans-serif" font-size="15" fill="#116329">输出修改计划和测试点</text>
+</svg>

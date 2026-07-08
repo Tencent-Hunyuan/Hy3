@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#f6f8fa"/>
+  <rect x="80" y="58" width="800" height="424" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="112" y="108" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#24292f">CodeBuddy / WorkBuddy + Hy3</text>
+  <rect x="112" y="142" width="736" height="96" rx="8" fill="#fff8c5" stroke="#d4a72c"/>
+  <text x="136" y="176" font-family="Arial, sans-serif" font-size="18" fill="#24292f">Settings → Model Provider → OpenAI Compatible</text>
+  <text x="136" y="206" font-family="Arial, sans-serif" font-size="18" fill="#24292f">Model: hy3-preview | Auth: Bearer Token</text>
+  <rect x="112" y="270" width="350" height="150" rx="8" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="136" y="306" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#24292f">User task</text>
+  <text x="136" y="342" font-family="Arial, sans-serif" font-size="15" fill="#57606a">整理会议纪要为行动项表格</text>
+  <rect x="498" y="270" width="350" height="150" rx="8" fill="#dafbe1"/>
+  <text x="522" y="306" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#116329">Hy3 output</text>
+  <text x="522" y="342" font-family="Arial, sans-serif" font-size="15" fill="#116329">负责人 / 任务 / 截止时间 / 风险</text>
+</svg>

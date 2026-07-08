@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#f6f8fa"/>
+  <rect x="70" y="48" width="820" height="444" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="104" y="96" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#24292f">Hy3 需求澄清助手</text>
+  <rect x="104" y="128" width="344" height="304" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="130" y="170" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#24292f">User input</text>
+  <text x="130" y="214" font-family="Arial, sans-serif" font-size="16" fill="#57606a">我想让用户可以收藏文章，</text>
+  <text x="130" y="244" font-family="Arial, sans-serif" font-size="16" fill="#57606a">以后能快速找到。</text>
+  <rect x="504" y="128" width="320" height="304" rx="10" fill="#dafbe1"/>
+  <text x="530" y="170" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#116329">Hy3 output</text>
+  <text x="530" y="214" font-family="Arial, sans-serif" font-size="15" fill="#116329">1. 澄清问题</text>
+  <text x="530" y="246" font-family="Arial, sans-serif" font-size="15" fill="#116329">2. 用户故事</text>
+  <text x="530" y="278" font-family="Arial, sans-serif" font-size="15" fill="#116329">3. 验收标准</text>
+  <text x="530" y="310" font-family="Arial, sans-serif" font-size="15" fill="#116329">4. 接口建议</text>
+  <text x="530" y="342" font-family="Arial, sans-serif" font-size="15" fill="#116329">5. 风险与边界情况</text>
+</svg>

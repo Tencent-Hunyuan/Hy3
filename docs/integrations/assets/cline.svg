@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#f6f8fa"/>
+  <rect x="72" y="50" width="816" height="440" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="104" y="100" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#24292f">Cline + Hy3</text>
+  <rect x="104" y="136" width="752" height="72" rx="8" fill="#f0f7ff" stroke="#0969da"/>
+  <text x="130" y="180" font-family="Arial, sans-serif" font-size="18" fill="#24292f">Provider: OpenAI Compatible | Model: hy3-preview | Streaming: on</text>
+  <rect x="104" y="244" width="752" height="170" rx="8" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="132" y="288" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#24292f">Read-only verification task</text>
+  <text x="132" y="326" font-family="Arial, sans-serif" font-size="15" fill="#57606a">请检查当前项目结构，只读分析，不要修改文件。</text>
+  <text x="132" y="366" font-family="Arial, sans-serif" font-size="15" fill="#116329">Hy3: 项目类型、入口文件、下一步建议</text>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#f6f8fa"/>
+  <rect x="74" y="52" width="812" height="436" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="108" y="102" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#24292f">Dify + Hy3</text>
+  <rect x="108" y="136" width="344" height="252" rx="8" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="132" y="178" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#24292f">Model Provider</text>
+  <text x="132" y="218" font-family="Arial, sans-serif" font-size="15" fill="#57606a">OpenAI-API-compatible</text>
+  <text x="132" y="250" font-family="Arial, sans-serif" font-size="15" fill="#57606a">Base URL: .../v1</text>
+  <text x="132" y="282" font-family="Arial, sans-serif" font-size="15" fill="#57606a">Model: hy3-preview</text>
+  <rect x="502" y="136" width="324" height="252" rx="8" fill="#dafbe1"/>
+  <text x="526" y="178" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#116329">Chat App Demo</text>
+  <text x="526" y="218" font-family="Arial, sans-serif" font-size="15" fill="#116329">输入模糊需求</text>
+  <text x="526" y="250" font-family="Arial, sans-serif" font-size="15" fill="#116329">输出澄清问题、用户故事、验收标准</text>
+</svg>
