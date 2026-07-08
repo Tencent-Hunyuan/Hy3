@@ -137,6 +137,10 @@ print(response.choices[0].message.content)
 
 See the [Deployment](#deployment) section below for how to start the API server.
 
+## Rhino-Bird Application Example
+
+This branch includes an end-to-end interactive Web application in [`examples/hy3-research-canvas`](examples/hy3-research-canvas). It uses Hy3 as the reasoning layer for research brief generation and multilingual tone rewriting, with two reproducible demo flows.
+
 ## Deployment
 
 Hy3 has 295B parameters in total. To serve it on 8 GPUs, we recommend using H20-3e or other GPUs with larger memory capacity.
