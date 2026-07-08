@@ -1,54 +1,56 @@
 # Hy3 with CodeBuddy
 
-[CodeBuddy](https://codebuddy.ai/) 是一个 AI 编程助手，支持自定义 OpenAI 兼容 API。
+[CodeBuddy](https://codebuddy.ai/) 是 AI 编程助手（IDE 插件 / 独立客户端），支持自定义 OpenAI 兼容 API。
 
-## 配置
+## 1. 安装与版本要求
 
-1. 打开 CodeBuddy 设置 → 模型配置
-2. 选择 **Custom OpenAI** 作为 Provider
-3. 填入以下参数：
+- VS Code / JetBrains 插件，或独立客户端（版本 ≥ 1.0）
+- 从官网或扩展市场安装「CodeBuddy」
+- 本地或云端已部署 Hy3 服务
+
+## 2. 配置项
 
 | 配置项 | 值 |
 |--------|-----|
-| API Base URL | `http://127.0.0.1:8000/v1` |
+| 协议 | OpenAI Compatible |
+| API Base URL | `http://127.0.0.1:8000/v1`（本地） |
 | API Key | `EMPTY`（本地部署） |
-| Model | `hy3` |
+| Model 名 | `hy3` |
 | Max Tokens | 4096 |
+| 配置入口 | 设置 → 模型配置 → Provider 选 `Custom OpenAI` |
 
-## 使用
+## 3. 端到端流程
 
-### Chat 模式
+### 步骤 1：配置
 
-选中代码后按 `Ctrl+I` 打开 CodeBuddy Chat，输入指令：
+1. 打开 CodeBuddy 设置 → 模型配置
+2. Provider 选 `Custom OpenAI`
+3. 填入 Base URL / API Key / Model `hy3`
+4. 保存
+
+### 步骤 2：第一次对话
+
+选中代码后 `Ctrl/Cmd + I` 打开 Chat，输入「介绍一下你自己」验证连通。
+
+### 步骤 3：跑通一个真实任务
 
 ```
-给这个函数添加类型注解和 docstring
+用 TypeScript 写一个防抖函数 debounce，支持 leading 立即执行选项，
+并给出使用示例。
 ```
 
-### 代码生成
+CodeBuddy 生成代码并可直接插入编辑器。
 
-```
-用 TypeScript 写一个防抖函数，支持立即执行选项
-```
+## 4. 端到端 demo（截图 / GIF）
 
-### Agent 模式
+> 截图位置：见 [screenshots 指南 #5](../../screenshots/README.md#5-codebuddy)
+> - 图 1：CodeBuddy 模型配置页
+> - 图 2：第一次对话
+> - 图 3：真实任务（生成 TS 防抖函数）
 
-CodeBuddy 的 Agent 模式利用 tool calling 能力，可以：
-- 读取/写入文件
-- 执行终端命令
-- 搜索项目代码
-- 创建和修改文件
+## 5. 常见注意事项
 
-## 验证
-
-确认连接成功：CodeBuddy 状态栏会显示已连接的模型名。
-
-## 注意事项
-
-- CodeBuddy 的 Agent 模式需要 tool calling 支持，Hy3 需启用 `--enable-auto-tool-choice`
-- 如果使用 SSH 远程开发，确保 Hy3 端口可访问
-- 自定义模型不支持 CodeBuddy 的某些高级功能（如代码补全）
-
-## 截图
-
-详见 [截图指南](../../screenshots/README.md#5-codebuddy)。 注意：CodeBuddy 需要从官网下载安装，当前环境未安装。
+- Agent 模式依赖 tool calling，Hy3 需启用 `--enable-auto-tool-choice`
+- SSH 远程开发需保证 Hy3 端口可达
+- 自定义模型不支持 CodeBuddy 的部分高级功能（如代码补全）
+- 云端部署需配置对应 API Key

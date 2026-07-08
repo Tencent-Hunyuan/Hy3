@@ -65,7 +65,14 @@ cline.openAiModelId: "hy3"
 | 1 | Dify 模型配置页 | 登录 dify.ai → 设置 → 模型供应商 → OpenAI-API-compatible → 填入 Hy3 参数 |
 | 2 | Dify Agent 应用 | 创建 Agent 应用 → 选择 hy3 模型 → 运行 |
 
-## 8. Showcase App (hy3-showcase)
+## 8. CodeBuddy
+
+| # | 截图内容 | 操作步骤 |
+|---|---------|---------|
+| 1 | CodeBuddy 模型配置页 | 打开 CodeBuddy → 设置 → 模型配置 → Provider 选 Custom OpenAI → 填入 Hy3 |
+| 2 | CodeBuddy 对话 | 选中代码 → Ctrl/Cmd+I → 提问验证 |
+
+## 9. Showcase App (hy3-showcase)
 
 Hy3 Playground — Flask Web 应用，演示推理 / 工具调用 / 流式输出三大能力。
 
@@ -74,4 +81,4 @@ Hy3 Playground — Flask Web 应用，演示推理 / 工具调用 / 流式输出
 | 1 | 推理模式对比 | `python app.py` → 打开浏览器 → 点击"三档模式对比" |
 | 2 | 工具调用链路 | 切换到"工具调用" → 点击"运行 Agent"，截图调用日志 |
 | 3 | 流式输出 | 切换到"流式对话" → 点击"开始流式输出" |
-| 4 | 流式输出 Tab | 输入问题 → 点击"开始流式输出" |
+| 4 | 应用首页 | 浏览器打开 `http://localhost:8000` 首页截图 |

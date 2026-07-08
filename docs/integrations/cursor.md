@@ -1,49 +1,64 @@
 # Hy3 in Cursor
 
-[Cursor](https://cursor.sh/) 是一款 AI-first 的代码编辑器，支持自定义 OpenAI 兼容的 API 提供商。
+[Cursor](https://cursor.sh/) 是一款 AI-first 代码编辑器，支持接入 OpenAI 兼容的自定义模型。
 
-## 配置步骤
+## 1. 安装与版本要求
 
-1. 打开 Cursor → Settings → Models
+- 下载安装 Cursor（Windows / macOS / Linux，版本 ≥ 0.40）
+- 本地或云端已部署 Hy3 服务并可访问
+
+## 2. 配置项
+
+| 配置项 | 值 |
+|--------|-----|
+| 协议 | OpenAI 兼容 |
+| OpenAI Key | `EMPTY`（本地）/ 云端服务的 API Key |
+| OpenAI Base URL | `http://127.0.0.1:8000/v1`（本地）或你的云端地址 |
+| Model 名 | `hy3` |
+| 配置入口 | Settings → Models → 关闭内置模型 → 填 OpenAI Key / Base URL → 添加 `hy3` |
+
+## 3. 端到端流程
+
+### 步骤 1：配置
+
+1. 打开 Cursor → `Settings` → `Models`
 2. 关闭所有内置模型开关
-3. 在 **OpenAI Key** 填入你的 API Key
-4. 在 **OpenAI Base URL** 填入 Hy3 服务的地址
-5. 添加自定义模型名 `hy3`
-6. 在 **Override OpenAI Base URL** 中再次确认地址
+3. `OpenAI Key` 填 `EMPTY`
+4. `OpenAI Base URL` 填 `http://127.0.0.1:8000/v1`
+5. 在模型列表添加自定义模型 `hy3`
+6. 确认 `Override OpenAI Base URL` 已勾选
 
-### 参数
+### 步骤 2：第一次对话
 
-| 项 | 值 |
-|---|-----|
-| OpenAI Key | `EMPTY`（本地）或你的 API Key |
-| OpenAI Base URL | `http://127.0.0.1:8000/v1` |
-| Model | `hy3` |
-
-## 使用
-
-配置完成后：
-
-1. `Ctrl+K` / `Cmd+K` 打开内联编辑
-2. `Ctrl+L` / `Cmd+L` 打开 Chat 面板
-3. Agent / Ask / Edit 三种模式均可使用
-
-### 示例任务
-
-在 Cursor Chat 中输入：
+`Ctrl/Cmd + L` 打开 Chat，输入：
 
 ```
-用 Python 写一个命令行工具，可以递归列出目录下所有文件的大小并排序
+你好，介绍一下你能帮我做什么。
 ```
 
-Hy3 会自动生成代码并可以 Apply 到编辑器中。
+若返回 Hy3 的回复，说明连接成功。
 
-## 注意事项
+### 步骤 3：跑通一个真实任务
 
-- 确保 Hy3 服务先启动，Cursor 启动时如果连不上会 fallback 到其他模型
-- 本地部署下支持 tool calling，Agent 模式可用
-- Cursor 的 Tab 补全功能不使用自定义模型，仍需内置模型
-- 如果使用云端 Hy3 部署，需要配置对应的 API Key
+在 Chat 或 `Ctrl/Cmd + K` 内联编辑中输入：
 
-## 截图
+```
+用 Python 写一个命令行工具，递归列出目录下所有文件，
+按大小降序排序并输出前 10 个。
+```
 
-详见 [截图指南](../../screenshots/README.md#2-cursor)。
+Hy3 生成代码后点击 `Apply` 写入编辑器，运行验证。
+
+## 4. 端到端 demo（截图 / GIF）
+
+> 截图位置：见 [screenshots 指南 #2](../../screenshots/README.md#2-cursor)
+> - 图 1：Cursor Settings → Models 配置页
+> - 图 2：Chat 第一次对话
+> - 图 3：真实任务（生成并 Apply 代码）
+
+## 5. 常见注意事项
+
+- Hy3 服务需先启动，否则 Cursor 会 fallback 到内置模型
+- 本地部署支持 tool calling，Agent 模式可用
+- Tab 补全不使用自定义模型，仍需内置模型支持
+- 云端部署需填对应 API Key，注意 CORS / 网络可达性
