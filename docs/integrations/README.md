@@ -7,7 +7,7 @@ The guides cover two setup modes:
 - **TokenHub cloud API mode**: use Hy3 through Tencent Cloud TokenHub without self-hosting.
 - **Local self-hosted mode**: run Hy3 locally as an OpenAI-compatible chat completions server.
 
-No client integration in this directory has been manually verified yet.
+Client verification status is tracked in the guide table below.
 
 ## Setup Modes
 
@@ -50,8 +50,8 @@ For shared local server setup, see [local-server.md](local-server.md). The repos
 
 | Tool | Guide | Verification status |
 |:---|:---|:---|
-| Cline | [cline.md](cline.md) | TokenHub mode verified; screenshot/GIF pending |
-| Roo Code | [roo-code.md](roo-code.md) | TODO: verify manually |
+| Cline | [cline.md](cline.md) | TokenHub mode verified with screenshots |
+| Roo Code | [roo-code.md](roo-code.md) | TokenHub mode verified with screenshots |
 | Kilo Code | [kilo-code.md](kilo-code.md) | TODO: verify manually |
 | OpenCode | [opencode.md](opencode.md) | TODO: verify manually |
 | CodeBuddy Code | [codebuddy-code.md](codebuddy-code.md) | TODO: verify manually |
@@ -71,7 +71,7 @@ For shared local server setup, see [local-server.md](local-server.md). The repos
 
 ## Screenshots / GIFs
 
-Screenshots and GIFs will be added only after real manual verification.
+Screenshots and GIFs are added only after real manual verification.
 
 Do not add generated, mocked, or placeholder media as verification evidence.
 

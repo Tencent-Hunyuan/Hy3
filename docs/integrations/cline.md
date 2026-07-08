@@ -4,7 +4,7 @@
 
 This guide shows how to configure Cline to use Hy3 through an OpenAI-compatible provider.
 
-Verification status: Cline with Hy3 through Tencent Cloud TokenHub mode was manually verified. Screenshots/GIFs are still TODO.
+Verification status: Cline with Hy3 through Tencent Cloud TokenHub mode was manually verified with screenshots.
 
 ## Prerequisites
 
@@ -112,9 +112,9 @@ Observed summary:
 
 ![Cline README demo with Hy3 through TokenHub](assets/cline/cline-readme-demo-tokenhub.png)
 
-Add verified media under `docs/integrations/assets/cline/`.
+Screenshots are included under `docs/integrations/assets/cline/`. GIFs are optional and were not added.
 
-Screenshots and GIFs must be captured from real runs and must not reveal API keys.
+Screenshots and GIFs must not reveal API keys.
 
 ## Troubleshooting
 
