@@ -137,6 +137,10 @@ print(response.choices[0].message.content)
 
 See the [Deployment](#deployment) section below for how to start the API server.
 
+## Rhino-Bird MCP Server Example
+
+This branch includes a stdio MCP Server example in [`examples/hy3-mcp-server`](examples/hy3-mcp-server). It packages Hy3 API calls as three MCP tools for code review, document QA, and data analysis, with CodeBuddy/WorkBuddy and Cursor configuration examples.
+
 ## Deployment
 
 Hy3 has 295B parameters in total. To serve it on 8 GPUs, we recommend using H20-3e or other GPUs with larger memory capacity.
