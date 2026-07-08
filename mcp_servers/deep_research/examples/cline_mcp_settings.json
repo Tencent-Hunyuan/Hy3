@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "hy3-research": {
+      "command": "/absolute/path/to/conda/envs/llms/bin/python",
+      "args": ["-m", "hy3_research_mcp.server"],
+      "env": {
+        "HY3_ENV_FILE": "/absolute/path/to/Hy3/.env"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "web_search_tool",
+        "read_url_tool",
+        "research_question",
+        "summarize_documents",
+        "generate_research_outline"
+      ]
+    }
+  }
+}
