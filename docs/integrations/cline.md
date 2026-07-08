@@ -104,8 +104,13 @@ Observed summary:
 
 ## Screenshots / GIF
 
-- First chat screenshot: TODO: add sanitized real screenshot.
-- Real task demo screenshot or GIF: TODO: add sanitized real screenshot/GIF.
+- First chat screenshot:
+
+![Cline first chat with Hy3 through TokenHub](assets/cline/cline-first-chat-tokenhub.png)
+
+- Real task demo screenshot:
+
+![Cline README demo with Hy3 through TokenHub](assets/cline/cline-readme-demo-tokenhub.png)
 
 Add verified media under `docs/integrations/assets/cline/`.
 
