@@ -2,15 +2,37 @@
 
 ## Overview
 
-This guide shows how to configure Roo Code to use a local Hy3 OpenAI-compatible chat completions server.
+This guide shows how to configure Roo Code to use Hy3 through an OpenAI-compatible provider.
 
 Verification status: TODO: verify manually.
 
 ## Prerequisites
 
 - Roo Code installation and version: TODO: verify manually.
-- Hy3 served locally with an OpenAI-compatible endpoint.
-- Local Hy3 base settings:
+- Choose one Hy3 setup mode:
+  - TokenHub cloud API mode.
+  - Local self-hosted mode.
+
+## Option A: TokenHub Cloud API Mode
+
+Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without self-hosting.
+
+See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
+
+| Setting | Value |
+|:---|:---|
+| Base URL | `https://tokenhub.tencentmaas.com/v1` |
+| Model | `hy3` |
+| API key | User-created TokenHub API key |
+| Protocol | OpenAI-compatible |
+
+If the TokenHub API key access scope is limited, Hy3 must be included in that scope.
+
+## Option B: Local Self-hosted Mode
+
+Use local self-hosted mode when Hy3 is running as a local OpenAI-compatible chat completions server.
+
+See [local-server.md](local-server.md) for the repository-documented vLLM and SGLang serving examples.
 
 | Setting | Value |
 |:---|:---|
@@ -21,24 +43,19 @@ Verification status: TODO: verify manually.
 
 ## Start Hy3 as an OpenAI-compatible Server
 
-Follow the shared local setup in [local-server.md](local-server.md). It summarizes the repository-documented vLLM and SGLang serving examples and the local OpenAI-compatible API settings.
+For TokenHub cloud API mode, no local Hy3 server is required.
 
-Roo Code-specific connectivity with this endpoint: TODO: verify manually.
+For local self-hosted mode, follow [local-server.md](local-server.md).
+
+Roo Code-specific connectivity with either endpoint: TODO: verify manually.
 
 ## Configure the Tool
 
 Tool-specific configuration path: TODO: verify manually.
 
-Use these Hy3 settings when configuring the provider:
+Use either TokenHub cloud API mode or local self-hosted mode when configuring the provider. Do not commit API keys.
 
-```text
-Base URL: http://127.0.0.1:8000/v1
-Model: hy3
-API key: EMPTY
-Protocol: OpenAI-compatible chat completions
-```
-
-Any Roo Code-specific provider name, custom model field, or advanced option: TODO: verify manually.
+Any Roo Code-specific provider name, custom model field, secret storage, or advanced option: TODO: verify manually.
 
 ## First Chat
 
@@ -71,6 +88,8 @@ Screenshots and GIFs must be captured from real local runs before this PR is mar
 
 ## Troubleshooting
 
+- TokenHub API key handling: TODO: verify manually.
+- TokenHub API key access scope for Hy3: TODO: verify manually.
 - Endpoint connection issue: TODO: verify manually.
 - Authentication or API key handling: TODO: verify manually.
 - Model selection issue: TODO: verify manually.
@@ -82,7 +101,8 @@ Screenshots and GIFs must be captured from real local runs before this PR is mar
 |:---|:---|
 | OS | TODO: verify manually |
 | Roo Code version | TODO: verify manually |
+| Setup mode | TODO: verify manually |
 | Hy3 server backend | TODO: verify manually |
-| Base URL | `http://127.0.0.1:8000/v1` |
+| Base URL | TODO: verify manually |
 | Model | `hy3` |
 | Verification date | TODO: verify manually |
