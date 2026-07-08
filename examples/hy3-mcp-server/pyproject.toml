@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hy3-mcp-server"
+version = "0.1.0"
+description = "A stdio MCP server that wraps Hy3 API for code review, document QA, and data analysis."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [
+  { name = "Tencent Hy3 Rhino-Bird Example Contributors" }
+]
+dependencies = [
+  "mcp>=1.8.0"
+]
+
+[project.scripts]
+hy3-mcp-server = "hy3_mcp_server.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hy3_mcp_server"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
