@@ -1,0 +1,15 @@
+{
+  "name": "hy3-research-canvas",
+  "version": "0.1.0",
+  "description": "Interactive research and rewrite application powered by the Hy3 API.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "demo": "node scripts/run-demos.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
