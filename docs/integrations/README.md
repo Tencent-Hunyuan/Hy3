@@ -52,7 +52,7 @@ For shared local server setup, see [local-server.md](local-server.md). The repos
 |:---|:---|:---|
 | Cline | [cline.md](cline.md) | TokenHub mode verified with screenshots |
 | Roo Code | [roo-code.md](roo-code.md) | TokenHub mode verified with screenshots |
-| Kilo Code | [kilo-code.md](kilo-code.md) | TODO: verify manually |
+| Kilo Code | [kilo-code.md](kilo-code.md) | TokenHub mode verified with screenshots |
 | OpenCode | [opencode.md](opencode.md) | TODO: verify manually |
 | CodeBuddy Code | [codebuddy-code.md](codebuddy-code.md) | TODO: verify manually |
 
