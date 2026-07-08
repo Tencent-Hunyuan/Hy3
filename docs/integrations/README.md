@@ -79,10 +79,27 @@ Screenshots and GIFs must be captured from real local runs before this PR is mar
 
 ## Showcase Project
 
-TODO: verify manually.
+The independent showcase project is **Hy3 TokenHub Developer Brief CLI**.
 
-Add the separate small showcase project repository here after it is created and tested:
+It is separate from this Hy3 repository and demonstrates Tencent Cloud TokenHub usage with:
 
-- Repository: TODO: verify manually
-- Demo GIF or video: TODO: verify manually
-- README/run instructions: TODO: verify manually
+- Base URL / endpoint: `https://tokenhub.tencentmaas.com/v1/chat/completions`
+- Model: `hy3`
+- Protocol: OpenAI-compatible chat completions
+
+Project links:
+
+- Repository: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief
+- Demo video: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief/blob/main/docs/assets/demo-all.mp4
+- First chat screenshot: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief/blob/main/docs/assets/demo-chat.png
+- Developer brief screenshot: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief/blob/main/docs/assets/demo-brief.png
+
+Run commands:
+
+```bash
+npm install
+# Copy .env.example to .env, then set TOKENHUB_API_KEY.
+npm run brief
+# Or run the full demo flow.
+npm run all
+```
