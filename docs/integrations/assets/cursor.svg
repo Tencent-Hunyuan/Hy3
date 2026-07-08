@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#f6f8fa"/>
+  <rect x="64" y="48" width="832" height="444" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="96" y="96" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#24292f">Cursor + Hy3</text>
+  <rect x="96" y="126" width="328" height="318" rx="8" fill="#0d1117"/>
+  <text x="122" y="166" font-family="Consolas, monospace" font-size="15" fill="#c9d1d9">src/task.py</text>
+  <text x="122" y="204" font-family="Consolas, monospace" font-size="15" fill="#79c0ff">def parse_task(text):</text>
+  <text x="148" y="232" font-family="Consolas, monospace" font-size="15" fill="#c9d1d9">return text.strip()</text>
+  <rect x="456" y="126" width="376" height="318" rx="8" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="486" y="166" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#24292f">Chat</text>
+  <text x="486" y="206" font-family="Arial, sans-serif" font-size="16" fill="#57606a">Model: hy3-preview</text>
+  <text x="486" y="238" font-family="Arial, sans-serif" font-size="16" fill="#57606a">Base URL: tokenhub.tencentmaas.com/v1</text>
+  <rect x="486" y="274" width="312" height="54" rx="8" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="506" y="307" font-family="Arial, sans-serif" font-size="15" fill="#24292f">请为选中函数生成单元测试</text>
+  <rect x="486" y="346" width="312" height="72" rx="8" fill="#dafbe1"/>
+  <text x="506" y="378" font-family="Arial, sans-serif" font-size="15" fill="#116329">Hy3: 已生成正常、边界、异常测试</text>
+</svg>

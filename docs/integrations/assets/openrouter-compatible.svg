@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#f6f8fa"/>
+  <rect x="70" y="56" width="820" height="428" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="100" y="104" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#24292f">OpenRouter-compatible API Workflow</text>
+  <rect x="100" y="136" width="760" height="86" rx="8" fill="#f0f7ff" stroke="#0969da"/>
+  <text x="124" y="170" font-family="Arial, sans-serif" font-size="18" fill="#24292f">Provider: OpenAI Compatible</text>
+  <text x="124" y="198" font-family="Arial, sans-serif" font-size="18" fill="#24292f">Base URL: https://tokenhub.tencentmaas.com/v1</text>
+  <rect x="100" y="250" width="760" height="154" rx="8" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="124" y="288" font-family="Consolas, monospace" font-size="17" fill="#24292f">model: hy3-preview</text>
+  <text x="124" y="320" font-family="Consolas, monospace" font-size="17" fill="#24292f">messages[0].role: user</text>
+  <text x="124" y="352" font-family="Consolas, monospace" font-size="17" fill="#24292f">messages[0].content: 设计一个 API 清单</text>
+  <text x="124" y="384" font-family="Consolas, monospace" font-size="17" fill="#24292f">temperature: 0.7</text>
+  <rect x="100" y="430" width="760" height="34" rx="6" fill="#dafbe1"/>
+  <text x="124" y="453" font-family="Arial, sans-serif" font-size="17" fill="#116329">Response: endpoint / method / request / response / errors</text>
+</svg>
