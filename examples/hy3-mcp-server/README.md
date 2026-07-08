@@ -1,12 +1,13 @@
 # Hy3 MCP Server
 
-This example implements a local stdio MCP Server powered by Hy3. It exposes three tools for common agent workflows:
+This example implements a local stdio MCP Server powered by Hy3. It exposes four tools for common agent workflows:
 
 - `hy3_code_review`: review a diff and return prioritized findings.
 - `hy3_document_qa`: answer a question from supplied documents with citations.
 - `hy3_data_insight`: inspect CSV or JSON data and produce an analysis plan plus takeaways.
+- `hy3_agent_plan`: turn a complex user goal into an MCP-client execution plan.
 
-Hy3 is used as the reasoning engine through its OpenAI-compatible chat completions API. API keys are never hard-coded; configure them through environment variables.
+Hy3 is used as the reasoning engine through its OpenAI-compatible chat completions API. API keys are never hard-coded; configure them through environment variables. The tools expose a Hy3-specific `thinking_mode` parameter where useful: `fast` maps to `reasoning_effort=no_think`, and `deep` maps to `reasoning_effort=high`.
 
 ## Install
 
@@ -68,6 +69,14 @@ diff --git a/app.py b/app.py
 + cursor.execute("select * from docs where title = '%s'" % user_input)
 ```
 
+The review, QA, and data tools also accept:
+
+```json
+{
+  "thinking_mode": "deep"
+}
+```
+
 ## Cursor Configuration
 
 Add this server to `.cursor/mcp.json`:
@@ -102,6 +111,12 @@ Demo 2: Document QA.
 HY3_MOCK=1 python -m hy3_mcp_server.demo document-qa
 ```
 
+Demo 3: MCP task planning.
+
+```bash
+HY3_MOCK=1 python -m hy3_mcp_server.demo agent-plan
+```
+
 These demos exercise the same tool functions that the MCP server exposes. Replace `HY3_MOCK=1` with real Hy3 environment variables for live model calls.
 
 ## Development
@@ -114,7 +129,8 @@ python -m compileall src
 ## Notes For The Rhino-Bird Issue
 
 - The implementation uses the MCP Python SDK and local stdio mode.
-- It exposes three tools with names, schemas, and docstrings.
+- It exposes four tools with names, schemas, and docstrings.
 - Core reasoning is delegated to Hy3 through the OpenAI-compatible API.
+- Hy3 fast/deep thinking modes are surfaced through tool parameters where useful.
 - The package can be installed with `pip install -e .` or built as a wheel.
 - CodeBuddy/WorkBuddy and Cursor configuration examples are included above.

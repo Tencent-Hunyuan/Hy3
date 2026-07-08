@@ -6,7 +6,7 @@ from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
-from .tools import answer_question, inspect_data, review_diff
+from .tools import answer_question, build_agent_plan, inspect_data, review_diff
 
 
 mcp = FastMCP(
@@ -19,21 +19,39 @@ mcp = FastMCP(
 
 
 @mcp.tool()
-def hy3_code_review(diff: str, focus: str = "correctness and regressions") -> dict[str, Any]:
-    """Review a unified diff with Hy3 and return prioritized findings."""
-    return review_diff(diff=diff, focus=focus)
+def hy3_code_review(
+    diff: str,
+    focus: str = "correctness and regressions",
+    thinking_mode: str = "deep",
+) -> dict[str, Any]:
+    """Review a unified diff with Hy3. thinking_mode may be fast or deep."""
+    return review_diff(diff=diff, focus=focus, thinking_mode=thinking_mode)
 
 
 @mcp.tool()
-def hy3_document_qa(question: str, documents: list[dict[str, str]]) -> dict[str, Any]:
+def hy3_document_qa(
+    question: str,
+    documents: list[dict[str, str]],
+    thinking_mode: str = "deep",
+) -> dict[str, Any]:
     """Answer a question from supplied documents and cite document ids."""
-    return answer_question(question=question, documents=documents)
+    return answer_question(question=question, documents=documents, thinking_mode=thinking_mode)
 
 
 @mcp.tool()
-def hy3_data_insight(data: str, question: str = "What should I know about this dataset?") -> dict[str, Any]:
+def hy3_data_insight(
+    data: str,
+    question: str = "What should I know about this dataset?",
+    thinking_mode: str = "deep",
+) -> dict[str, Any]:
     """Analyze CSV or JSON data with Hy3 and return takeaways plus next steps."""
-    return inspect_data(data=data, question=question)
+    return inspect_data(data=data, question=question, thinking_mode=thinking_mode)
+
+
+@mcp.tool()
+def hy3_agent_plan(goal: str, available_context: str = "") -> dict[str, Any]:
+    """Plan a multi-step AI-client task with Hy3 before running tools."""
+    return build_agent_plan(goal=goal, available_context=available_context)
 
 
 def main() -> None:

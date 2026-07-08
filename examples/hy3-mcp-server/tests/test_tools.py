@@ -1,5 +1,12 @@
 from hy3_mcp_server.hy3_client import Hy3Client, Hy3Settings
-from hy3_mcp_server.tools import answer_question, inspect_data, normalize_documents, review_diff
+from hy3_mcp_server.tools import (
+    answer_question,
+    build_agent_plan,
+    inspect_data,
+    normalize_documents,
+    reasoning_effort_for,
+    review_diff,
+)
 
 
 def mock_client() -> Hy3Client:
@@ -7,9 +14,10 @@ def mock_client() -> Hy3Client:
 
 
 def test_review_diff_returns_tool_payload() -> None:
-    result = review_diff("+ return user.name\n", client=mock_client())
+    result = review_diff("+ return user.name\n", thinking_mode="fast", client=mock_client())
 
     assert result["tool"] == "hy3_code_review"
+    assert result["thinking_mode"] == "fast"
     assert "Mock Hy3 response" in result["result"]
 
 
@@ -35,3 +43,15 @@ def test_inspect_data_profiles_csv() -> None:
     assert result["profile"]["format"] == "csv"
     assert result["profile"]["row_count"] == 2
     assert result["profile"]["null_counts"]["score"] == 1
+
+
+def test_reasoning_effort_maps_hy3_modes() -> None:
+    assert reasoning_effort_for("fast") == "no_think"
+    assert reasoning_effort_for("deep") == "high"
+
+
+def test_build_agent_plan_returns_tool_payload() -> None:
+    result = build_agent_plan("Ship a release note", client=mock_client())
+
+    assert result["tool"] == "hy3_agent_plan"
+    assert result["thinking_mode"] == "deep"
