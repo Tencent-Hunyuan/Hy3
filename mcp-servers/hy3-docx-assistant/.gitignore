@@ -1,0 +1,18 @@
+# Secrets / local configs that contain a real API key — never commit
+examples/codebuddy_deepseek.json
+examples/sample.docx.corrupted
+
+# Generated demo output
+examples/*.hy3-edited.docx
+examples/*.comments.docx
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/

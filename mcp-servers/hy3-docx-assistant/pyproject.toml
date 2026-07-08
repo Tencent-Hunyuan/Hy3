@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hy3-docx-assistant-mcp"
+version = "0.1.0"
+description = "Hy3-powered MCP server for Word document reading, editing, and review comments"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [
+  { name = "Tencent Hunyuan Rhinobird Contributor" }
+]
+dependencies = [
+  "fastmcp>=2.0.0",
+  "openai>=1.0.0",
+  "python-docx>=1.1.0",
+  "pydantic>=2.0.0"
+]
+
+[project.scripts]
+docx-assistant-mcp = "hy3_docx_assistant.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hy3_docx_assistant"]
