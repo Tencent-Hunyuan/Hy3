@@ -11,8 +11,8 @@ Verification status: CodeBuddy Code CLI print mode with Hy3 through Tencent Clou
 - Install package: `npm install -g @tencent-ai/codebuddy-code`.
 - CodeBuddy Code CLI version: `2.117.2`.
 - Observed command paths:
-  - `C:\Users\smallfish\AppData\Roaming\npm\codebuddy`
-  - `C:\Users\smallfish\AppData\Roaming\npm\codebuddy.cmd`
+  - `%APPDATA%\npm\codebuddy`
+  - `%APPDATA%\npm\codebuddy.cmd`
 - Choose one Hy3 setup mode:
   - TokenHub cloud API mode: manually verified for CLI print mode.
   - Local self-hosted mode: Not verified in this PR.

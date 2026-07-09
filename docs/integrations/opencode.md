@@ -11,8 +11,8 @@ Verification status: OpenCode with Hy3 through Tencent Cloud TokenHub mode was m
 - Install package: `npm install -g opencode-ai`.
 - OpenCode version: `1.17.15`.
 - Observed command paths:
-  - `C:\Users\smallfish\AppData\Roaming\npm\opencode`
-  - `C:\Users\smallfish\AppData\Roaming\npm\opencode.cmd`
+  - `%APPDATA%\npm\opencode`
+  - `%APPDATA%\npm\opencode.cmd`
 - Choose one Hy3 setup mode:
   - TokenHub cloud API mode: manually verified.
   - Local self-hosted mode: Not verified in this PR.

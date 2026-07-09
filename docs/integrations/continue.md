@@ -61,7 +61,7 @@ Continue connectivity with TokenHub mode was manually verified. Local self-hoste
 Continue v2.0.0 was configured through the local extension configuration file:
 
 ```text
-C:\Users\smallfish\.continue\config.yaml
+%USERPROFILE%\.continue\config.yaml
 ```
 
 Verified provider configuration:
@@ -137,7 +137,7 @@ Screenshots and GIFs must not reveal API keys.
 | Continue version | `2.0.0` |
 | Setup mode | Tencent Cloud TokenHub cloud API mode |
 | Hy3 server backend | TokenHub cloud API |
-| Config file | `C:\Users\smallfish\.continue\config.yaml` |
+| Config file | `%USERPROFILE%\.continue\config.yaml` |
 | Config name shown in UI | Main Config |
 | Provider | `openai` |
 | Base URL | `https://tokenhub.tencentmaas.com/v1` |
@@ -146,4 +146,3 @@ Screenshots and GIFs must not reveal API keys.
 | Model display | Hy3 TokenHub |
 | Chat mode | Agent |
 | Verification date | 2026-07-08 |
-

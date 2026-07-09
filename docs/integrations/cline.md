@@ -121,10 +121,10 @@ Screenshots and GIFs must not reveal API keys.
 - Workspace directory error observed before opening the actual repository folder:
 
 ```text
-Cannot access workspace directory. Error: ENOENT: no such file or directory, access 'C:\Users\smallfish\Desktop'
+Cannot access workspace directory. Error: ENOENT: no such file or directory, access '%USERPROFILE%\Desktop'
 ```
 
-Fix: in VS Code, use **File -> Open Folder** and open `C:\Users\smallfish\open-source\Hy3` or another real workspace folder.
+Fix: in VS Code, use **File -> Open Folder** and open `%USERPROFILE%\open-source\Hy3` or another real workspace folder.
 
 - TokenHub API key handling: verified by using a user-created TokenHub API key without committing or documenting it.
 - TokenHub API key access scope for Hy3: Future verification item.

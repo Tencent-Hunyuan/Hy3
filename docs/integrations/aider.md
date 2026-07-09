@@ -10,7 +10,7 @@ Verification status: Aider CLI with Hy3 through Tencent Cloud TokenHub mode was 
 
 - Aider version: `0.86.2`.
 - Observed executable path:
-  - `C:\Users\smallfish\.local\bin\aider.exe`
+  - `%USERPROFILE%\.local\bin\aider.exe`
 - Choose one Hy3 setup mode:
   - TokenHub cloud API mode: manually verified.
   - Local self-hosted mode: Not verified in this PR.
@@ -70,17 +70,17 @@ Use Aider model `openai/hy3`, which sends TokenHub model `hy3`.
 If `aider.exe` is not on `PATH`, call it directly from:
 
 ```text
-C:\Users\smallfish\.local\bin\aider.exe
+%USERPROFILE%\.local\bin\aider.exe
 ```
 
-or add `C:\Users\smallfish\.local\bin` to `PATH` for the current shell.
+or add `%USERPROFILE%\.local\bin` to `PATH` for the current shell.
 
 ## First Chat
 
 Command:
 
-```text
-C:\Users\smallfish\.local\bin\aider.exe --model openai/hy3 --no-show-model-warnings --message "Hello Hy3. Please introduce yourself in two sentences. Do not inspect the repository or modify any files."
+```powershell
+& "$env:USERPROFILE\.local\bin\aider.exe" --model openai/hy3 --no-show-model-warnings --message "Hello Hy3. Please introduce yourself in two sentences. Do not inspect the repository or modify any files."
 ```
 
 Result: completed successfully.
@@ -89,8 +89,8 @@ Result: completed successfully.
 
 Command:
 
-```text
-C:\Users\smallfish\.local\bin\aider.exe --model openai/hy3 --no-show-model-warnings --no-gitignore --read README.md --message "Please inspect README.md in this workspace and summarize what Hy3 is in three bullet points. Do not edit, create, delete, or modify any files."
+```powershell
+& "$env:USERPROFILE\.local\bin\aider.exe" --model openai/hy3 --no-show-model-warnings --no-gitignore --read README.md --message "Please inspect README.md in this workspace and summarize what Hy3 is in three bullet points. Do not edit, create, delete, or modify any files."
 ```
 
 Result: Aider added `README.md` to the chat as read-only and returned a three-bullet summary. No repository files were edited.
@@ -114,7 +114,7 @@ Screenshots and GIFs must not reveal API keys.
 - Aider may warn that `openai/hy3` has unknown context window size and costs. Use `--no-show-model-warnings` to suppress this warning after manual verification.
 - Aider may ask whether to add `.aider*` to `.gitignore`. For this docs PR, use `--no-gitignore` or answer `N`, then remove local `.aider.chat.history.md`, `.aider.input.history`, and `.aider.tags.cache.v4` before committing.
 - Aider may create local `.aider*` files; these should not be committed.
-- If `aider.exe` is not on `PATH`, call it directly from `C:\Users\smallfish\.local\bin\aider.exe` or add that directory to `PATH` for the current shell.
+- If `aider.exe` is not on `PATH`, call it directly from `%USERPROFILE%\.local\bin\aider.exe` or add that directory to `PATH` for the current shell.
 - Do not include or commit the TokenHub API key.
 - TokenHub API key access scope for Hy3: Future verification item.
 - Local endpoint connection issue: Not verified in this PR.
@@ -128,7 +128,7 @@ Screenshots and GIFs must not reveal API keys.
 | OS | Windows 10.0.26200 |
 | Tool | Aider CLI |
 | Aider version | `0.86.2` |
-| Executable path | `C:\Users\smallfish\.local\bin\aider.exe` |
+| Executable path | `%USERPROFILE%\.local\bin\aider.exe` |
 | Setup mode | Tencent Cloud TokenHub cloud API mode |
 | Hy3 server backend | TokenHub cloud API |
 | `OPENAI_API_BASE` | `https://tokenhub.tencentmaas.com/v1` |
