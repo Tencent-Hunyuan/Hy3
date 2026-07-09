@@ -1,5 +1,6 @@
 # Hy3 Data MCP
 
+[![npm](https://img.shields.io/npm/v/hy3-data-mcp.svg)](https://www.npmjs.com/package/hy3-data-mcp)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](#license)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)](#)
 [![MCP](https://img.shields.io/badge/MCP-1.0+-green)](#)
@@ -65,6 +66,34 @@ All screenshots are rendered with the default **Nature** theme using the bundled
     <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/10-dashboard.png" width="420" alt="Dashboard"><br/>Composite dashboard</td>
   </tr>
 </table>
+
+---
+
+## Installation
+
+```bash
+npm install -g hy3-data-mcp
+```
+
+Start the server:
+
+```bash
+hy3-data-mcp
+```
+
+Or run without installing:
+
+```bash
+npx -y hy3-data-mcp
+```
+
+Configure your MCP client automatically:
+
+```bash
+npx -y hdm init
+# or after global install
+hdm init
+```
 
 ---
 

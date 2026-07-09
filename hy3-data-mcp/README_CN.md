@@ -1,5 +1,6 @@
 # Hy3 数据分析 MCP
 
+[![npm](https://img.shields.io/npm/v/hy3-data-mcp.svg)](https://www.npmjs.com/package/hy3-data-mcp)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](#license)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)](#)
 [![MCP](https://img.shields.io/badge/MCP-1.0+-green)](#)
@@ -65,6 +66,34 @@
     <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/10-dashboard.png" width="420" alt="数据大屏"><br/>综合数据大屏</td>
   </tr>
 </table>
+
+---
+
+## 安装
+
+```bash
+npm install -g hy3-data-mcp
+```
+
+启动 MCP 服务：
+
+```bash
+hy3-data-mcp
+```
+
+或免安装运行：
+
+```bash
+npx -y hy3-data-mcp
+```
+
+自动配置 MCP 客户端：
+
+```bash
+npx -y hdm init
+# 或全局安装后
+hdm init
+```
 
 ---
 
