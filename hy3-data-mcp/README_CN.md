@@ -9,7 +9,7 @@
 
 **Hy3 数据分析 MCP** 是一个基于 [Model Context Protocol](https://modelcontextprotocol.io) 的服务端，它让你的 AI 助手拥有数据分析能力：你用自然语言提问，Hy3 完成推理，服务端渲染出可用于报告、网页或演示的 **SVG**、**HTML** 或 **PNG** 可视化结果。
 
-![Demo](./assets/demo.gif)
+![Demo](https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/demo.gif)
 
 本项目为 **2026 腾讯犀牛鸟开源人才培养活动** issue [Build an MCP Server powered by Hy3](https://github.com/Tencent-Hunyuan/Hy3/issues/3) 而开发。
 
@@ -45,24 +45,24 @@
 
 <table>
   <tr>
-    <td align="center"><img src="./assets/screenshots/01-stacked-bar.png" width="420" alt="堆叠柱状图"><br/>分区域堆叠柱状图</td>
-    <td align="center"><img src="./assets/screenshots/02-bubble.png" width="420" alt="气泡图"><br/>年龄与生命周期价值</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/01-stacked-bar.png" width="420" alt="堆叠柱状图"><br/>分区域堆叠柱状图</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/02-bubble.png" width="420" alt="气泡图"><br/>年龄与生命周期价值</td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/screenshots/03-boxplot.png" width="420" alt="箱线图"><br/>临床试验响应分数箱线图</td>
-    <td align="center"><img src="./assets/screenshots/04-candlestick.png" width="420" alt="K 线图"><br/>股票价格 K 线图</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/03-boxplot.png" width="420" alt="箱线图"><br/>临床试验响应分数箱线图</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/04-candlestick.png" width="420" alt="K 线图"><br/>股票价格 K 线图</td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/screenshots/05-funnel.png" width="420" alt="漏斗图"><br/>营销转化漏斗</td>
-    <td align="center"><img src="./assets/screenshots/06-sunburst.png" width="420" alt="旭日图"><br/>区域/城市/品类旭日图</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/05-funnel.png" width="420" alt="漏斗图"><br/>营销转化漏斗</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/06-sunburst.png" width="420" alt="旭日图"><br/>区域/城市/品类旭日图</td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/screenshots/07-radar.png" width="420" alt="雷达图"><br/>部门绩效雷达图</td>
-    <td align="center"><img src="./assets/screenshots/08-wordcloud.png" width="420" alt="词云"><br/>关键词词云</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/07-radar.png" width="420" alt="雷达图"><br/>部门绩效雷达图</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/08-wordcloud.png" width="420" alt="词云"><br/>关键词词云</td>
   </tr>
   <tr>
-    <td align="center"><img src="./assets/screenshots/09-knowledge-graph.png" width="420" alt="知识图谱"><br/>知识图谱</td>
-    <td align="center"><img src="./assets/screenshots/10-dashboard.png" width="420" alt="数据大屏"><br/>综合数据大屏</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/09-knowledge-graph.png" width="420" alt="知识图谱"><br/>知识图谱</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/10-dashboard.png" width="420" alt="数据大屏"><br/>综合数据大屏</td>
   </tr>
 </table>
 
