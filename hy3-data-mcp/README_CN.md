@@ -82,7 +82,7 @@ cp .env.example .env
 npx -y hy3-data-mcp
 ```
 
-### 3. 或全局安装
+### 3. 从 npm 安装
 
 ```bash
 npm install -g hy3-data-mcp
@@ -91,11 +91,17 @@ hy3-data-mcp
 
 ### 4. 一键配置客户端
 
+包内附带独立的 `hdm` CLI，用于自动配置 MCP 客户端：
+
 ```bash
-npx -y hy3-data-mcp hdm init
+# 不安装直接运行
+npx -y hdm init
+
+# 或全局安装后
+hdm init
 ```
 
-`hdm init` 会扫描系统中的 MCP 客户端、让你选择目标客户端，并自动写入配置和 `.env` 文件。
+`hdm init` 会扫描系统中的 MCP 客户端（CodeBuddy、Cursor、Cline、Roo Code、Continue、Codex CLI、OpenCode 等），让你选择目标客户端，并自动写入 MCP 配置和 `.env` 文件。
 
 ---
 

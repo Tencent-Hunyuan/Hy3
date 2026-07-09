@@ -82,7 +82,7 @@ cp .env.example .env
 npx -y hy3-data-mcp
 ```
 
-### 3. Or install globally
+### 3. Or install from npm
 
 ```bash
 npm install -g hy3-data-mcp
@@ -91,11 +91,17 @@ hy3-data-mcp
 
 ### 4. One-click client setup
 
+The package ships with a dedicated `hdm` CLI for client configuration:
+
 ```bash
-npx -y hy3-data-mcp hdm init
+# Without installing
+npx -y hdm init
+
+# Or after global install
+hdm init
 ```
 
-`hdm init` scans your system for MCP clients, lets you pick one, and writes the configuration and `.env` automatically.
+`hdm init` scans your system for MCP clients (CodeBuddy, Cursor, Cline, Roo Code, Continue, Codex CLI, OpenCode, etc.), lets you pick one, and writes the MCP configuration and `.env` file automatically.
 
 ---
 

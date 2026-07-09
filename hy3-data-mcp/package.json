@@ -39,6 +39,15 @@
   ],
   "author": "xy200303",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tencent-Hunyuan/Hy3.git",
+    "directory": "hy3-data-mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/Tencent-Hunyuan/Hy3/issues"
+  },
+  "homepage": "https://github.com/Tencent-Hunyuan/Hy3/tree/rhinobird2026/hy3-data-mcp#readme",
   "dependencies": {
     "@clack/prompts": "^0.10.0",
     "@modelcontextprotocol/sdk": "^1.0.4",
