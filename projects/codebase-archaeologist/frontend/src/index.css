@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #fafafa;
+  color: #1a1a2e;
+}
+
+/* Scrollbar — subtle light */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f0f0f3; }
+::-webkit-scrollbar-thumb { background: #d0d0d8; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #b0b0ba; }
+
+/* Selection */
+::selection { background: rgba(99, 102, 241, 0.15); color: #1a1a2e; }
+
+/* Code blocks */
+pre {
+  background: #f5f5f8;
+  color: #2d2d3f;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  border: 1px solid #e8e8ef;
+}
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+  font-size: 0.8125em;
+}
+
+/* SSE pulse animation */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.animate-pulse-dot { animation: pulse-dot 1.5s ease-in-out infinite; }
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass card — elegant white with subtle shadow */
+.glass-card {
+  background: #ffffff;
+  border: 1px solid #e8e8ef;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.glass-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border-color: #d8d8e4;
+}
+
+/* Elevated card — more depth for primary sections */
+.card-elevated {
+  background: #ffffff;
+  border: 1px solid #e8e8ef;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03);
+  border-radius: 1rem;
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
+}
+.card-elevated:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
+  transform: translateY(-1px);
+}
+
+/* Subtle glow accent */
+.glow {
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.08), 0 4px 12px rgba(99, 102, 241, 0.06);
+}
+
+/* Icon gradient background */
+.icon-gradient {
+  background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+}
+
+/* Tab underline animation */
+.tab-underline {
+  position: relative;
+}
+.tab-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #6366f1, #a855f7);
+  border-radius: 1px;
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+}
+.tab-underline.active::after {
+  transform: scaleX(1);
+}
+
+/* QA typing animation */
+@keyframes typing-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.typing-cursor::after {
+  content: '▊';
+  animation: typing-cursor 0.8s infinite;
+  color: #6366f1;
+  margin-left: 2px;
+}
+
+/* Page background texture */
+.bg-canvas {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99, 102, 241, 0.04), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(168, 85, 247, 0.03), transparent),
+    #fafafa;
+}
+
+/* Input focus ring */
+.input-focus {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.input-focus:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  outline: none;
+}
+
+/* Mermaid diagram styling override */
+.mermaid-container svg {
+  max-width: 100%;
+  height: auto;
+}
