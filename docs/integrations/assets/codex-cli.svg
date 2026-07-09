@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#f6f8fa"/>
+  <rect x="72" y="50" width="816" height="440" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="104" y="100" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#24292f">Codex CLI + Hy3</text>
+  <rect x="104" y="136" width="752" height="72" rx="8" fill="#f0f7ff" stroke="#0969da"/>
+  <text x="130" y="180" font-family="Arial, sans-serif" font-size="18" fill="#24292f">Provider: OpenAI Compatible | Model: tencent/hy3-295b-a21b</text>
+  <rect x="104" y="244" width="752" height="170" rx="8" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="132" y="288" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#24292f">Review git diff task</text>
+  <text x="132" y="326" font-family="Arial, sans-serif" font-size="15" fill="#57606a">$ codex "请 review 当前仓库的未提交改动..."</text>
+  <text x="132" y="356" font-family="Arial, sans-serif" font-size="15" fill="#57606a">Hy3 输出：3 个按风险排序的改进点</text>
+  <rect x="104" y="374" width="752" height="2" fill="#d0d7de"/>
+  <text x="132" y="406" font-family="Arial, sans-serif" font-size="14" fill="#1a7f37">✓ Connected to OpenRouter / local vLLM</text>
+</svg>
