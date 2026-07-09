@@ -1,0 +1,65 @@
+{
+  "name": "hy3-data-mcp",
+  "version": "0.1.0",
+  "description": "A data-analysis MCP server powered by Tencent Hunyuan Hy3. Generates charts, word clouds, knowledge graphs and dashboards from CSV/JSON data.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "hy3-data-mcp": "dist/index.js",
+    "hdm": "dist/cli/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README_CN.md",
+    "configs"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:real": "node scripts/test-real.mjs",
+    "demo:gif": "node scripts/generate-demo-gif.mjs",
+    "test:watch": "vitest",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "hy3",
+    "hunyuan",
+    "data-analysis",
+    "visualization",
+    "charts",
+    "knowledge-graph",
+    "dashboard"
+  ],
+  "author": "xy200303",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@clack/prompts": "^0.10.0",
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "dotenv": "^16.4.7",
+    "echarts": "^6.1.0",
+    "mammoth": "^1.12.0",
+    "openai": "^4.77.0",
+    "papaparse": "^5.5.0",
+    "pdf2json": "^4.0.3",
+    "picocolors": "^1.1.1",
+    "sharp": "^0.35.3",
+    "xlsx": "^0.18.5",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "@types/papaparse": "^5.3.15",
+    "prettier": "^3.4.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

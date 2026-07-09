@@ -1,0 +1,16 @@
+region,city,category,revenue
+North,Beijing,Electronics,450000
+North,Beijing,Clothing,230000
+North,Tianjin,Electronics,180000
+North,Tianjin,Home,120000
+South,Guangzhou,Electronics,520000
+South,Guangzhou,Sports,150000
+South,Shenzhen,Electronics,680000
+South,Shenzhen,Clothing,210000
+East,Shanghai,Electronics,610000
+East,Shanghai,Home,340000
+East,Hangzhou,Clothing,190000
+West,Chengdu,Sports,170000
+West,Chengdu,Food,140000
+Central,Wuhan,Electronics,290000
+Central,Wuhan,Home,160000
