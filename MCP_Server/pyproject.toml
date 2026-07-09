@@ -1,0 +1,32 @@
+[project]
+name = "hy3-mcp-server"
+version = "0.1.0"
+description = "A stdio MCP server for Tencent Hunyuan Hy3 OpenAI-compatible inference APIs."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "mcp>=1.9.0",
+    "openai>=1.90.0",
+    "pydantic>=2.7.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+hy3-mcp-server = "hy3_mcp_server.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hy3_mcp_server"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
