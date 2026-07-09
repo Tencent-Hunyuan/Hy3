@@ -1,0 +1,15 @@
+diff --git a/app/store/orders.py b/app/store/orders.py
+index c3d4e5f..a7b8c9d 100644
+--- a/app/store/orders.py
++++ b/app/store/orders.py
+@@ -10,9 +10,10 @@ class OrderRepository:
+     def find_by_customer(self, customer_id: int):
+         cur = self.conn.cursor()
+-        cur.execute(
+-            "SELECT id, total FROM orders WHERE customer_id = " + str(customer_id)
+-        )
++        cur.execute(
++            "SELECT id, total FROM orders WHERE customer_id = %s",
++            (customer_id,),
++        )
+         return cur.fetchall()

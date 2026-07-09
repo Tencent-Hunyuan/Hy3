@@ -1,0 +1,24 @@
+diff --git a/app/api/signup.py b/app/api/signup.py
+index d0e1f2a..b4c5d6e 100644
+--- a/app/api/signup.py
++++ b/app/api/signup.py
+@@ -1,14 +1,22 @@
++import re
+ from flask import request, jsonify
+
++EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
++
+
+ @app.route("/api/signup", methods=["POST"])
+ def signup():
+     payload = request.get_json(force=True)
+     email = payload.get("email", "")
+     age = payload.get("age")
++
++    if not EMAIL_RE.match(email):
++        return jsonify({"error": "invalid email"}), 400
++    if not isinstance(age, int) or not (13 <= age <= 120):
++        return jsonify({"error": "invalid age"}), 400
++
+     users.create(email=email, age=age)
+     return jsonify({"status": "created"}), 201

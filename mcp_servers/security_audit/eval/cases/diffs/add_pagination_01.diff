@@ -1,0 +1,19 @@
+diff --git a/app/api/articles.py b/app/api/articles.py
+index b2c3d4e..f6a7b8c 100644
+--- a/app/api/articles.py
++++ b/app/api/articles.py
+@@ -8,10 +8,17 @@ from app.store import articles
+
+ @app.route("/api/articles")
+ def list_articles():
+-    items = articles.all()
+-    return jsonify([a.to_dict() for a in items])
++    page = max(1, request.args.get("page", 1, type=int))
++    per_page = min(100, request.args.get("per_page", 20, type=int))
++    offset = (page - 1) * per_page
++    items = articles.paginate(limit=per_page, offset=offset)
++    return jsonify({
++        "page": page,
++        "per_page": per_page,
++        "items": [a.to_dict() for a in items],
++    })

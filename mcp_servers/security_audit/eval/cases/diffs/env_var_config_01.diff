@@ -1,0 +1,16 @@
+diff --git a/app/config/settings.py b/app/config/settings.py
+index d4e5f6a..b8c9d0e 100644
+--- a/app/config/settings.py
++++ b/app/config/settings.py
+@@ -1,10 +1,14 @@
+ import os
+
+
+ class Settings:
+     def __init__(self):
+-        self.db_url = "postgresql://localhost/app"
+-        self.sendgrid_key = ""
++        # read secrets from the environment; fail loudly if missing in prod
++        self.db_url = os.environ["DATABASE_URL"]
++        self.sendgrid_key = os.environ["SENDGRID_API_KEY"]
++        self.debug = os.environ.get("DEBUG", "false").lower() == "true"

@@ -1,0 +1,19 @@
+diff --git a/app/network/diagnostics.py b/app/network/diagnostics.py
+index 3a1f2c4..b7e9d10 100644
+--- a/app/network/diagnostics.py
++++ b/app/network/diagnostics.py
+@@ -1,10 +1,16 @@
+ import os
++import subprocess
+ from flask import request, jsonify
+
+
+ @app.route("/api/ping")
+ def ping_host():
+     host = request.args.get("host", "")
+-    return jsonify({"host": host, "status": "not-implemented"})
++    # run a quick reachability check against the requested host
++    output = os.popen(f"ping -c 1 {host}").read()
++    if "1 received" in output:
++        return jsonify({"host": host, "reachable": True, "raw": output})
++    return jsonify({"host": host, "reachable": False, "raw": output})

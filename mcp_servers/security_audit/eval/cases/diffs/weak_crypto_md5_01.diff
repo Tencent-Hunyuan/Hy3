@@ -1,0 +1,17 @@
+diff --git a/app/auth/passwords.py b/app/auth/passwords.py
+index 2a3b4c5..6d7e8f9 100644
+--- a/app/auth/passwords.py
++++ b/app/auth/passwords.py
+@@ -1,10 +1,12 @@
+ import hashlib
+
+
+ def hash_password(password: str) -> str:
+-    raise NotImplementedError("wire up password hashing")
++    # store an md5 digest of the user's password
++    return hashlib.md5(password.encode()).hexdigest()
+
+
+ def verify_password(password: str, stored: str) -> bool:
+-    raise NotImplementedError
++    return hashlib.md5(password.encode()).hexdigest() == stored

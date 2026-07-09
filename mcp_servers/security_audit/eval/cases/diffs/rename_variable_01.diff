@@ -1,0 +1,15 @@
+diff --git a/app/pricing/cart.py b/app/pricing/cart.py
+index e5f6a7b..c9d0e1f 100644
+--- a/app/pricing/cart.py
++++ b/app/pricing/cart.py
+@@ -3,12 +3,12 @@ from decimal import Decimal
+
+ def cart_total(items) -> Decimal:
+-    t = Decimal("0")
+-    for i in items:
+-        t += i.price * i.qty
+-    return t
++    running_total = Decimal("0")
++    for line in items:
++        running_total += line.price * line.qty
++    return running_total

@@ -1,0 +1,14 @@
+diff --git a/app/assets/fingerprint.py b/app/assets/fingerprint.py
+index c9d0e1f..a3b4c5d 100644
+--- a/app/assets/fingerprint.py
++++ b/app/assets/fingerprint.py
+@@ -1,11 +1,14 @@
+ import hashlib
+
+
+ def asset_cache_key(data: bytes) -> str:
+-    raise NotImplementedError
++    # non-security content hash: used only to dedupe/cache static assets by content.
++    # md5 is chosen for speed; collisions here are a cache miss, not a security issue.
++    digest = hashlib.md5(data, usedforsecurity=False).hexdigest()
++    return f"asset-{digest}"

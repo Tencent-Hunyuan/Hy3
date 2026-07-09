@@ -1,0 +1,27 @@
+diff --git a/tests/test_discount.py b/tests/test_discount.py
+new file mode 100644
+index 0000000..a1c2e3f
+--- /dev/null
++++ b/tests/test_discount.py
+@@ -0,0 +1,21 @@
++import pytest
++
++from app.pricing.discount import apply_discount
++
++
++def test_percentage_discount():
++    assert apply_discount(100, "PCT10") == 90
++
++
++def test_flat_discount():
++    assert apply_discount(100, "FLAT5") == 95
++
++
++def test_unknown_code_is_noop():
++    assert apply_discount(100, "NOPE") == 100
++
++
++@pytest.mark.parametrize("amount", [0, -1])
++def test_non_positive_amount_rejected(amount):
++    with pytest.raises(ValueError):
++        apply_discount(amount, "PCT10")

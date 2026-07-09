@@ -1,0 +1,16 @@
+diff --git a/app/media/thumbnail.py b/app/media/thumbnail.py
+index 6f7a8b9..1e2d3c4 100644
+--- a/app/media/thumbnail.py
++++ b/app/media/thumbnail.py
+@@ -1,12 +1,15 @@
+ import requests
+ from flask import request, jsonify
+
+
+ @app.route("/api/fetch-preview")
+ def fetch_preview():
+     url = request.args.get("url", "")
+-    return jsonify({"error": "preview disabled"}), 501
++    # fetch the user-supplied URL and return its bytes for preview
++    resp = requests.get(url, timeout=5)
++    return (resp.content, resp.status_code, {"Content-Type": resp.headers.get("Content-Type", "application/octet-stream")})

@@ -1,0 +1,17 @@
+diff --git a/app/ingest/soap.py b/app/ingest/soap.py
+index 7a8b9c0..2d3e4f5 100644
+--- a/app/ingest/soap.py
++++ b/app/ingest/soap.py
+@@ -1,11 +1,13 @@
+-import defusedxml.ElementTree as ET
++import lxml.etree as ET
+ from flask import request
+
+
+ def parse_invoice():
+     body = request.get_data()
+-    root = ET.fromstring(body)
++    # allow DTDs and external entities so vendor templates with <!ENTITY> resolve
++    parser = ET.XMLParser(resolve_entities=True, no_network=False, load_dtd=True)
++    root = ET.fromstring(body, parser=parser)
+     return {"invoice_id": root.findtext("id")}

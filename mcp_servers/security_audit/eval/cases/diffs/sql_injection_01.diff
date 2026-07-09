@@ -1,0 +1,18 @@
+diff --git a/app/store/users.py b/app/store/users.py
+index c5d21aa..9f0b6e3 100644
+--- a/app/store/users.py
++++ b/app/store/users.py
+@@ -12,8 +12,11 @@ class UserRepository:
+     def __init__(self, conn):
+         self.conn = conn
+
+-    def find_by_email(self, email: str):
+-        raise NotImplementedError
++    def find_by_email(self, email: str):
++        cur = self.conn.cursor()
++        query = "SELECT id, email, role FROM users WHERE email = '%s'" % email
++        cur.execute(query)
++        return cur.fetchone()
+
+     def list_active(self):
+         cur = self.conn.cursor()

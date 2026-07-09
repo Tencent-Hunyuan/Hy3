@@ -1,0 +1,31 @@
+diff --git a/app/parsing/tokens.py b/app/parsing/tokens.py
+index a1b2c3d..e4f5a6b 100644
+--- a/app/parsing/tokens.py
++++ b/app/parsing/tokens.py
+@@ -1,18 +1,20 @@
+ def tokenize(source: str) -> list[str]:
+-    tokens = []
+-    current = ""
+-    for ch in source:
+-        if ch.isspace():
+-            if current:
+-                tokens.append(current)
+-                current = ""
+-        else:
+-            current += ch
+-    if current:
+-        tokens.append(current)
+-    return tokens
++    return [tok for tok in _split_on_whitespace(source) if tok]
++
++
++def _split_on_whitespace(source: str) -> list[str]:
++    out, current = [], ""
++    for ch in source:
++        if ch.isspace():
++            out.append(current)
++            current = ""
++        else:
++            current += ch
++    out.append(current)
++    return out
