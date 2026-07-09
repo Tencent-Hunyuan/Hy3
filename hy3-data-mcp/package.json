@@ -47,7 +47,7 @@
   "bugs": {
     "url": "https://github.com/Tencent-Hunyuan/Hy3/issues"
   },
-  "homepage": "https://github.com/Tencent-Hunyuan/Hy3/tree/rhinobird2026/hy3-data-mcp#readme",
+  "homepage": "https://github.com/xy200303/Hy3",
   "dependencies": {
     "@clack/prompts": "^0.10.0",
     "@modelcontextprotocol/sdk": "^1.0.4",
