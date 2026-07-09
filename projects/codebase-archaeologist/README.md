@@ -287,9 +287,9 @@ cd frontend && npm run build
 
 ## 两个端到端 Demo
 
-> 🎬 点击下方封面图跳转播放页面
+> 🎬 点击图片直接播放视频
 
-| [![Demo 1](demo1-poster.png)](demo.html) | [![Demo 2](demo2-poster.png)](demo.html) |
+| <a href="https://bobvictory.github.io/Hy3-agent/projects/codebase-archaeologist/demo1.mp4"><img src="demo1-thumb.png" width="400" alt="Demo 1"></a> | <a href="https://bobvictory.github.io/Hy3-agent/projects/codebase-archaeologist/demo2.mp4"><img src="demo2-thumb.png" width="400" alt="Demo 2"></a> |
 |:--:|:--:|
 | **Demo 1**：缓存闪电回访 (~30s) | **Demo 2**：陌生仓库深度考古 (~2min) |
 
