@@ -1,0 +1,34 @@
+﻿{
+  "tasks": [
+    {
+      "id": "TC001",
+      "category": "代码生成",
+      "prompt": "写一个 Python 函数，判断一个整数是否为质数",
+      "expected_behavior": "返回布尔值，正确处理边界情况（0, 1, 负数）"
+    },
+    {
+      "id": "TC002",
+      "category": "代码生成",
+      "prompt": "写一个 JavaScript 函数，实现数组去重",
+      "expected_behavior": "返回去重后的新数组，不修改原数组"
+    },
+    {
+      "id": "TC003",
+      "category": "代码解释",
+      "prompt": "解释一下什么是闭包，用 JavaScript 举例",
+      "expected_behavior": "包含闭包的定义、原理和代码示例"
+    },
+    {
+      "id": "TC004",
+      "category": "工具调用",
+      "prompt": "查询上海今天的天气",
+      "expected_behavior": "调用 get_current_weather 工具，正确传递参数 location='上海'"
+    },
+    {
+      "id": "TC005",
+      "category": "代码分析",
+      "prompt": "分析以下代码的性能问题：\n```python\nfor i in range(len(arr)):\n    for j in range(len(arr)):\n        if arr[i] == arr[j]:\n            return True\n```",
+      "expected_behavior": "指出 O(n²) 时间复杂度问题，建议使用 set 优化"
+    }
+  ]
+}
