@@ -39,6 +39,35 @@ Built for the **2026 Tencent RhinoBird Open Source Talent Program** issue: [Buil
 
 ---
 
+## Demo Gallery
+
+All screenshots are rendered with the default **Nature** theme using the bundled sample datasets.
+
+<table>
+  <tr>
+    <td align="center"><img src="./assets/screenshots/01-stacked-bar.png" width="420" alt="Stacked bar chart"><br/>Stacked bar by region</td>
+    <td align="center"><img src="./assets/screenshots/02-bubble.png" width="420" alt="Bubble chart"><br/>Age vs lifetime value</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/screenshots/03-boxplot.png" width="420" alt="Boxplot"><br/>Clinical response boxplot</td>
+    <td align="center"><img src="./assets/screenshots/04-candlestick.png" width="420" alt="Candlestick chart"><br/>Stock candlestick</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/screenshots/05-funnel.png" width="420" alt="Funnel chart"><br/>Marketing funnel</td>
+    <td align="center"><img src="./assets/screenshots/06-sunburst.png" width="420" alt="Sunburst chart"><br/>Geo/category sunburst</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/screenshots/07-radar.png" width="420" alt="Radar chart"><br/>Department performance radar</td>
+    <td align="center"><img src="./assets/screenshots/08-wordcloud.png" width="420" alt="Word cloud"><br/>Keyword word cloud</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/screenshots/09-knowledge-graph.png" width="420" alt="Knowledge graph"><br/>Knowledge graph</td>
+    <td align="center"><img src="./assets/screenshots/10-dashboard.png" width="420" alt="Dashboard"><br/>Composite dashboard</td>
+  </tr>
+</table>
+
+---
+
 ## Quick Start
 
 ### 1. Get an API key
