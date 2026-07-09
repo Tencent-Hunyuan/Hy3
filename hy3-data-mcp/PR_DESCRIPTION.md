@@ -25,6 +25,7 @@ This PR introduces `hy3-data-mcp`, a TypeScript ESM MCP server that uses the Ten
 - **Output formats:** `svg` (static), `html` (interactive / animated), `png` (rasterized via `sharp`)
 - **Document parsing:** PDF (`pdf2json`), DOCX (`mammoth`), XLSX/CSV/JSON (`xlsx` / `papaparse`)
 - **CLI installer:** `hdm init` detects CodeBuddy, Cursor, Cline, Roo Code, Continue, Codex CLI, OpenCode and writes the client config automatically
+- **Published on npm:** `npm install -g hy3-data-mcp` / `npx -y hy3-data-mcp` (package name `hy3-data-mcp`)
 - **Configuration:** all secrets via `.env` (`HY3_API_KEY`, `HY3_BASE_URL`, `HY3_MODEL`, `HY3_OUTPUT_DIR`); no hard-coded keys
 - **Demo:** `assets/demo.gif` generated from real API outputs
 
