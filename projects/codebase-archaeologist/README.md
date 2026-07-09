@@ -287,34 +287,19 @@ cd frontend && npm run build
 
 ## 两个端到端 Demo
 
+> 🎬 点击下方封面图跳转播放页面
+
+| [![Demo 1](demo1-poster.png)](demo.html) | [![Demo 2](demo2-poster.png)](demo.html) |
+|:--:|:--:|
+| **Demo 1**：缓存闪电回访 (~30s) | **Demo 2**：陌生仓库深度考古 (~2min) |
+
 ### Demo 1：已分析仓库的闪电回访（~30 秒）
 
-[![Demo 1 封面](https://bobvictory.github.io/Hy3-agent/projects/codebase-archaeologist/demo1-poster.png)](https://bobvictory.github.io/Hy3-agent/projects/codebase-archaeologist/demo.html)
-
-**场景**：你之前已经分析过一个仓库，隔了几天有人问你"这个项目有哪些风险点？各模块之间怎么依赖的？"——你不想再看一遍代码，也不想再花几分钟重新跑一次分析。
-
-**流程**：
-
-1. 在 Web UI 中再次粘贴同一个仓库 URL，点击"开始分析"
-2. 命中缓存，直接从 `~/.archaeologist/cache/` 读取已存储的 `ArchitectureReport`（秒出，零 API 消耗）
-3. 前端立即展示完整报告：架构摘要、D3 依赖关系图、Mermaid 架构图、模块详情、调用链追踪、风险清单
-4. 在追问 Tab 中用 Hy3 流式追问任意细节，Prompt Cache 将成本降低约 75%
+你之前已经分析过一个仓库，隔了几天有人问你"这个项目有哪些风险点？"——你不想再花几分钟重新跑一次分析。粘贴同一个 URL，命中缓存，秒出结果，零 API 消耗。
 
 ### Demo 2：陌生仓库深度考古（~2 分钟）
 
-[![Demo 2 封面](https://bobvictory.github.io/Hy3-agent/projects/codebase-archaeologist/demo2-poster.png)](https://bobvictory.github.io/Hy3-agent/projects/codebase-archaeologist/demo.html)
-
-**场景**：收到一个从未见过的 GitHub 仓库链接，明天就要开始贡献代码，但完全没有头绪。
-
-**流程**：
-
-1. 在 Web UI 中粘贴仓库 URL，点击"开始分析"
-2. 后端自动 clone → 本地 AST 构建精确依赖图 + PageRank
-3. **Hy3 Planner** 制定分批策略：从依赖图和 PageRank 中推理出最优批次划分
-4. **Hy3 ReAct Agent** 逐批分析代码——每批次模型自主调用 grep_search / file_read / ast_parse / dep_graph_query 进行跨文件调查
-5. **Hy3 Consistency Check** 全量跨批次交叉验证，消除矛盾
-6. **Hy3 Synthesizer** 综合研判，以严格 JSON Schema 输出结构化架构报告
-7. 前端展示完整报告，同时持久化到缓存中
+收到一个从未见过的 GitHub 仓库，明天就要开始贡献代码，但完全没有头绪。输入 URL → Hy3 Planner 制定策略 → ReAct Agent 自主调用工具逐批分析 → Consistency Check 消除矛盾 → Synthesizer 生成结构化报告。
 
 ---
 
