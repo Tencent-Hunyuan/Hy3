@@ -46,22 +46,23 @@ export async function initCommand(): Promise<void> {
   const detected = await detectClients();
   const installed = detected.filter((c) => c.installed);
 
+  if (installed.length === 0) {
+    cancel(
+      "No supported MCP hosts detected. Install one of: CodeBuddy / WorkBuddy, Cursor, Cline, Roo Code, Continue, Codex CLI, Claude Code, or OpenCode, then run 'hdm init' again."
+    );
+    process.exit(0);
+  }
+
   const options = installed.map((client) => ({
     value: client.configPath,
     label: clientLabel(client),
     hint: client.configPath,
   }));
 
-  options.push({
-    value: "__manual__",
-    label: "Manually specify a config path",
-    hint: "",
-  });
-
   const selected = await multiselect<string>({
     message: "Select the MCP hosts to configure (space to toggle, enter to confirm):",
     options,
-    required: false,
+    required: true,
   });
 
   if (isCancel(selected)) {
@@ -69,25 +70,7 @@ export async function initCommand(): Promise<void> {
     process.exit(0);
   }
 
-  const paths = (selected as string[]).filter((p) => p !== "__manual__");
-  const manualRequested = (selected as string[]).includes("__manual__");
-
-  if (manualRequested) {
-    const manualPath = await text({
-      message: "Enter the full path to the MCP config file:",
-      placeholder: "/path/to/mcp-config.json",
-      validate(value) {
-        if (!value) return "Path is required";
-        return undefined;
-      },
-    });
-    if (isCancel(manualPath)) {
-      cancel("Installation cancelled.");
-      process.exit(0);
-    }
-    paths.push(manualPath as string);
-  }
-
+  const paths = selected as string[];
   if (paths.length === 0) {
     cancel("No MCP hosts selected.");
     process.exit(0);
