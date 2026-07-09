@@ -4,7 +4,7 @@
 
 TokenHub cloud API mode is a setup option for using Hy3 without self-hosting the model.
 
-Verification status: the basic TokenHub Hy3 Chat Completions API smoke test is verified. Five TokenHub client integrations in this PR are verified with screenshots. Remaining unverified items are documented as future verification items.
+Verification status: the basic TokenHub Hy3 Chat Completions API smoke test is verified. All TokenHub client integrations listed in the integrations README are verified with screenshots. Remaining unverified items are documented as future verification items.
 
 ## TokenHub API Settings
 
@@ -81,7 +81,7 @@ Observed response summary:
 - Billing requirements: Future verification item.
 - Regional availability: Future verification item.
 - Exact free quota details: Future verification item.
-- Hy3 model availability in TokenHub: Future verification item.
+- TokenHub account-level model access scope for Hy3: Future verification item.
 
 Do not add unsupported pricing claims.
 
