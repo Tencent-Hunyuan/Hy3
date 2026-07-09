@@ -1,9 +1,9 @@
-import { intro, outro, select, text, confirm, isCancel, cancel } from "@clack/prompts";
+import { intro, outro, multiselect, text, confirm, isCancel, cancel } from "@clack/prompts";
 import pc from "picocolors";
 import { existsSync } from "fs";
 import { readFile, writeFile } from "fs/promises";
 import { resolve } from "path";
-import { detectClients } from "./detect.js";
+import { detectClients, type DetectedClient } from "./detect.js";
 import { installMcpConfig } from "./config.js";
 
 async function ensureEnvFile(apiKey: string): Promise<void> {
@@ -31,35 +31,48 @@ async function ensureEnvFile(apiKey: string): Promise<void> {
   }
 }
 
+function clientLabel(client: DetectedClient): string {
+  const status = client.installed
+    ? client.configured
+      ? "already configured"
+      : "not configured"
+    : "not installed";
+  return `${client.name} (${status} | scope: ${client.scope})`;
+}
+
 export async function initCommand(): Promise<void> {
   intro(pc.cyan("🚀 Hy3 Data MCP Installer"));
 
   const detected = await detectClients();
+  const installed = detected.filter((c) => c.installed);
 
-  const choices = detected.map((client) => ({
+  const options = installed.map((client) => ({
     value: client.configPath,
-    label: `${client.name} (${client.scope})`,
+    label: clientLabel(client),
     hint: client.configPath,
   }));
 
-  choices.push({
+  options.push({
     value: "__manual__",
     label: "Manually specify a config path",
     hint: "",
   });
 
-  const configPath = await select({
-    message: "Select the MCP client to configure:",
-    options: choices,
+  const selected = await multiselect<string>({
+    message: "Select the MCP hosts to configure (space to toggle, enter to confirm):",
+    options,
+    required: false,
   });
 
-  if (isCancel(configPath)) {
+  if (isCancel(selected)) {
     cancel("Installation cancelled.");
     process.exit(0);
   }
 
-  let targetPath: string = configPath as string;
-  if (targetPath === "__manual__") {
+  const paths = (selected as string[]).filter((p) => p !== "__manual__");
+  const manualRequested = (selected as string[]).includes("__manual__");
+
+  if (manualRequested) {
     const manualPath = await text({
       message: "Enter the full path to the MCP config file:",
       placeholder: "/path/to/mcp-config.json",
@@ -72,7 +85,12 @@ export async function initCommand(): Promise<void> {
       cancel("Installation cancelled.");
       process.exit(0);
     }
-    targetPath = manualPath as string;
+    paths.push(manualPath as string);
+  }
+
+  if (paths.length === 0) {
+    cancel("No MCP hosts selected.");
+    process.exit(0);
   }
 
   const apiKey = await text({
@@ -120,7 +138,7 @@ export async function initCommand(): Promise<void> {
   }
 
   const shouldInstall = await confirm({
-    message: `Install hy3-data-mcp into ${pc.yellow(targetPath)}?`,
+    message: `Install hy3-data-mcp into ${pc.yellow(String(paths.length))} selected host(s)?`,
   });
 
   if (isCancel(shouldInstall) || !shouldInstall) {
@@ -129,20 +147,24 @@ export async function initCommand(): Promise<void> {
   }
 
   try {
-    await installMcpConfig(targetPath, {
-      apiKey: apiKey as string,
-      baseURL: baseURL as string,
-      model: model as string,
-      outputDir: outputDir as string,
-    });
+    for (const targetPath of paths) {
+      await installMcpConfig(targetPath, {
+        apiKey: apiKey as string,
+        baseURL: baseURL as string,
+        model: model as string,
+        outputDir: outputDir as string,
+      });
+    }
     await ensureEnvFile(apiKey as string);
 
     outro(pc.green("✅ hy3-data-mcp installed successfully!"));
     console.log(pc.gray("Next steps:"));
-    console.log(pc.gray("  1. Restart your MCP client."));
+    console.log(pc.gray("  1. Restart your MCP client(s)."));
     console.log(pc.gray("  2. Try: 'Analyze ./sample_data/sales.csv with hy3_data_insight'"));
-    console.log(pc.gray(`  3. Generated config: ${targetPath}`));
-    console.log(pc.gray(`  4. Environment file: ${resolve(process.cwd(), ".env")}`));
+    for (const targetPath of paths) {
+      console.log(pc.gray(`  • Config: ${targetPath}`));
+    }
+    console.log(pc.gray(`  • Environment file: ${resolve(process.cwd(), ".env")}`));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     outro(pc.red(`❌ Installation failed: ${message}`));
