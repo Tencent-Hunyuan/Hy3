@@ -13,7 +13,7 @@ Client verification status is tracked in the guide table below.
 
 | Mode | Setup | Status |
 |:---|:---|:---|
-| TokenHub cloud API | [tokenhub.md](tokenhub.md) | Chat Completions smoke test and seven tool integrations verified with screenshots |
+| TokenHub cloud API | [tokenhub.md](tokenhub.md) | Chat Completions smoke test and eight tool integrations verified with screenshots |
 | Local self-hosted server | [local-server.md](local-server.md) | Repo-documented server facts only |
 
 ## TokenHub Cloud API Mode
@@ -53,6 +53,7 @@ For shared local server setup, see [local-server.md](local-server.md). The repos
 | Aider | [aider.md](aider.md) | TokenHub mode verified with screenshots |
 | Cline | [cline.md](cline.md) | TokenHub mode verified with screenshots |
 | Continue | [continue.md](continue.md) | TokenHub mode verified with screenshots |
+| Dify | [dify.md](dify.md) | TokenHub mode verified with screenshots |
 | Roo Code | [roo-code.md](roo-code.md) | TokenHub mode verified with screenshots |
 | Kilo Code | [kilo-code.md](kilo-code.md) | TokenHub mode verified with screenshots |
 | OpenCode | [opencode.md](opencode.md) | TokenHub mode verified with screenshots |
@@ -60,7 +61,7 @@ For shared local server setup, see [local-server.md](local-server.md). The repos
 
 ## Verification Summary
 
-- TokenHub cloud API mode was manually verified for Aider, Cline, Continue, Roo Code, Kilo Code, OpenCode, and CodeBuddy Code.
+- TokenHub cloud API mode was manually verified for Aider, Cline, Continue, Dify, Roo Code, Kilo Code, OpenCode, and CodeBuddy Code.
 - Each verified guide includes install/version notes, TokenHub endpoint/base URL, model `hy3`, authentication setup, first chat, a real task demo, screenshots, and troubleshooting notes.
 - Local self-hosted mode is documented from repository facts, but local tool-by-tool verification is not part of this PR.
 - Screenshots and demo media are from real local runs; generated, mocked, or placeholder media should not be used as verification evidence.
