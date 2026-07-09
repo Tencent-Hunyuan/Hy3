@@ -95,6 +95,8 @@ npx -y hdm init
 hdm init
 ```
 
+`hdm init` scans for installed MCP hosts such as Codex, Claude Code, Cursor, Cline, Roo Code, Continue and OpenCode, shows which are already configured, and lets you set up multiple clients in one run.
+
 ---
 
 ## Quick Start

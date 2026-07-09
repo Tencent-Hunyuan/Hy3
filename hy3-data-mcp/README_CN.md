@@ -95,6 +95,8 @@ npx -y hdm init
 hdm init
 ```
 
+`hdm init` 会自动扫描已安装的 MCP 宿主，如 Codex、Claude Code、Cursor、Cline、Roo Code、Continue、OpenCode 等，显示每个宿主的已配置/未配置状态，并支持一次性为多个客户端写入配置。
+
 ---
 
 ## 快速开始
