@@ -79,6 +79,12 @@ The independent showcase project is **Hy3 TokenHub Developer Brief CLI**.
 
 The showcase is a Node.js CLI that calls Hy3 through Tencent Cloud TokenHub's OpenAI-compatible chat completions endpoint. It reads a project note and code sample, then generates a developer brief with a project summary, code-review findings, and suggested next steps. The linked demo media shows both the first chat check and the end-to-end developer brief flow.
 
+The demo video is 25 seconds long and shows the chat, summarize, code-review, and developer brief flow.
+
+The showcase exercises Hy3's reasoning capability by analyzing a project note and JavaScript code sample, then producing a structured developer brief.
+
+![Hy3 TokenHub Developer Brief CLI demo](assets/showcase/showcase-brief-tokenhub.png)
+
 It is separate from this Hy3 repository and demonstrates Tencent Cloud TokenHub usage with:
 
 - Base URL / endpoint: `https://tokenhub.tencentmaas.com/v1/chat/completions`
