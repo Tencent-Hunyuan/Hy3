@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小说设定编写器</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1f232c;
+    --border: #2a2f3a;
+    --text: #e6e8ec;
+    --muted: #9aa3b2;
+    --accent: #6c8cff;
+    --accent-2: #4f6fe0;
+    --danger: #ff6b6b;
+    --ok: #4ec98a;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header h1 { font-size: 16px; margin: 0; font-weight: 600; letter-spacing: .5px; }
+  header .logo { font-size: 20px; }
+  nav { display: flex; gap: 8px; margin-left: 8px; }
+  nav button {
+    background: transparent; color: var(--muted);
+    border: 1px solid transparent; padding: 7px 14px;
+    border-radius: 20px; cursor: pointer; font-size: 13px;
+    transition: all .15s;
+  }
+  nav button:hover { color: var(--text); background: var(--panel-2); }
+  nav button.active {
+    color: #fff; background: var(--accent-2);
+    border-color: var(--accent);
+  }
+  nav .spacer { flex: 1; }
+  main { flex: 1; overflow: hidden; position: relative; }
+  .view { display: none; height: 100%; }
+  .view.active { display: block; overflow-y: auto; }
+
+  /* generic */
+  .wrap { max-width: 760px; margin: 0 auto; padding: 22px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 16px 0 6px; }
+  input[type=text], input[type=password], select, textarea {
+    width: 100%; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 11px 12px; font-size: 14px; font-family: inherit;
+    outline: none; transition: border-color .15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+  .row { display: flex; gap: 12px; }
+  .row > * { flex: 1; }
+  .btn {
+    background: var(--accent-2); color: #fff; border: none;
+    border-radius: 10px; padding: 11px 18px; font-size: 14px;
+    cursor: pointer; transition: filter .15s; font-family: inherit;
+  }
+  .btn:hover { filter: brightness(1.1); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn.ghost { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
+  .btn.danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .section-title { font-size: 15px; font-weight: 600; margin: 4px 0 4px; }
+
+  .status { font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .status.ok { color: var(--ok); }
+  .status.err { color: var(--danger); }
+
+  /* authors */
+  .author-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px; margin-bottom: 12px;
+  }
+  .author-card .head { display: flex; gap: 10px; align-items: center; }
+  .author-card .head strong { font-size: 14px; }
+  .author-card .head .acts { margin-left: auto; display: flex; gap: 8px; }
+  .author-card .head .acts button {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 8px; padding: 5px 10px; font-size: 12px; cursor: pointer;
+  }
+  .author-card .head .acts button:hover { color: var(--text); border-color: var(--accent); }
+  .author-card textarea { margin-top: 10px; min-height: 70px; }
+  .empty { color: var(--muted); text-align: center; padding: 30px 0; font-size: 13px; }
+
+  /* chat */
+  .chat-layout { display: flex; flex-direction: column; height: 100%; }
+  .composer {
+    border-top: 1px solid var(--border); background: var(--panel);
+    padding: 12px 16px;
+  }
+  .composer .opts { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .composer .opts .field { flex: 1; min-width: 140px; }
+  .composer .opts label { margin: 0 0 4px; }
+  .composer .opts select { padding: 8px 10px; font-size: 13px; }
+  .composer .input-row { display: flex; gap: 10px; align-items: flex-end; }
+  .composer textarea { flex: 1; min-height: 52px; max-height: 160px; }
+  .composer .send-btn { height: 52px; padding: 0 22px; }
+
+  .messages { flex: 1; overflow-y: auto; padding: 18px 16px; }
+  .msg { display: flex; margin-bottom: 16px; }
+  .msg .bubble {
+    max-width: 78%; padding: 12px 14px; border-radius: 14px;
+    font-size: 14px; line-height: 1.7; white-space: pre-wrap; word-break: break-word;
+  }
+  .msg.user { justify-content: flex-end; }
+  .msg.user .bubble { background: var(--accent-2); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.ai { justify-content: flex-start; }
+  .msg.ai .bubble { background: var(--panel); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .msg .meta {
+    font-size: 11px; color: var(--muted); margin-top: 4px;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .msg.ai .meta { margin-left: 2px; }
+  .msg .meta button {
+    background: transparent; border: none; color: var(--muted);
+    cursor: pointer; font-size: 11px; padding: 0;
+  }
+  .msg .meta button:hover { color: var(--accent); }
+  .msg .avatar {
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+    margin: 0 10px;
+  }
+  .msg.user .avatar { background: var(--accent-2); order: 2; }
+  .msg.ai .avatar { background: var(--panel-2); border: 1px solid var(--border); }
+  .thinking { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--muted); animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
+  .toolbar { display: flex; gap: 8px; align-items: center; padding: 8px 16px;
+    border-bottom: 1px solid var(--border); background: var(--panel); }
+  .toolbar .spacer { flex: 1; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #000; color: #fff; padding: 9px 16px; border-radius: 20px;
+    font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none;
+  }
+  .toast.show { opacity: .92; }
+
+  .pwd-wrap { position: relative; }
+  .pwd-wrap .toggle {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">📖</span>
+  <h1>小说设定编写器</h1>
+  <nav>
+    <button data-view="settings" class="active">① API 设置</button>
+    <button data-view="authors">② 作者风格</button>
+    <button data-view="chat">③ 创作</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ========== ① API 设置 ========== -->
+  <section class="view active" id="view-settings">
+    <div class="wrap">
+      <div class="section-title">API 配置</div>
+      <p class="hint">本程序直接调用腾讯混元（Hunyuan）OpenAI 兼容接口。密钥仅保存在你本机浏览器（localStorage），不会上传到任何第三方。</p>
+
+      <label>API Key</label>
+      <div class="pwd-wrap">
+        <input type="password" id="cfg-key" placeholder="粘贴你的 Hunyuan API Key" autocomplete="off">
+        <button class="toggle" id="key-toggle">显示</button>
+      </div>
+
+      <label>Base URL</label>
+      <input type="text" id="cfg-base" placeholder="https://api.hunyuan.cloud.tencent.com/v1">
+
+      <label>模型</label>
+      <div class="row">
+        <select id="cfg-model"></select>
+        <input type="text" id="cfg-model-custom" placeholder="自定义模型名（可选）" style="display:none">
+      </div>
+
+      <div style="margin-top:20px; display:flex; gap:10px;">
+        <button class="btn" id="btn-save-cfg">保存配置</button>
+        <button class="btn ghost" id="btn-test">测试连接</button>
+      </div>
+      <div class="status" id="cfg-status"></div>
+
+      <hr style="border:none; border-top:1px solid var(--border); margin:28px 0;">
+      <div class="section-title">关于 CORS</div>
+      <p class="hint">浏览器直连若被跨域拦截（控制台报 CORS 错误），可启用随附的 <code>proxy.js</code> 本地代理：将 Base URL 改为 <code>http://localhost:8787/v1</code> 后重试。代理仅在你本机运行，转发你的请求。</p>
+    </div>
+  </section>
+
+  <!-- ========== ② 作者风格 ========== -->
+  <section class="view" id="view-authors">
+    <div class="wrap">
+      <div class="section-title">作者风格库</div>
+      <p class="hint">提前写好你欣赏的作者的写作风格，创作时可一键套用。点击「新建作者」添加。</p>
+      <div id="authors-list" style="margin-top:16px;"></div>
+      <button class="btn ghost" id="btn-new-author" style="margin-top:6px;">＋ 新建作者</button>
+    </div>
+  </section>
+
+  <!-- ========== ③ 创作聊天 ========== -->
+  <section class="view" id="view-chat">
+    <div class="chat-layout">
+      <div class="toolbar">
+        <span style="font-size:13px; color:var(--muted);" id="chat-status">未连接</span>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="btn-clear-chat" style="padding:6px 12px; font-size:12px;">清空记录</button>
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="composer">
+        <div class="opts">
+          <div class="field">
+            <label>字数规模</label>
+            <select id="opt-length">
+              <option value="300">短篇（约 300 字）</option>
+              <option value="800" selected>中篇（约 800 字）</option>
+              <option value="2000">长篇（约 2000 字）</option>
+              <option value="custom">自定义</option>
+            </select>
+            <input type="text" id="opt-length-custom" placeholder="输入目标字数" style="display:none; margin-top:6px;">
+          </div>
+          <div class="field">
+            <label>作者风格</label>
+            <select id="opt-author"><option value="">无特定风格</option></select>
+          </div>
+        </div>
+        <div class="input-row">
+          <textarea id="input-keywords" placeholder="输入关键词，例如：废土世界，少女机械师，寻找失踪的哥哥"></textarea>
+          <button class="btn send-btn" id="btn-send">生成</button>
+        </div>
+        <div class="hint">支持多轮对话，AI 会参考上方历史保持上下文。</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ---------- 存储工具 ---------- */
+const KEYS = { cfg: 'hy_cfg', authors: 'hy_authors', chat: 'hy_chat' };
+const MODELS = ['hunyuan-turbos-latest', 'hunyuan-turbos', 'hunyuan-lite', 'hunyuan-standard'];
+
+function load(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch { return fallback; }
+}
+function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+/* ---------- UI 辅助 ---------- */
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+function $(id) { return document.getElementById(id); }
+
+/* ---------- Tab 切换 ---------- */
+const tabs = document.querySelectorAll('nav button');
+tabs.forEach(btn => btn.addEventListener('click', () => {
+  tabs.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  $('view-' + btn.dataset.view).classList.add('active');
+  if (btn.dataset.view === 'authors') renderAuthors();
+  if (btn.dataset.view === 'chat') { refreshAuthorSelect(); refreshChatStatus(); }
+}));
+
+/* ========== ① API 设置 ========== */
+function initSettings() {
+  // 填充模型下拉
+  const sel = $('cfg-model');
+  MODELS.forEach(m => {
+    const o = document.createElement('option'); o.value = m; o.textContent = m; sel.appendChild(o);
+  });
+  const oc = document.createElement('option'); oc.value = '__custom'; oc.textContent = '自定义…'; sel.appendChild(oc);
+
+  const cfg = load(KEYS.cfg, {});
+  $('cfg-key').value = cfg.apiKey || '';
+  $('cfg-base').value = cfg.baseUrl || 'https://api.hunyuan.cloud.tencent.com/v1';
+  if (cfg.model && !MODELS.includes(cfg.model)) { sel.value = '__custom'; $('cfg-model-custom').style.display=''; $('cfg-model-custom').value = cfg.model; }
+  else if (cfg.model) sel.value = cfg.model;
+
+  $('key-toggle').addEventListener('click', () => {
+    const i = $('cfg-key'); const show = i.type === 'password';
+    i.type = show ? 'text' : 'password';
+    $('key-toggle').textContent = show ? '隐藏' : '显示';
+  });
+  sel.addEventListener('change', () => {
+    $('cfg-model-custom').style.display = sel.value === '__custom' ? '' : 'none';
+  });
+
+  $('btn-save-cfg').addEventListener('click', () => {
+    const model = sel.value === '__custom' ? $('cfg-model-custom').value.trim() : sel.value;
+    if (!model) { setStatus('cfg-status', '请选择或填写模型', true); return; }
+    save(KEYS.cfg, {
+      apiKey: $('cfg-key').value.trim(),
+      baseUrl: $('cfg-base').value.trim().replace(/\/+$/, ''),
+      model
+    });
+    setStatus('cfg-status', '配置已保存到本机 ✓', false);
+    refreshChatStatus();
+  });
+
+  $('btn-test').addEventListener('click', async () => {
+    const cfg = readCfg(true);
+    if (!cfg) return;
+    setStatus('cfg-status', '正在测试连接…', false);
+    $('btn-test').disabled = true;
+    try {
+      const r = await fetch(cfg.baseUrl + '/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey },
+        body: JSON.stringify({ model: cfg.model, stream: false,
+          messages: [{ role: 'user', content: '回复一个字：好' }] })
+      });
+      if (!r.ok) { const txt = await r.text(); throw new Error('HTTP ' + r.status + ' ' + txt.slice(0, 120)); }
+      setStatus('cfg-status', '连接成功 ✓ API Key 有效', false);
+    } catch (e) {
+      setStatus('cfg-status', '连接失败：' + e.message, true);
+    } finally { $('btn-test').disabled = false; }
+  });
+}
+function readCfg(silent) {
+  const cfg = load(KEYS.cfg, {});
+  if (!cfg.apiKey || !cfg.baseUrl || !cfg.model) {
+    if (!silent) { setStatus('cfg-status', '请先填写并保存 API 配置', true); switchView('settings'); }
+    return null;
+  }
+  return cfg;
+}
+function setStatus(id, msg, isErr) {
+  const el = $(id); el.textContent = msg;
+  el.className = 'status ' + (isErr ? 'err' : 'ok');
+}
+function switchView(name) {
+  tabs.forEach(b => b.classList.toggle('active', b.dataset.view === name));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  $('view-' + name).classList.add('active');
+}
+
+/* ========== ② 作者风格 ========== */
+function getAuthors() { return load(KEYS.authors, []); }
+function renderAuthors() {
+  const list = $('authors-list'); const authors = getAuthors();
+  list.innerHTML = '';
+  if (!authors.length) { list.innerHTML = '<div class="empty">还没有作者，点击下方「新建作者」添加。</div>'; return; }
+  authors.forEach(a => {
+    const card = document.createElement('div'); card.className = 'author-card';
+    card.innerHTML = `
+      <div class="head">
+        <strong>${escapeHtml(a.name)}</strong>
+        <div class="acts">
+          <button data-act="save">保存</button>
+          <button data-act="del">删除</button>
+        </div>
+      </div>
+      <textarea data-field="style" placeholder="描述该作者的写作风格，例如：武侠、快意恩仇、短句凌厉、善用留白…">${escapeHtml(a.style || '')}</textarea>`;
+    // 名称可编辑
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text'; nameInput.value = a.name; nameInput.placeholder = '作者名';
+    nameInput.style.cssText = 'margin-top:8px;';
+    nameInput.dataset.field = 'name';
+    card.appendChild(nameInput);
+
+    card.querySelector('[data-act="save"]').addEventListener('click', () => {
+      const name = card.querySelector('[data-field=name]').value.trim();
+      const style = card.querySelector('[data-field=style]').value.trim();
+      if (!name) { toast('作者名不能为空'); return; }
+      const arr = getAuthors(); const idx = arr.findIndex(x => x.id === a.id);
+      arr[idx] = { id: a.id, name, style }; save(KEYS.authors, arr);
+      toast('已保存'); refreshAuthorSelect();
+    });
+    card.querySelector('[data-act="del"]').addEventListener('click', () => {
+      save(KEYS.authors, getAuthors().filter(x => x.id !== a.id));
+      renderAuthors(); refreshAuthorSelect();
+    });
+    list.appendChild(card);
+  });
+}
+function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+$('btn-new-author').addEventListener('click', () => {
+  const arr = getAuthors();
+  arr.push({ id: 'a' + Date.now(), name: '新作者', style: '' });
+  save(KEYS.authors, arr); renderAuthors();
+  // 滚动到新卡片
+  $('authors-list').lastElementChild?.scrollIntoView({ behavior: 'smooth' });
+});
+
+/* ========== ③ 创作聊天 ========== */
+function getChat() { return load(KEYS.chat, []); }
+function saveChat(arr) { save(KEYS.chat, arr); }
+
+function refreshAuthorSelect() {
+  const sel = $('opt-author'); const cur = sel.value;
+  sel.innerHTML = '<option value="">无特定风格</option>';
+  getAuthors().forEach(a => {
+    const o = document.createElement('option'); o.value = a.id; o.textContent = a.name; sel.appendChild(o);
+  });
+  if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+}
+function refreshChatStatus() {
+  const cfg = load(KEYS.cfg, {});
+  $('chat-status').textContent = (cfg.apiKey && cfg.model) ? ('已就绪 · ' + cfg.model) : '未配置 API，请先到 ① 设置';
+}
+
+function appendMessage(role, text, opts = {}) {
+  const arr = getChat();
+  const msg = { id: 'm' + Date.now() + Math.random().toString(36).slice(2,6),
+    role, text, ts: Date.now(), authorId: opts.authorId || null };
+  arr.push(msg); saveChat(arr);
+  renderMessage(msg, opts);
+  scrollMessages();
+  return msg;
+}
+function renderMessage(msg, opts = {}) {
+  const box = $('messages');
+  const wrap = document.createElement('div'); wrap.className = 'msg ' + msg.role; wrap.dataset.id = msg.id;
+  const avatar = document.createElement('div'); avatar.className = 'avatar';
+  avatar.textContent = msg.role === 'user' ? '🧑' : '✨';
+
+  const col = document.createElement('div'); col.style.cssText = 'display:flex; flex-direction:column; max-width:78%;';
+  const bubble = document.createElement('div'); bubble.className = 'bubble';
+  bubble.textContent = msg.text || (msg.role === 'ai' && opts.thinking ? '思考中' : '');
+  if (opts.thinking) { const s = document.createElement('span'); s.className='thinking'; bubble.appendChild(s); }
+
+  const meta = document.createElement('div'); meta.className = 'meta';
+  if (msg.role === 'ai') {
+    const copy = document.createElement('button'); copy.textContent = '复制';
+    copy.addEventListener('click', () => { navigator.clipboard.writeText(msg.text); toast('已复制'); });
+    const regen = document.createElement('button'); regen.textContent = '重新生成';
+    regen.addEventListener('click', () => regenerate(msg));
+    meta.appendChild(copy); meta.appendChild(regen);
+  } else {
+    meta.textContent = '';
+  }
+  col.appendChild(bubble); if (msg.role === 'ai' || meta.childNodes.length) col.appendChild(meta);
+  wrap.appendChild(avatar); wrap.appendChild(col); box.appendChild(wrap);
+}
+function scrollMessages() { $('messages').scrollTop = $('messages').scrollHeight; }
+
+function renderChat() {
+  const box = $('messages'); box.innerHTML = '';
+  const arr = getChat();
+  if (!arr.length) {
+    box.innerHTML = '<div class="empty" style="padding-top:60px;">还没有对话，在下方输入关键词开始创作吧～</div>';
+    return;
+  }
+  arr.forEach(m => renderMessage(m));
+}
+
+function buildMessages() {
+  const cfg = readCfg();
+  if (!cfg) return null;
+  const authorId = $('opt-author').value;
+  const author = getAuthors().find(a => a.id === authorId);
+  const lengthSel = $('opt-length').value;
+  const wordCount = lengthSel === 'custom'
+    ? Math.max(50, parseInt($('opt-length-custom').value) || 800)
+    : parseInt(lengthSel);
+
+  const sys = `你是一位专业的小说设定助手。
+${author ? `请严格模仿以下作者的写作风格来撰写设定：\n${author.style}\n` : ''}
+当用户给出关键词时，请生成结构完整的小说设定，包含【世界观】【主要人物】【情节主线】【风格基调】等板块，
+总字数控制在约 ${wordCount} 字左右，使用中文输出，风格自然连贯。`;
+
+  // 历史上下文（最多最近 10 条）
+  const hist = getChat().slice(-10).map(m => ({ role: m.role, content: m.text }));
+  return { system: sys, hist };
+}
+
+async function send() {
+  const keywords = $('input-keywords').value.trim();
+  if (!keywords) { toast('请输入关键词'); return; }
+  const built = buildMessages();
+  if (!built) return;
+
+  appendMessage('user', keywords, { authorId: $('opt-author').value });
+  $('input-keywords').value = '';
+
+  // 创建 AI 占位消息
+  const aiMsg = appendMessage('ai', '', { thinking: true });
+  const box = document.querySelector(`.msg[data-id="${aiMsg.id}"] .bubble`);
+
+  // 完整消息：system + 历史 + 当前关键词
+  const cfg = readCfg();
+  const fullMsgs = [{ role: 'system', content: built.system },
+    ...built.hist, { role: 'user', content: keywords }];
+
+  let acc = '';
+  try {
+    await streamChat(cfg, fullMsgs, delta => {
+      acc += delta;
+      box.textContent = acc;
+      scrollMessages();
+    }, () => {
+      box.textContent = acc || '(无内容返回)';
+      // 更新存储
+      const arr = getChat(); const idx = arr.findIndex(m => m.id === aiMsg.id);
+      if (idx >= 0) { arr[idx].text = acc; saveChat(arr); }
+    });
+  } catch (e) {
+    box.textContent = '生成失败：' + e.message;
+    const arr = getChat(); const idx = arr.findIndex(m => m.id === aiMsg.id);
+    if (idx >= 0) { arr[idx].text = box.textContent; saveChat(arr); }
+  }
+}
+
+function regenerate(origMsg) {
+  const arr = getChat();
+  const idx = arr.findIndex(m => m.id === origMsg.id);
+  if (idx < 0) return;
+  // 找到该 ai 消息之前最近的 user 关键词
+  let kw = '';
+  for (let i = idx - 1; i >= 0; i--) { if (arr[i].role === 'user') { kw = arr[i].text; break; } }
+  if (!kw) { toast('未找到对应关键词'); return; }
+
+  const cfg = readCfg(); if (!cfg) return;
+  const authorId = origMsg.authorId;
+  const author = getAuthors().find(a => a.id === authorId);
+
+  // 用该消息之前的上下文重建
+  const hist = arr.slice(0, idx).map(m => ({ role: m.role, content: m.text }));
+  const sys = `你是一位专业的小说设定助手。
+${author ? `请严格模仿以下作者的写作风格来撰写设定：\n${author.style}\n` : ''}
+当用户给出关键词时，请生成结构完整的小说设定，包含【世界观】【主要人物】【情节主线】【风格基调】等板块，使用中文输出，风格自然连贯。`;
+  const fullMsgs = [{ role: 'system', content: sys }, ...hist, { role: 'user', content: kw }];
+
+  const box = document.querySelector(`.msg[data-id="${origMsg.id}"] .bubble`);
+  let acc = '';
+  box.textContent = '';
+  streamChat(cfg, fullMsgs, d => { acc += d; box.textContent = acc; scrollMessages(); },
+    () => { arr[idx].text = acc; saveChat(arr); });
+}
+
+async function streamChat(cfg, messages, onDelta, onDone) {
+  const res = await fetch(cfg.baseUrl + '/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey },
+    body: JSON.stringify({ model: cfg.model, messages, stream: true })
+  });
+  if (!res.ok) {
+    let detail = '';
+    try { const t = await res.text(); detail = t.slice(0, 200); } catch {}
+    throw new Error('HTTP ' + res.status + (detail ? ' · ' + detail : ''));
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t.startsWith('data:')) continue;
+      const data = t.slice(5).trim();
+      if (data === '[DONE]') { onDone && onDone(); return; }
+      try {
+        const json = JSON.parse(data);
+        const delta = json.choices?.[0]?.delta?.content || '';
+        if (delta) onDelta(delta);
+      } catch (_) {}
+    }
+  }
+  onDone && onDone();
+}
+
+$('btn-send').addEventListener('click', send);
+$('input-keywords').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); send(); }
+});
+$('opt-length').addEventListener('change', () => {
+  $('opt-length-custom').style.display = $('opt-length').value === 'custom' ? '' : 'none';
+});
+$('btn-clear-chat').addEventListener('click', () => {
+  if (!confirm('确定清空所有聊天记录？')) return;
+  saveChat([]); renderChat();
+});
+
+/* ---------- 启动 ---------- */
+initSettings();
+refreshAuthorSelect();
+refreshChatStatus();
+renderChat();
+</script>
+</body>
+</html>
