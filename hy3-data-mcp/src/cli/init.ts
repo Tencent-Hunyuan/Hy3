@@ -1,18 +1,29 @@
 import { intro, outro, multiselect, text, confirm, isCancel, cancel } from "@clack/prompts";
 import pc from "picocolors";
 import { existsSync } from "fs";
-import { readFile, writeFile, stat } from "fs/promises";
-import { resolve, join, isAbsolute } from "path";
+import { readFile, writeFile, stat, mkdir } from "fs/promises";
+import { resolve, join } from "path";
+import { homedir } from "os";
 import { detectClients, type DetectedClient } from "./detect.js";
 import { installMcpConfig } from "./config.js";
 
-async function ensureEnvFile(projectDir: string, apiKey: string): Promise<string> {
-  const envPath = resolve(projectDir, ".env");
+const DEFAULT_OUTPUT_DIR = "./hy3-data-mcp";
+
+async function ensureEnvDir(dir: string): Promise<string> {
+  if (!existsSync(dir)) {
+    await mkdir(dir, { recursive: true });
+  }
+  return dir;
+}
+
+async function ensureEnvFile(envDir: string, apiKey: string): Promise<string> {
+  await ensureEnvDir(envDir);
+  const envPath = resolve(envDir, ".env");
   const lines = [
     "HY3_API_KEY=" + apiKey,
     "HY3_BASE_URL=https://tokenhub.tencentmaas.com/v1",
     "HY3_MODEL=hy3-preview",
-    "HY3_OUTPUT_DIR=./hy3-mcp-output",
+    "HY3_OUTPUT_DIR=" + DEFAULT_OUTPUT_DIR,
   ];
 
   if (existsSync(envPath)) {
@@ -48,11 +59,9 @@ async function looksLikeProjectDir(dir: string): Promise<boolean> {
 
 async function pickDefaultProjectDir(): Promise<string> {
   const cwd = process.cwd();
-  // If the current directory itself is the project root, use it.
   if (existsSync(join(cwd, "package.json"))) {
     return cwd;
   }
-  // Common case: user ran `hdm init` from the parent of a hy3-data-mcp checkout.
   const candidate = join(cwd, "hy3-data-mcp");
   if (await looksLikeProjectDir(candidate)) {
     return candidate;
@@ -60,12 +69,66 @@ async function pickDefaultProjectDir(): Promise<string> {
   return cwd;
 }
 
+function pickDefaultEnvDir(): string {
+  return join(homedir(), "hy3-data-mcp");
+}
+
 export async function initCommand(): Promise<void> {
   intro(pc.cyan("🚀 Hy3 Data MCP Installer"));
 
+  const apiKey = await text({
+    message: "Enter your Hy3 / TokenHub API key:",
+    placeholder: "sk-...",
+    validate(value) {
+      if (!value) return "API key is required";
+      return undefined;
+    },
+  });
+
+  if (isCancel(apiKey)) {
+    cancel("Installation cancelled.");
+    process.exit(0);
+  }
+
+  const baseURL = await text({
+    message: "Hy3 Base URL:",
+    initialValue: "https://tokenhub.tencentmaas.com/v1",
+  });
+
+  if (isCancel(baseURL)) {
+    cancel("Installation cancelled.");
+    process.exit(0);
+  }
+
+  const model = await text({
+    message: "Hy3 model name:",
+    initialValue: "hy3-preview",
+  });
+
+  if (isCancel(model)) {
+    cancel("Installation cancelled.");
+    process.exit(0);
+  }
+
+  const envDirInput = await text({
+    message: "Directory for the shared .env file:",
+    initialValue: pickDefaultEnvDir(),
+    validate(value) {
+      if (!value) return ".env directory is required";
+      return undefined;
+    },
+  });
+
+  if (isCancel(envDirInput)) {
+    cancel("Installation cancelled.");
+    process.exit(0);
+  }
+
+  const envDir = resolve(envDirInput as string);
+
   const defaultProjectDir = await pickDefaultProjectDir();
   const projectDirInput = await text({
-    message: "Project directory (where .env and output will live):",
+    message: "Project directory for project-scoped MCP configs and output preview:",
     initialValue: defaultProjectDir,
     validate(value) {
       if (!value) return "Project directory is required";
@@ -117,53 +180,6 @@ export async function initCommand(): Promise<void> {
     process.exit(0);
   }
 
-  const apiKey = await text({
-    message: "Enter your Hy3 / TokenHub API key:",
-    placeholder: "sk-...",
-    validate(value) {
-      if (!value) return "API key is required";
-      return undefined;
-    },
-  });
-
-  if (isCancel(apiKey)) {
-    cancel("Installation cancelled.");
-    process.exit(0);
-  }
-
-  const baseURL = await text({
-    message: "Hy3 Base URL:",
-    initialValue: "https://tokenhub.tencentmaas.com/v1",
-  });
-
-  if (isCancel(baseURL)) {
-    cancel("Installation cancelled.");
-    process.exit(0);
-  }
-
-  const model = await text({
-    message: "Hy3 model name:",
-    initialValue: "hy3-preview",
-  });
-
-  if (isCancel(model)) {
-    cancel("Installation cancelled.");
-    process.exit(0);
-  }
-
-  const outputDirInput = await text({
-    message: "Output directory for generated charts:",
-    initialValue: "./hy3-mcp-output",
-  });
-
-  if (isCancel(outputDirInput)) {
-    cancel("Installation cancelled.");
-    process.exit(0);
-  }
-
-  const outputDirRaw = (outputDirInput as string) || "./hy3-mcp-output";
-  const outputDir = isAbsolute(outputDirRaw) ? outputDirRaw : resolve(projectDir, outputDirRaw);
-
   const shouldInstall = await confirm({
     message: `Install hy3-data-mcp into ${pc.yellow(String(paths.length))} selected host(s)?`,
   });
@@ -179,10 +195,10 @@ export async function initCommand(): Promise<void> {
         apiKey: apiKey as string,
         baseURL: baseURL as string,
         model: model as string,
-        outputDir,
+        outputDir: DEFAULT_OUTPUT_DIR,
       });
     }
-    const envPath = await ensureEnvFile(projectDir, apiKey as string);
+    const envPath = await ensureEnvFile(envDir, apiKey as string);
 
     outro(pc.green("✅ hy3-data-mcp installed successfully!"));
     console.log(pc.gray("Next steps:"));
@@ -192,7 +208,7 @@ export async function initCommand(): Promise<void> {
       console.log(pc.gray(`  • Config: ${targetPath}`));
     }
     console.log(pc.gray(`  • Environment file: ${envPath}`));
-    console.log(pc.gray(`  • Output directory: ${outputDir}`));
+    console.log(pc.gray(`  • Generated outputs will go to: ${DEFAULT_OUTPUT_DIR} (relative to the opened project)`));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     outro(pc.red(`❌ Installation failed: ${message}`));
