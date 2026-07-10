@@ -5,7 +5,7 @@ import sys
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 
 API_DIR = Path(__file__).resolve().parents[1]
@@ -21,6 +21,7 @@ from common import (
     reasoning_extra_body,
     summarize_completion,
 )
+from tests.helpers import load_example
 
 
 class Hy3ConfigTests(unittest.TestCase):
@@ -284,6 +285,51 @@ class CompletionNormalizationTests(unittest.TestCase):
                 "finish_reason": "stop",
                 "usage": {"total_tokens": 7},
             },
+        )
+
+
+class BasicChatExampleTests(unittest.TestCase):
+    @staticmethod
+    def _completion(content: str, reasoning: str) -> SimpleNamespace:
+        return SimpleNamespace(
+            model="hy3",
+            choices=[
+                SimpleNamespace(
+                    finish_reason="stop",
+                    message=SimpleNamespace(
+                        role="assistant",
+                        content=content,
+                        reasoning=reasoning,
+                        model_extra={},
+                    ),
+                )
+            ],
+            usage=SimpleNamespace(total_tokens=5),
+        )
+
+    def test_runs_single_and_multi_turn_conversation(self) -> None:
+        module = load_example("01_basic_chat.py")
+        client = MagicMock()
+        client.chat.completions.create.side_effect = [
+            self._completion("I am Hy3.", "brief plan"),
+            self._completion("I can help with APIs.", ""),
+        ]
+        config = Hy3Config.from_mapping({})
+
+        first, second = module.run_conversation(client, config)
+
+        self.assertEqual(first["content"], "I am Hy3.")
+        self.assertEqual(second["content"], "I can help with APIs.")
+        second_request = client.chat.completions.create.call_args_list[1].kwargs
+        self.assertEqual(
+            second_request["messages"][-2:],
+            [
+                {"role": "assistant", "content": "I am Hy3."},
+                {
+                    "role": "user",
+                    "content": "What kinds of tasks can you help me with?",
+                },
+            ],
         )
 
 
