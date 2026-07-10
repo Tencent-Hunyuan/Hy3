@@ -34,11 +34,7 @@ const CLIENT_CANDIDATES: Candidate[] = [
   {
     id: "codebuddy",
     name: "CodeBuddy / WorkBuddy",
-    getPaths: (root) => [
-      home(".codebuddy", ".mcp.json"),
-      join(root, ".mcp.json"),
-      home(".codebuddy", "mcp.json"),
-    ],
+    getPaths: () => [home(".codebuddy", ".mcp.json")],
     getDefaultPath: () => home(".codebuddy", ".mcp.json"),
     scope: "global",
     format: "json",
