@@ -1,5 +1,6 @@
 import { readFile, writeFile, mkdir } from "fs/promises";
-import { basename, dirname } from "path";
+import { basename, dirname, resolve } from "path";
+import { fileURLToPath } from "url";
 
 export interface ServerConfig {
   apiKey: string;
@@ -7,6 +8,8 @@ export interface ServerConfig {
   model: string;
   outputDir: string;
 }
+
+const SERVER_SCRIPT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "dist", "index.js");
 
 function envFromConfig(config: ServerConfig): Record<string, string> {
   return {
@@ -20,8 +23,8 @@ function envFromConfig(config: ServerConfig): Record<string, string> {
 export function buildStandardMcpEntry(config: ServerConfig): Record<string, unknown> {
   return {
     type: "stdio",
-    command: "npx",
-    args: ["-y", "hy3-data-mcp"],
+    command: "node",
+    args: [SERVER_SCRIPT],
     env: envFromConfig(config),
   };
 }
@@ -29,7 +32,7 @@ export function buildStandardMcpEntry(config: ServerConfig): Record<string, unkn
 export function buildOpenCodeMcpEntry(config: ServerConfig): Record<string, unknown> {
   return {
     type: "local",
-    command: ["npx", "-y", "hy3-data-mcp"],
+    command: ["node", SERVER_SCRIPT],
     enabled: true,
     environment: envFromConfig(config),
   };
@@ -39,8 +42,8 @@ export function buildContinueMcpEntry(config: ServerConfig): Record<string, unkn
   return {
     name: "hy3-data-mcp",
     type: "stdio",
-    command: "npx",
-    args: ["-y", "hy3-data-mcp"],
+    command: "node",
+    args: [SERVER_SCRIPT],
     env: envFromConfig(config),
   };
 }
@@ -48,8 +51,8 @@ export function buildContinueMcpEntry(config: ServerConfig): Record<string, unkn
 export function buildVsCodeMcpEntry(config: ServerConfig): Record<string, unknown> {
   return {
     type: "stdio",
-    command: "npx",
-    args: ["-y", "hy3-data-mcp"],
+    command: "node",
+    args: [SERVER_SCRIPT],
     env: envFromConfig(config),
   };
 }
@@ -121,8 +124,8 @@ async function installCodexConfig(configPath: string, config: ServerConfig): Pro
   };
 
   text += `\n[mcp_servers.hy3-data-mcp]\n`;
-  text += `command = "npx"\n`;
-  text += `args = ["-y", "hy3-data-mcp"]\n`;
+  text += `command = "node"\n`;
+  text += `args = [${tomlString(SERVER_SCRIPT)}]\n`;
   text += `env = ${tomlString(env)}\n`;
 
   await mkdir(dirname(configPath), { recursive: true });

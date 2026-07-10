@@ -21,15 +21,17 @@ describe("MCP entry builders", () => {
   it("builds a standard stdio entry", () => {
     const entry = buildStandardMcpEntry(baseConfig);
     expect(entry.type).toBe("stdio");
-    expect(entry.command).toBe("npx");
-    expect(entry.args).toEqual(["-y", "hy3-data-mcp"]);
+    expect(entry.command).toBe("node");
+    expect(entry.args).toHaveLength(1);
+    expect(entry.args[0]).toContain("dist");
     expect(entry.env).toMatchObject({ HY3_API_KEY: "test-key" });
   });
 
   it("builds an OpenCode entry", () => {
     const entry = buildOpenCodeMcpEntry(baseConfig);
     expect(entry.type).toBe("local");
-    expect(entry.command).toEqual(["npx", "-y", "hy3-data-mcp"]);
+    expect(entry.command[0]).toBe("node");
+    expect(entry.command[1]).toContain("dist");
     expect(entry.enabled).toBe(true);
     expect(entry.environment).toMatchObject({ HY3_API_KEY: "test-key" });
   });
@@ -78,7 +80,7 @@ describe("installMcpConfig", () => {
     await installMcpConfig(path, baseConfig);
     const content = await readFile(path, "utf-8");
     expect(content).toContain("[mcp_servers.hy3-data-mcp]");
-    expect(content).toContain('command = "npx"');
+    expect(content).toContain('command = "node"');
     expect(content).toContain("HY3_API_KEY");
   });
 

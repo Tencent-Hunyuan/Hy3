@@ -91,27 +91,23 @@ All screenshots are rendered with the **Professional** theme using the bundled s
 
 ## Installation
 
+> The public npm package has been removed. Use the prebuilt release tarball in `releases/` instead.
+
+Use `npx` to run directly without installing:
+
 ```bash
-npm install -g hy3-data-mcp
+# Start the MCP server directly
+npx -p ./releases/hy3-data-mcp-0.1.8.tgz hy3-data-mcp
+
+# Or run the interactive client setup
+npx -p ./releases/hy3-data-mcp-0.1.8.tgz hdm init
 ```
 
-Start the server:
+Or install the local tarball globally for persistent `hy3-data-mcp` / `hdm` commands (no npm registry required):
 
 ```bash
+npm install -g ./releases/hy3-data-mcp-0.1.8.tgz
 hy3-data-mcp
-```
-
-Or run without installing:
-
-```bash
-npx -y hy3-data-mcp
-```
-
-Configure your MCP client automatically:
-
-```bash
-npx -y hdm init
-# or after global install
 hdm init
 ```
 
@@ -130,26 +126,15 @@ Sign up at [TokenHub](https://tokenhub.tencentmaas.com) and create an API key fo
 ```bash
 cp .env.example .env
 # Edit .env and set HY3_API_KEY
-npx -y hy3-data-mcp
+npx -p ./releases/hy3-data-mcp-0.1.8.tgz hy3-data-mcp
 ```
 
-### 3. Or install from npm
-
-```bash
-npm install -g hy3-data-mcp
-hy3-data-mcp
-```
-
-### 4. One-click client setup
+### 3. One-click client setup
 
 The package ships with a dedicated `hdm` CLI for client configuration:
 
 ```bash
-# Without installing
-npx -y hdm init
-
-# Or after global install
-hdm init
+npx -p ./releases/hy3-data-mcp-0.1.8.tgz hdm init
 ```
 
 `hdm init` scans your system for MCP clients (CodeBuddy, Cursor, Cline, Roo Code, Continue, Codex CLI, OpenCode, etc.), lets you pick one, and writes the MCP configuration and `.env` file automatically.
@@ -188,7 +173,7 @@ Add to `~/.codebuddy/.mcp.json`:
     "hy3-data-mcp": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "hy3-data-mcp"],
+      "args": ["-p", "/path/to/hy3-data-mcp/releases/hy3-data-mcp-0.1.8.tgz", "hy3-data-mcp"],
       "env": {
         "HY3_API_KEY": "your-tokenhub-api-key",
         "HY3_BASE_URL": "https://tokenhub.tencentmaas.com/v1",
@@ -206,7 +191,7 @@ Use `hdm init` to auto-configure.
 
 ### Open WebUI
 
-Open WebUI does not expose a stdio MCP host that `hdm init` can write to. To use Hy3 Data MCP there, create an Open WebUI [Function / Tool](https://docs.openwebui.com/features/plugin/functions/) that shells out to `npx -y hy3-data-mcp` and proxies JSON-RPC messages, or run the server separately and forward stdio over a pipe. A one-click installer for Open WebUI is not available yet.
+Open WebUI does not expose a stdio MCP host that `hdm init` can write to. To use Hy3 Data MCP there, create an Open WebUI [Function / Tool](https://docs.openwebui.com/features/plugin/functions/) that shells out to `npx -p /path/to/hy3-data-mcp/releases/hy3-data-mcp-0.1.8.tgz hy3-data-mcp` and proxies JSON-RPC messages, or run the server separately and forward stdio over a pipe. A one-click installer for Open WebUI is not available yet.
 
 ---
 
@@ -517,7 +502,7 @@ Run `node scripts/generate-sample-data.mjs` to regenerate the CSV datasets deter
 ## Development
 
 ```bash
-git clone https://github.com/Tencent-Hunyuan/Hy3.git
+git clone https://github.com/xy200303/Hy3.git
 cd Hy3/hy3-data-mcp
 npm install
 npm run build
