@@ -233,11 +233,12 @@ class ToolCallingTests(unittest.TestCase):
                     )
 
     def test_response_rejects_invalid_tool_call_containers(self) -> None:
-        for tool_calls in ("bad", {"id": "call_1"}, 123):
+        for tool_calls in ("bad", {"id": "call_1"}, 123, 0, False, 0.0):
             with self.subTest(tool_calls=tool_calls):
                 response = SimpleNamespace(
                     choices=[
                         SimpleNamespace(
+                            finish_reason="tool_calls",
                             message=SimpleNamespace(tool_calls=tool_calls)
                         )
                     ]

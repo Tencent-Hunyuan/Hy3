@@ -105,12 +105,15 @@ def run_tool_loop(
         raw_tool_calls = getattr(message, "tool_calls", None)
         if isinstance(raw_tool_calls, (str, bytes, Mapping)):
             raise RuntimeError("tool completion returned invalid tool_calls")
-        try:
-            tool_calls = list(raw_tool_calls or [])
-        except TypeError:
-            raise RuntimeError(
-                "tool completion returned invalid tool_calls"
-            ) from None
+        if raw_tool_calls is None:
+            tool_calls = []
+        else:
+            try:
+                tool_calls = list(raw_tool_calls)
+            except TypeError:
+                raise RuntimeError(
+                    "tool completion returned invalid tool_calls"
+                ) from None
         if not tool_calls:
             return summarize_completion(response)
 
