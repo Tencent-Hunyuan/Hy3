@@ -72,7 +72,7 @@ npm run build
 npm test
 ```
 
-- **135 tests passed** across 14 test files.
+- **137 tests passed** across 14 test files.
 - Coverage for `src/` is approximately **95% statements / 85% branches / 96% functions**.
 - Real-API smoke tests available with `HY3_API_KEY` via `npm run test:real`.
 
@@ -80,7 +80,7 @@ npm test
 
 ## Version / 版本
 
-Bumped to `0.2.2` and packaged as `releases/hy3-data-mcp-0.2.2.tgz`.
+Bumped to `0.2.3` and packaged as `releases/hy3-data-mcp-0.2.3.tgz`.
 
 ---
 

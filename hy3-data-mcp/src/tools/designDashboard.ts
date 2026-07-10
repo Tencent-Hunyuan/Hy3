@@ -4,6 +4,7 @@ import {
   askHy3,
   DataTable,
   loadDataTable,
+  parseInlineData,
   resolveLanguage,
   tableSummary,
 } from "../utils.js";
@@ -19,7 +20,11 @@ export const designDashboardDefinition = {
       file_paths: {
         type: "array",
         items: { type: "string" },
-        description: "List of CSV or JSON files to include in the dashboard.",
+        description: "List of CSV or JSON files to include in the dashboard. Either this or `data` is required.",
+      },
+      data: {
+        type: "string",
+        description: "Inline data as a JSON array string, e.g. '[{\"month\":\"Jan\",\"sales\":100},...]'. Either this or `file_paths` is required.",
       },
       title: {
         type: "string",
@@ -39,16 +44,22 @@ export const designDashboardDefinition = {
         default: "auto",
       },
     },
-    required: ["file_paths"],
+    required: [],
   },
 };
 
-export const designDashboardSchema = z.object({
-  file_paths: z.array(z.string().min(1)).min(1),
-  title: z.string().optional(),
-  layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).default("grid"),
-  language: z.enum(["zh", "en", "auto"]).default("auto"),
-});
+export const designDashboardSchema = z
+  .object({
+    file_paths: z.array(z.string().min(1)).optional(),
+    data: z.string().optional(),
+    title: z.string().optional(),
+    layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).default("grid"),
+    language: z.enum(["zh", "en", "auto"]).default("auto"),
+  })
+  .refine(
+    (args) => (args.file_paths && args.file_paths.length > 0) || (args.data && args.data.trim().length > 0),
+    { message: "Either file_paths or data is required", path: ["file_paths"] }
+  );
 
 export type DashboardDesign = {
   title: string;
@@ -73,12 +84,15 @@ export async function runDesignDashboard(
   signal?: AbortSignal,
   _onOutput?: (chunk: string) => void
 ): Promise<{ content: Array<{ type: "text"; text: string }> }> {
-  const { file_paths, title, layout, language } = designDashboardSchema.parse(args);
+  const { file_paths, data, title, layout, language } = designDashboardSchema.parse(args);
 
   await onProgress?.(10, 100);
 
   const tables: { path: string; table: DataTable }[] = [];
-  for (const path of file_paths) {
+  if (data) {
+    tables.push({ path: "<inline-data>", table: parseInlineData(data) });
+  }
+  for (const path of file_paths ?? []) {
     tables.push({ path, table: await loadDataTable(path) });
   }
   await onProgress?.(30, 100);

@@ -61,6 +61,13 @@ export async function loadDataTable(filePath: string): Promise<DataTable> {
   return parseData(raw, ext);
 }
 
+export function parseInlineData(data: string): DataTable {
+  const parsed = JSON.parse(data);
+  const rows = Array.isArray(parsed) ? parsed : [parsed];
+  const columns = rows.length > 0 ? Array.from(new Set(rows.flatMap(Object.keys))) : [];
+  return { columns, rows: rows.map(normalizeRow(columns)), raw: data };
+}
+
 export function parseData(raw: string, ext?: string): DataTable {
   const trimmed = raw.trim();
   const lowerExt = ext?.toLowerCase();

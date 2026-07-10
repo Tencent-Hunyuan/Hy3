@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { renderDashboardHtml, renderDashboardPng, type ChartType } from "../viz/echarts.js";
-import { buildThemeOverrides, DataTable, loadDataTable, resolveLanguage, writeOutputFile } from "../utils.js";
+import { buildThemeOverrides, DataTable, loadDataTable, parseInlineData, resolveLanguage, writeOutputFile } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
 
@@ -14,7 +14,11 @@ export const renderDashboardDefinition = {
       file_paths: {
         type: "array",
         items: { type: "string" },
-        description: "List of CSV or JSON files referenced by the design. Must match the order used in hy3_design_dashboard.",
+        description: "List of CSV or JSON files referenced by the design. Either this or `data` is required. Must match the order used in hy3_design_dashboard.",
+      },
+      data: {
+        type: "string",
+        description: "Inline data as a JSON array string. Either this or `file_paths` is required. If both are provided, inline data is placed at index 0.",
       },
       design: {
         type: "object",
@@ -85,7 +89,7 @@ export const renderDashboardDefinition = {
         default: "auto",
       },
     },
-    required: ["file_paths", "design"],
+    required: ["design"],
   },
 };
 
@@ -101,28 +105,34 @@ const chartDesignSchema = z.object({
   title: z.string(),
 });
 
-export const renderDashboardSchema = z.object({
-  file_paths: z.array(z.string().min(1)).min(1),
-  design: z.object({
-    title: z.string(),
+export const renderDashboardSchema = z
+  .object({
+    file_paths: z.array(z.string().min(1)).optional(),
+    data: z.string().optional(),
+    design: z.object({
+      title: z.string(),
+      layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).optional(),
+      charts: z.array(chartDesignSchema).min(1),
+    }),
+    output_format: z.enum(["html", "png"]).default("html"),
+    title: z.string().optional(),
+    theme: z
+      .enum(["light", "dark", "colorful", "minimal", "professional", "retro", "science", "nature"])
+      .default("nature"),
+    font_family: z.string().optional(),
+    background_color: z.string().optional(),
+    text_color: z.string().optional(),
+    axis_color: z.string().optional(),
+    split_line_color: z.string().optional(),
+    palette: z.array(z.string()).optional(),
+    primary_color: z.string().optional(),
     layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).optional(),
-    charts: z.array(chartDesignSchema).min(1),
-  }),
-  output_format: z.enum(["html", "png"]).default("html"),
-  title: z.string().optional(),
-  theme: z
-    .enum(["light", "dark", "colorful", "minimal", "professional", "retro", "science", "nature"])
-    .default("nature"),
-  font_family: z.string().optional(),
-  background_color: z.string().optional(),
-  text_color: z.string().optional(),
-  axis_color: z.string().optional(),
-  split_line_color: z.string().optional(),
-  palette: z.array(z.string()).optional(),
-  primary_color: z.string().optional(),
-  layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).optional(),
-  language: z.enum(["zh", "en", "auto"]).default("auto"),
-});
+    language: z.enum(["zh", "en", "auto"]).default("auto"),
+  })
+  .refine(
+    (args) => (args.file_paths && args.file_paths.length > 0) || (args.data && args.data.trim().length > 0),
+    { message: "Either file_paths or data is required", path: ["file_paths"] }
+  );
 
 export async function runRenderDashboard(
   args: unknown,
@@ -130,6 +140,7 @@ export async function runRenderDashboard(
 ): Promise<{ content: Array<{ type: "text"; text: string }> }> {
   const {
     file_paths,
+    data,
     design,
     output_format,
     title,
@@ -153,7 +164,10 @@ export async function runRenderDashboard(
   );
 
   const tables: { path: string; table: DataTable }[] = [];
-  for (const path of file_paths) {
+  if (data) {
+    tables.push({ path: "<inline-data>", table: parseInlineData(data) });
+  }
+  for (const path of file_paths ?? []) {
     tables.push({ path, table: await loadDataTable(path) });
   }
   await onProgress?.(30, 100);

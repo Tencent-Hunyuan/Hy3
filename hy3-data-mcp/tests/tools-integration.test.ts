@@ -97,6 +97,44 @@ describe("tool integration tests", () => {
     expect(result.content[0].text).toContain("PNG");
   });
 
+  it("hy3_design_dashboard accepts inline data", async () => {
+    const client = createMockClient(
+      JSON.stringify({
+        title: "Inline Dashboard",
+        charts: [{ file_index: 0, chart_type: "bar", x_column: "month", y_column: "sales", title: "Sales" }],
+      })
+    );
+    const result = await handleToolCall(
+      "hy3_design_dashboard",
+      { data: '[{"month":"Jan","sales":100},{"month":"Feb","sales":150}]', language: "en" },
+      client
+    );
+
+    const design = JSON.parse(result.content[0].text);
+    expect(design.title).toBe("Inline Dashboard");
+  });
+
+  it("hy3_render_dashboard accepts inline data", async () => {
+    const design = {
+      title: "Inline Render",
+      layout: "grid",
+      charts: [{ file_index: 0, chart_type: "bar", x_column: "month", y_column: "sales", title: "Sales" }],
+    };
+    const result = await handleToolCall(
+      "hy3_render_dashboard",
+      {
+        data: '[{"month":"Jan","sales":100},{"month":"Feb","sales":150}]',
+        design,
+        output_format: "html",
+        language: "en",
+      },
+      {} as Hy3Client
+    );
+
+    expect(result.content[0].text).toContain("Inline Render");
+    expect(result.content[0].text).toContain("HTML");
+  });
+
   it("hy3_extract_document returns text and metadata for a DOCX", async () => {
     const docx = join(sampleDir, "report.docx");
     const result = await handleToolCall("hy3_extract_document", { file_path: docx }, {} as Hy3Client);
