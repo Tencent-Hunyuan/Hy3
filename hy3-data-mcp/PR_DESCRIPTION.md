@@ -50,8 +50,8 @@ npm run test:real   # requires a valid HY3_API_KEY
 ```
 
 - `npm run build` compiles cleanly.
-- `npm test` runs 80+ unit/integration/smoke tests.
-- `npm run test:coverage` generates a coverage report: `src/` coverage is ~82% statements / ~83% branches / ~88% functions.
+- `npm test` runs 115+ unit/integration/smoke tests.
+- `npm run test:coverage` generates a coverage report: `src/` coverage is ~95% statements / ~85% branches / ~96% functions (entry-point files excluded).
 - `npm run test:real` invokes every tool against the live Hy3 endpoint and writes files to `hy3-data-output/`.
 
 ---
@@ -105,7 +105,7 @@ hy3-data-mcp/
 ## Pre-submission checklist
 
 - [x] `npm run build` passes
-- [x] `npm test` passes (80/80)
+- [x] `npm test` passes (115/115)
 - [x] Real API smoke test passes for all 7 tools
 - [x] PNG output verified for `hy3_data_visualize` (including area, sankey, treemap, sunburst, gauge, boxplot, candlestick, bubble, histogram, stacked_bar), `hy3_wordcloud`, `hy3_knowledge_graph`, `hy3_data_dashboard`, and `hy3_document_visualize`
 - [x] Theme, custom font, and custom color overrides verified across visualization tools
