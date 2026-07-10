@@ -34,6 +34,8 @@ Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without se
 
 See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
 
+The values below use the verified Guangzhou / China-mainland endpoint. Use the TokenHub domain that matches your API key and service region; see [tokenhub.md](tokenhub.md) for region selection.
+
 The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). Aider CLI through TokenHub was also manually verified.
 
 | Setting | Value |
@@ -74,7 +76,8 @@ Set the OpenAI-compatible environment variables before running Aider:
 
 ```powershell
 $env:OPENAI_API_BASE = "https://tokenhub.tencentmaas.com/v1"
-$env:OPENAI_API_KEY = "<user-created TokenHub API key>"
+$SecureApiKey = Read-Host "TokenHub API key" -AsSecureString
+$env:OPENAI_API_KEY = [System.Net.NetworkCredential]::new("", $SecureApiKey).Password
 ```
 
 Do not commit or document API keys.
@@ -123,6 +126,8 @@ Run this command from the Hy3 repository root:
 ```
 
 Result: Aider added `README.md` to the chat as read-only and returned exactly three English bullet points covering architecture and scale, core capabilities, and open-source deployment. No repository files were edited.
+
+Aider also generated its normal repository map, so this demonstrates a README-focused task rather than strict isolation from all other repository context.
 
 ## Screenshots / GIFs
 

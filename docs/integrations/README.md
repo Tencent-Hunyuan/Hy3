@@ -31,6 +31,8 @@ TokenHub settings used by these guides:
 
 See [tokenhub.md](tokenhub.md) for setup notes and safety requirements.
 
+The values and screenshots in these guides use the verified Guangzhou / China-mainland TokenHub endpoint. TokenHub uses region-specific domains; users of the Singapore / global service must use the matching endpoint documented in `tokenhub.md`.
+
 ## Local Self-hosted Mode
 
 Use local self-hosted mode when you run Hy3 yourself and expose the repository-documented local OpenAI-compatible endpoint.

@@ -38,6 +38,8 @@ Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without se
 
 See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
 
+The values below use the verified Guangzhou / China-mainland endpoint. Use the TokenHub domain that matches your API key and service region; see [tokenhub.md](tokenhub.md) for region selection.
+
 The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). Roo Code-specific setup through TokenHub was also manually verified.
 
 | Setting | Value |
