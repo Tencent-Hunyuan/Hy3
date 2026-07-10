@@ -78,6 +78,22 @@ class Hy3Config:
         return cls.from_mapping(os.environ)
 
 
+@dataclass(frozen=True)
+class StreamUpdate:
+    content: str
+    reasoning: str
+
+
+@dataclass(frozen=True)
+class StreamResult:
+    content: str
+    reasoning: str
+    reasoning_details: list[Any]
+    finish_reason: str | None
+    usage: dict[str, Any] | None
+    tool_calls: list[dict[str, Any]]
+
+
 def create_client(config: Hy3Config, *, max_retries: int = 2) -> OpenAI:
     return OpenAI(
         base_url=config.base_url,
@@ -163,6 +179,78 @@ def extract_reasoning(message: Any) -> tuple[str, list[Any]]:
         )
 
     return reasoning, details
+
+
+class StreamAccumulator:
+    def __init__(self) -> None:
+        self._content: list[str] = []
+        self._reasoning: list[str] = []
+        self._reasoning_details: list[Any] = []
+        self._finish_reason: str | None = None
+        self._usage: dict[str, Any] | None = None
+        self._tool_calls: dict[int, dict[str, Any]] = {}
+
+    def add_chunk(self, chunk: Any) -> StreamUpdate:
+        usage = object_to_dict(_field(chunk, "usage"))
+        if usage:
+            self._usage = usage
+
+        choices = _field(chunk, "choices", [])
+        if not choices:
+            return StreamUpdate(content="", reasoning="")
+
+        choice = choices[0]
+        finish_reason = _field(choice, "finish_reason")
+        if finish_reason is not None:
+            self._finish_reason = str(finish_reason)
+
+        delta = _field(choice, "delta")
+        content = str(_field(delta, "content") or "")
+        reasoning, reasoning_details = extract_reasoning(delta)
+        if content:
+            self._content.append(content)
+        if reasoning:
+            self._reasoning.append(reasoning)
+        self._reasoning_details.extend(reasoning_details)
+
+        for fragment in _field(delta, "tool_calls", []) or []:
+            index = int(_field(fragment, "index"))
+            tool_call = self._tool_calls.setdefault(
+                index,
+                {
+                    "id": "",
+                    "type": "function",
+                    "function": {"name": "", "arguments": ""},
+                },
+            )
+            tool_call["id"] += str(_field(fragment, "id") or "")
+
+            fragment_type = _field(fragment, "type")
+            if fragment_type:
+                tool_call["type"] = str(fragment_type)
+
+            function = _field(fragment, "function")
+            tool_call["function"]["name"] += str(
+                _field(function, "name") or ""
+            )
+            tool_call["function"]["arguments"] += str(
+                _field(function, "arguments") or ""
+            )
+
+        return StreamUpdate(content=content, reasoning=reasoning)
+
+    def result(self) -> StreamResult:
+        return StreamResult(
+            content="".join(self._content),
+            reasoning="".join(self._reasoning),
+            reasoning_details=list(self._reasoning_details),
+            finish_reason=self._finish_reason,
+            usage=self._usage,
+            tool_calls=[
+                object_to_dict(self._tool_calls[index])
+                for index in sorted(self._tool_calls)
+            ],
+        )
 
 
 def assistant_message_to_dict(message: Any) -> dict[str, Any]:
