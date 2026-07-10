@@ -2,7 +2,7 @@ import { z } from "zod";
 import { Hy3Client } from "../client.js";
 import { renderChartHtml, renderChartSvg, type ChartType } from "../viz/echarts.js";
 import { svgToPng } from "../viz/png.js";
-import { askHy3, loadDataTable, resolveLanguage, tableSummary, writeOutputFile } from "../utils.js";
+import { askHy3, loadDataTable, parseInlineData, resolveLanguage, tableSummary, writeOutputFile } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
 export const dataVisualizeDefinition = {
@@ -14,7 +14,11 @@ export const dataVisualizeDefinition = {
     properties: {
       file_path: {
         type: "string",
-        description: "Path to a CSV, JSON or XLSX file.",
+        description: "Path to a CSV, JSON or XLSX file. Either this or `data` is required.",
+      },
+      data: {
+        type: "string",
+        description: "Inline data as a JSON array string, e.g. '[{\"month\":\"Jan\",\"sales\":100},...]'. Either this or `file_path` is required.",
       },
       chart_type: {
         type: "string",
@@ -173,12 +177,13 @@ export const dataVisualizeDefinition = {
         default: "auto",
       },
     },
-    required: ["file_path"],
+    required: [],
   },
 };
 
 export const dataVisualizeSchema = z.object({
-  file_path: z.string().min(1),
+  file_path: z.string().min(1).optional(),
+  data: z.string().optional(),
   chart_type: z
     .enum([
       "bar",
@@ -248,6 +253,7 @@ export async function runDataVisualize(
 ) {
   const {
     file_path,
+    data,
     chart_type,
     x_column,
     y_column,
@@ -274,8 +280,12 @@ export async function runDataVisualize(
     language,
   } = dataVisualizeSchema.parse(args);
 
+  if ((!file_path || file_path.trim().length === 0) && (!data || data.trim().length === 0)) {
+    throw new Error("Either file_path or data is required");
+  }
+
   await onProgress?.(10, 100);
-  const table = await loadDataTable(file_path);
+  const table = data ? parseInlineData(data) : await loadDataTable(file_path!);
   await onProgress?.(30, 100);
 
   if (table.columns.length === 0) {

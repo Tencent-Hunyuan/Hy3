@@ -72,7 +72,7 @@ npm run build
 npm test
 ```
 
-- **137 tests passed** across 14 test files.
+- **138 tests passed** across 14 test files.
 - Coverage for `src/` is approximately **95% statements / 85% branches / 96% functions**.
 - Real-API smoke tests available with `HY3_API_KEY` via `npm run test:real`.
 

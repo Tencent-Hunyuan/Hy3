@@ -652,7 +652,7 @@ npm run test:coverage   # generate coverage report
 npm run test:real       # requires HY3_API_KEY
 ```
 
-The test suite contains **137 unit, integration, and smoke tests** covering documents, utilities, themes, CLI config, dashboard rendering, client setup, streaming LLM output, async task execution, all visualization tools, chart rendering, and the MCP server handshake. As of the latest run, code coverage for the `src/` directory is approximately **95% statements / 85% branches / 96% functions** (overall ~92% statements when including uncovered helper scripts).
+The test suite contains **138 unit, integration, and smoke tests** covering documents, utilities, themes, CLI config, dashboard rendering, client setup, streaming LLM output, async task execution, all visualization tools, chart rendering, and the MCP server handshake. As of the latest run, code coverage for the `src/` directory is approximately **95% statements / 85% branches / 96% functions** (overall ~92% statements when including uncovered helper scripts).
 
 Debug with the [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
 

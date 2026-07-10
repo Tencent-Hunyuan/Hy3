@@ -122,7 +122,7 @@ hy3-data-mcp/
 ## Pre-submission checklist
 
 - [x] `npm run build` passes
-- [x] `npm test` passes (137/137)
+- [x] `npm test` passes (138/138)
 - [x] Real API smoke test passes for all 8 tools
 - [x] PNG output verified for `hy3_data_visualize` (including area, sankey, treemap, sunburst, gauge, boxplot, candlestick, bubble, histogram, stacked_bar), `hy3_wordcloud`, `hy3_knowledge_graph`, `hy3_design_dashboard` + `hy3_render_dashboard`, and `hy3_analyze_text`
 - [x] Theme, custom font, and custom color overrides verified across visualization tools

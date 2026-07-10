@@ -114,6 +114,25 @@ describe("tool integration tests", () => {
     expect(design.title).toBe("Inline Dashboard");
   });
 
+  it("hy3_data_visualize accepts inline data", async () => {
+    const client = createMockClient(
+      JSON.stringify({ x_column: "month", y_column: "sales", title: "Monthly Sales" })
+    );
+    const result = await handleToolCall(
+      "hy3_data_visualize",
+      {
+        data: '[{"month":"Jan","sales":100},{"month":"Feb","sales":150}]',
+        chart_type: "bar",
+        output_format: "svg",
+        language: "en",
+      },
+      client
+    );
+
+    expect(result.content[0].text).toContain("Monthly Sales");
+    expect(result.content[0].text).toContain("SVG");
+  });
+
   it("hy3_render_dashboard accepts inline data", async () => {
     const design = {
       title: "Inline Render",
