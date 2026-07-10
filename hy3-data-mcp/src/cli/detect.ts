@@ -43,9 +43,9 @@ const CLIENT_CANDIDATES: Candidate[] = [
     id: "cursor",
     name: "Cursor",
     command: "cursor",
-    getPaths: (root) => [join(root, ".cursor", "mcp.json"), home(".cursor", "mcp.json")],
-    getDefaultPath: (root) => join(root, ".cursor", "mcp.json"),
-    scope: "project",
+    getPaths: () => [home(".cursor", "mcp.json")],
+    getDefaultPath: () => home(".cursor", "mcp.json"),
+    scope: "global",
     format: "json",
   },
   {
@@ -61,9 +61,9 @@ const CLIENT_CANDIDATES: Candidate[] = [
     id: "roo",
     name: "Roo Code",
     command: "roo",
-    getPaths: (root) => [join(root, ".roo", "mcp.json"), home(".roo", "mcp_settings.json")],
-    getDefaultPath: (root) => join(root, ".roo", "mcp.json"),
-    scope: "project",
+    getPaths: () => [rooMcpSettingsPath()],
+    getDefaultPath: () => rooMcpSettingsPath(),
+    scope: "global",
     format: "json",
   },
   {
@@ -88,9 +88,9 @@ const CLIENT_CANDIDATES: Candidate[] = [
     id: "claude",
     name: "Claude Code",
     command: "claude",
-    getPaths: (root) => [join(root, ".mcp.json")],
-    getDefaultPath: (root) => join(root, ".mcp.json"),
-    scope: "project",
+    getPaths: () => [home(".claude.json")],
+    getDefaultPath: () => home(".claude.json"),
+    scope: "global",
     format: "json",
   },
   {
@@ -111,6 +111,27 @@ function openCodeConfigPath(): string {
 function clineMcpSettingsPath(): string {
   const extensionId = "saoudrizwan.claude-dev";
   const fileName = "cline_mcp_settings.json";
+  if (process.platform === "win32") {
+    return home("AppData", "Roaming", "Code", "User", "globalStorage", extensionId, "settings", fileName);
+  }
+  if (process.platform === "darwin") {
+    return home(
+      "Library",
+      "Application Support",
+      "Code",
+      "User",
+      "globalStorage",
+      extensionId,
+      "settings",
+      fileName
+    );
+  }
+  return home(".config", "Code", "User", "globalStorage", extensionId, "settings", fileName);
+}
+
+function rooMcpSettingsPath(): string {
+  const extensionId = "rooveterinaryinc.roo-cline";
+  const fileName = "mcp_settings.json";
   if (process.platform === "win32") {
     return home("AppData", "Roaming", "Code", "User", "globalStorage", extensionId, "settings", fileName);
   }
@@ -253,7 +274,7 @@ export function getDefaultConfigPath(clientId: string): string {
     case "codebuddy":
       return home(".codebuddy", ".mcp.json");
     case "cursor":
-      return join(root, ".cursor", "mcp.json");
+      return home(".cursor", "mcp.json");
     case "cline":
       return home(
         "AppData",
@@ -266,13 +287,13 @@ export function getDefaultConfigPath(clientId: string): string {
         "cline_mcp_settings.json"
       );
     case "roo":
-      return join(root, ".roo", "mcp.json");
+      return rooMcpSettingsPath();
     case "continue":
       return join(root, ".continue", "config.json");
     case "codex":
       return home(".codex", "config.toml");
     case "claude":
-      return join(root, ".mcp.json");
+      return home(".claude.json");
     case "opencode":
       return openCodeConfigPath();
     default:

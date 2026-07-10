@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, mkdir, writeFile, readFile, rm } from "fs/promises";
 import { tmpdir } from "os";
-import { join } from "path";
+import { dirname, join } from "path";
 import { installMcpConfig } from "../src/cli/config.js";
 
 describe("CLI installer", () => {
@@ -88,16 +88,90 @@ describe("CLI installer", () => {
     process.env.HOME = originalHome;
   });
 
-  it("detects Claude Code config in project .mcp.json", async () => {
-    const { detectClients } = await import("../src/cli/detect.js");
-    const projectDir = join(tempDir, "project");
-    await mkdir(projectDir, { recursive: true });
-    await writeFile(join(projectDir, ".mcp.json"), "{}", "utf-8");
+  it("detects Claude Code config in ~/.claude.json", async () => {
+    const originalUserProfile = process.env.USERPROFILE;
+    const originalHome = process.env.HOME;
+    process.env.USERPROFILE = tempDir;
+    process.env.HOME = tempDir;
 
-    const clients = await detectClients(projectDir);
+    const { detectClients } = await import("../src/cli/detect.js");
+    await writeFile(join(tempDir, ".claude.json"), "{}", "utf-8");
+
+    const clients = await detectClients(tempDir);
     const claude = clients.find((c) => c.id === "claude");
     expect(claude).toBeDefined();
-    expect(claude?.configPath).toBe(join(projectDir, ".mcp.json"));
+    expect(claude?.configPath).toBe(join(tempDir, ".claude.json"));
+
+    process.env.USERPROFILE = originalUserProfile;
+    process.env.HOME = originalHome;
+  });
+
+  it("detects Cursor config in ~/.cursor/mcp.json", async () => {
+    const originalUserProfile = process.env.USERPROFILE;
+    const originalHome = process.env.HOME;
+    process.env.USERPROFILE = tempDir;
+    process.env.HOME = tempDir;
+
+    const { detectClients } = await import("../src/cli/detect.js");
+    await mkdir(join(tempDir, ".cursor"), { recursive: true });
+    await writeFile(join(tempDir, ".cursor", "mcp.json"), "{}", "utf-8");
+
+    const clients = await detectClients(join(tempDir, "project"));
+    const cursor = clients.find((c) => c.id === "cursor");
+    expect(cursor).toBeDefined();
+    expect(cursor?.configPath).toBe(join(tempDir, ".cursor", "mcp.json"));
+
+    process.env.USERPROFILE = originalUserProfile;
+    process.env.HOME = originalHome;
+  });
+
+  it("detects Roo Code global config", async () => {
+    const originalUserProfile = process.env.USERPROFILE;
+    const originalHome = process.env.HOME;
+    process.env.USERPROFILE = tempDir;
+    process.env.HOME = tempDir;
+
+    const { detectClients } = await import("../src/cli/detect.js");
+    const rooPath = join(
+      tempDir,
+      "AppData",
+      "Roaming",
+      "Code",
+      "User",
+      "globalStorage",
+      "rooveterinaryinc.roo-cline",
+      "settings",
+      "mcp_settings.json"
+    );
+    await mkdir(dirname(rooPath), { recursive: true });
+    await writeFile(rooPath, "{}", "utf-8");
+
+    const clients = await detectClients(join(tempDir, "project"));
+    const roo = clients.find((c) => c.id === "roo");
+    expect(roo).toBeDefined();
+    expect(roo?.configPath).toBe(rooPath);
+
+    process.env.USERPROFILE = originalUserProfile;
+    process.env.HOME = originalHome;
+  });
+
+  it("writes Claude Code user config under projects key", async () => {
+    const configPath = join(tempDir, ".claude.json");
+    const projectDir = join(tempDir, "my-project");
+    await installMcpConfig(
+      configPath,
+      {
+        apiKey: "test-key",
+        baseURL: "https://tokenhub.tencentmaas.com/v1",
+        model: "hy3-preview",
+        outputDir: "./hy3-data-output",
+      },
+      projectDir
+    );
+
+    const content = JSON.parse(await readFile(configPath, "utf-8"));
+    expect(content.projects[projectDir].mcpServers["hy3-data-mcp"]).toBeDefined();
+    expect(content.projects[projectDir].mcpServers["hy3-data-mcp"].env.HY3_API_KEY).toBe("test-key");
   });
 
   it("installs MCP config into a client file", async () => {

@@ -159,9 +159,42 @@ function isContinueConfigPath(path: string): boolean {
   return basename(path) === "config.json" && dirname(path).endsWith(".continue");
 }
 
+function isClaudeCodeConfigPath(path: string): boolean {
+  return basename(path) === ".claude.json";
+}
+
+async function installClaudeCodeConfig(
+  configPath: string,
+  serverConfig: ServerConfig,
+  projectDir?: string
+): Promise<void> {
+  const existing = await readJsonFile(configPath);
+  const project = projectDir || process.cwd();
+  const entry = buildStandardMcpEntry(serverConfig);
+  const projects = (existing.projects as Record<string, Record<string, unknown>>) || {};
+  const projectConfig = projects[project] || {};
+  const mcpServers = (projectConfig.mcpServers as Record<string, unknown>) || {};
+
+  const updated = {
+    ...existing,
+    projects: {
+      ...projects,
+      [project]: {
+        ...projectConfig,
+        mcpServers: {
+          ...mcpServers,
+          "hy3-data-mcp": entry,
+        },
+      },
+    },
+  };
+  await writeJsonFile(configPath, updated);
+}
+
 export async function installMcpConfig(
   configPath: string,
-  serverConfig: ServerConfig
+  serverConfig: ServerConfig,
+  projectDir?: string
 ): Promise<void> {
   if (isOpenCodeConfigPath(configPath)) {
     const existing = await readJsonFile(configPath);
@@ -195,6 +228,11 @@ export async function installMcpConfig(
       },
     };
     await writeJsonFile(configPath, updated);
+    return;
+  }
+
+  if (isClaudeCodeConfigPath(configPath)) {
+    await installClaudeCodeConfig(configPath, serverConfig, projectDir);
     return;
   }
 

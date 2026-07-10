@@ -214,9 +214,9 @@ async function confirmInstall(paths: string[]): Promise<void> {
   }
 }
 
-async function installIntoHosts(paths: string[], config: ServerConfig): Promise<void> {
+async function installIntoHosts(paths: string[], config: ServerConfig, projectDir: string): Promise<void> {
   for (const targetPath of paths) {
-    await installMcpConfig(targetPath, config);
+    await installMcpConfig(targetPath, config, projectDir);
   }
 }
 
@@ -247,7 +247,7 @@ export async function initCommand(): Promise<void> {
 
   try {
     const config: ServerConfig = { apiKey, baseURL, model, outputDir: DEFAULT_OUTPUT_DIR };
-    await installIntoHosts(paths, config);
+    await installIntoHosts(paths, config, projectDir);
     const envPath = await writeEnvFile(envDir, config);
     await finalize(paths, envPath);
   } catch (error) {
@@ -279,7 +279,7 @@ export async function mcpCommand(): Promise<void> {
   await confirmInstall(paths);
 
   try {
-    await installIntoHosts(paths, envConfig);
+    await installIntoHosts(paths, envConfig, projectDir);
     await finalize(paths, envConfig.envPath);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
