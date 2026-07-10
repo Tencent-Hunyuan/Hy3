@@ -17,12 +17,11 @@ describe("CLI installer", () => {
   });
 
   it("detects CodeBuddy config in project", async () => {
-    await mkdir(join(tempDir, ".codebuddy"), { recursive: true });
-    await writeFile(join(tempDir, ".codebuddy", "mcp.json"), "{}", "utf-8");
+    await writeFile(join(tempDir, ".mcp.json"), "{}", "utf-8");
     const clients = await detectClients(tempDir);
     const codebuddy = clients.find((c) => c.id === "codebuddy");
     expect(codebuddy).toBeDefined();
-    expect(codebuddy?.configPath).toContain(".codebuddy");
+    expect(codebuddy?.configPath).toContain(".mcp.json");
   });
 
   it("installs MCP config into a client file", async () => {

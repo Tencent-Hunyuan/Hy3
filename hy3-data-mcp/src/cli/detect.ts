@@ -2,7 +2,7 @@ import { access, readFile } from "fs/promises";
 import { homedir, platform } from "os";
 import { exec } from "child_process";
 import { promisify } from "util";
-import { basename, join, resolve } from "path";
+import { basename, dirname, join, resolve } from "path";
 
 const execAsync = promisify(exec);
 
@@ -11,7 +11,7 @@ export interface DetectedClient {
   name: string;
   configPath: string;
   scope: "project" | "global";
-  format: "json";
+  format: "json" | "toml";
   installed: boolean;
   configured: boolean;
 }
@@ -27,28 +27,32 @@ interface Candidate {
   getPaths: (root: string) => string[];
   getDefaultPath: (root: string) => string;
   scope: "project" | "global";
+  format: "json" | "toml";
 }
 
 const CLIENT_CANDIDATES: Candidate[] = [
   {
     id: "codebuddy",
     name: "CodeBuddy / WorkBuddy",
-    getPaths: (root) => [join(root, ".codebuddy", "mcp.json")],
-    getDefaultPath: (root) => join(root, ".codebuddy", "mcp.json"),
+    getPaths: (root) => [join(root, ".mcp.json"), home(".codebuddy", ".mcp.json")],
+    getDefaultPath: (root) => join(root, ".mcp.json"),
     scope: "project",
+    format: "json",
   },
   {
     id: "cursor",
     name: "Cursor",
+    command: "cursor",
     getPaths: (root) => [join(root, ".cursor", "mcp.json"), home(".cursor", "mcp.json")],
     getDefaultPath: (root) => join(root, ".cursor", "mcp.json"),
     scope: "project",
+    format: "json",
   },
   {
     id: "cline",
     name: "Cline",
-    getPaths: (root) => [
-      join(root, ".vscode", "mcp.json"),
+    command: "cline",
+    getPaths: () => [
       home(
         "AppData",
         "Roaming",
@@ -69,38 +73,62 @@ const CLIENT_CANDIDATES: Candidate[] = [
         "cline_mcp_settings.json"
       ),
     ],
-    getDefaultPath: (root) => join(root, ".vscode", "mcp.json"),
+    getDefaultPath: () =>
+      home(
+        "AppData",
+        "Roaming",
+        "Code",
+        "User",
+        "globalStorage",
+        "saoudrizwan.claude-dev",
+        "settings",
+        "cline_mcp_settings.json"
+      ),
     scope: "global",
+    format: "json",
   },
   {
     id: "roo",
     name: "Roo Code",
-    getPaths: (root) => [join(root, ".roo", "mcp.json"), home(".roo", "mcp.json")],
+    command: "roo",
+    getPaths: (root) => [
+      join(root, ".roo", "mcp.json"),
+      home(".roo", "mcp_settings.json"),
+      home(".roo", "mcp.json"),
+    ],
     getDefaultPath: (root) => join(root, ".roo", "mcp.json"),
-    scope: "global",
+    scope: "project",
+    format: "json",
   },
   {
     id: "continue",
     name: "Continue",
-    getPaths: (root) => [join(root, ".continue", "config.json"), home(".continue", "config.json")],
+    command: "continue",
+    getPaths: (root) => [
+      join(root, ".continue", "config.json"),
+      home(".continue", "config.json"),
+    ],
     getDefaultPath: (root) => join(root, ".continue", "config.json"),
     scope: "global",
+    format: "json",
   },
   {
     id: "codex",
     name: "OpenAI Codex CLI",
     command: "codex",
-    getPaths: () => [home(".codex", "config.json"), home(".codex", "mcp.json")],
-    getDefaultPath: () => home(".codex", "config.json"),
+    getPaths: () => [home(".codex", "config.toml")],
+    getDefaultPath: () => home(".codex", "config.toml"),
     scope: "global",
+    format: "toml",
   },
   {
     id: "claude",
     name: "Claude Code",
     command: "claude",
-    getPaths: () => [home(".claude", "config.json"), home(".claude", "mcp.json")],
-    getDefaultPath: () => home(".claude", "config.json"),
-    scope: "global",
+    getPaths: (root) => [join(root, ".mcp.json"), home(".claude.json")],
+    getDefaultPath: (root) => join(root, ".mcp.json"),
+    scope: "project",
+    format: "json",
   },
   {
     id: "opencode",
@@ -118,6 +146,7 @@ const CLIENT_CANDIDATES: Candidate[] = [
     },
     getDefaultPath: () => openCodeConfigPath(),
     scope: "global",
+    format: "json",
   },
 ];
 
@@ -152,19 +181,62 @@ function isOpenCodeConfigPath(path: string): boolean {
   return basename(path) === "opencode.json";
 }
 
+function isCodexConfigPath(path: string): boolean {
+  return basename(path) === "config.toml" && dirname(path).endsWith(".codex");
+}
+
+function isVsCodeMcpPath(path: string): boolean {
+  return basename(path) === "mcp.json" && dirname(path).endsWith(".vscode");
+}
+
+function isContinueConfigPath(path: string): boolean {
+  return basename(path) === "config.json" && dirname(path).endsWith(".continue");
+}
+
+function hasHy3Server(entries: Record<string, unknown> | unknown[]): boolean {
+  if (Array.isArray(entries)) {
+    return entries.some(
+      (entry) =>
+        typeof entry === "object" &&
+        entry !== null &&
+        "name" in entry &&
+        String((entry as { name: string }).name).toLowerCase().includes("hy3-data-mcp")
+    );
+  }
+  return Object.keys(entries).some((key) => key.toLowerCase().includes("hy3-data-mcp"));
+}
+
 async function isConfigured(path: string): Promise<boolean> {
   if (!(await exists(path))) return false;
-  try {
-    const content = await readFile(path, "utf-8");
-    const config = JSON.parse(content);
 
+  try {
     if (isOpenCodeConfigPath(path)) {
+      const content = await readFile(path, "utf-8");
+      const config = JSON.parse(content);
       const mcp = config.mcp ?? {};
       return Object.keys(mcp).some((key) => key.toLowerCase().includes("hy3-data-mcp"));
     }
 
+    if (isCodexConfigPath(path)) {
+      const content = await readFile(path, "utf-8");
+      return content.includes('[mcp_servers.hy3-data-mcp]');
+    }
+
+    const content = await readFile(path, "utf-8");
+    const config = JSON.parse(content);
+
+    if (isVsCodeMcpPath(path)) {
+      return hasHy3Server((config.servers as Record<string, unknown>) ?? {});
+    }
+
+    if (isContinueConfigPath(path)) {
+      const servers = config.mcpServers;
+      if (Array.isArray(servers)) return hasHy3Server(servers);
+      return hasHy3Server((servers as Record<string, unknown>) ?? {});
+    }
+
     const servers = config.mcpServers ?? config.servers ?? config.mcp?.servers ?? {};
-    return Object.keys(servers).some((key) => key.toLowerCase().includes("hy3-data-mcp"));
+    return hasHy3Server(servers);
   } catch {
     return false;
   }
@@ -198,7 +270,7 @@ export async function detectClients(baseDir?: string): Promise<DetectedClient[]>
       name: candidate.name,
       configPath: targetPath,
       scope: candidate.scope,
-      format: "json",
+      format: candidate.format,
       installed,
       configured: await isConfigured(targetPath),
     });
@@ -211,22 +283,31 @@ export function getDefaultConfigPath(clientId: string): string {
   const root = process.cwd();
   switch (clientId) {
     case "codebuddy":
-      return join(root, ".codebuddy", "mcp.json");
+      return join(root, ".mcp.json");
     case "cursor":
       return join(root, ".cursor", "mcp.json");
     case "cline":
-      return join(root, ".vscode", "mcp.json");
+      return home(
+        "AppData",
+        "Roaming",
+        "Code",
+        "User",
+        "globalStorage",
+        "saoudrizwan.claude-dev",
+        "settings",
+        "cline_mcp_settings.json"
+      );
     case "roo":
       return join(root, ".roo", "mcp.json");
     case "continue":
       return join(root, ".continue", "config.json");
     case "codex":
-      return home(".codex", "config.json");
+      return home(".codex", "config.toml");
     case "claude":
-      return home(".claude", "config.json");
-    case "opencodes":
-      return home(".opencodes", "mcp.json");
+      return home(".claude.json");
+    case "opencode":
+      return openCodeConfigPath();
     default:
-      return join(root, "mcp-config.json");
+      return join(root, ".mcp.json");
   }
 }
