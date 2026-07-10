@@ -40,6 +40,14 @@ export const dataVisualizeDefinition = {
           "candlestick",
           "stacked_bar",
           "grouped_bar",
+          "bar3d",
+          "scatter3d",
+          "line3d",
+          "line_bar",
+          "area_bar",
+          "dual_axis",
+          "stacked_area",
+          "grouped_line",
         ],
         description: "Desired chart type.",
         default: "bar",
@@ -82,6 +90,11 @@ export const dataVisualizeDefinition = {
         type: "string",
         description:
           "Optional column for bubble size (used by bubble). Leave empty to let Hy3 choose.",
+      },
+      z_column: {
+        type: "string",
+        description:
+          "Optional third numeric dimension for 3D charts (scatter3d, line3d). Leave empty to let Hy3 choose.",
       },
       theme: {
         type: "string",
@@ -189,6 +202,14 @@ const dataVisualizeSchema = z.object({
       "candlestick",
       "stacked_bar",
       "grouped_bar",
+      "bar3d",
+      "scatter3d",
+      "line3d",
+      "line_bar",
+      "area_bar",
+      "dual_axis",
+      "stacked_area",
+      "grouped_line",
     ])
     .default("bar"),
   x_column: z.string().optional(),
@@ -200,6 +221,7 @@ const dataVisualizeSchema = z.object({
   low_column: z.string().optional(),
   group_column: z.string().optional(),
   size_column: z.string().optional(),
+  z_column: z.string().optional(),
   theme: z
     .enum(["light", "dark", "colorful", "minimal", "professional", "retro", "science", "nature"])
     .default("nature"),
@@ -234,6 +256,7 @@ export async function runDataVisualize(
     low_column,
     group_column,
     size_column,
+    z_column,
     theme,
     font_family,
     background_color,
@@ -261,8 +284,8 @@ export async function runDataVisualize(
 
   const system =
     resolvedLanguage === "zh"
-      ? '你是一位数据可视化专家。请根据图表类型推荐合适的列，并以纯 JSON 返回：{"x_column": string, "y_column": string, "value_column": string?, "open_column": string?, "close_column": string?, "high_column": string?, "low_column": string?, "group_column": string?, "size_column": string?, "title": string}。说明：普通图表使用 x_column/y_column；桑基图使用 x_column 作为 source、y_column 作为 target、value_column 作为流量；矩形树图/旭日图使用 x_column 作为名称、y_column 作为数值；K 线图使用 open_column/close_column/low_column/high_column；堆叠/分组柱状图使用 group_column；气泡图使用 size_column 控制点大小；直方图自动对数值列分箱。不要输出任何额外文字。'
-      : 'You are a data visualization expert. Recommend suitable columns for the requested chart type and return only pure JSON: {"x_column": string, "y_column": string, "value_column": string?, "open_column": string?, "close_column": string?, "high_column": string?, "low_column": string?, "group_column": string?, "size_column": string?, "title": string}. Notes: regular charts use x_column/y_column; sankey uses x_column as source, y_column as target, value_column as weight; treemap/sunburst use x_column as name and y_column as value; candlestick uses open_column/close_column/low_column/high_column; stacked/grouped bar uses group_column; bubble uses size_column for point size; histogram auto-bins a numeric column. No extra text.';
+      ? '你是一位数据可视化专家。请根据图表类型推荐合适的列，并以纯 JSON 返回：{"x_column": string, "y_column": string, "value_column": string?, "open_column": string?, "close_column": string?, "high_column": string?, "low_column": string?, "group_column": string?, "size_column": string?, "z_column": string?, "title": string}。说明：普通图表使用 x_column/y_column；桑基图使用 x_column 作为 source、y_column 作为 target、value_column 作为流量；矩形树图/旭日图使用 x_column 作为名称、y_column 作为数值；K 线图使用 open_column/close_column/low_column/high_column；堆叠/分组柱状图使用 group_column；气泡图使用 size_column 控制点大小；3D 散点/折线使用 z_column 作为第三维；复合图（line_bar、area_bar、dual_axis）使用 value_column 作为第二指标；stacked_area 与 grouped_line 使用 group_column 分组；直方图自动对数值列分箱。不要输出任何额外文字。'
+      : 'You are a data visualization expert. Recommend suitable columns for the requested chart type and return only pure JSON: {"x_column": string, "y_column": string, "value_column": string?, "open_column": string?, "close_column": string?, "high_column": string?, "low_column": string?, "group_column": string?, "size_column": string?, "z_column": string?, "title": string}. Notes: regular charts use x_column/y_column; sankey uses x_column as source, y_column as target, value_column as weight; treemap/sunburst use x_column as name and y_column as value; candlestick uses open_column/close_column/low_column/high_column; stacked/grouped bar uses group_column; bubble uses size_column for point size; 3D scatter/line use z_column as the third dimension; composite charts (line_bar, area_bar, dual_axis) use value_column as the second metric; stacked_area and grouped_line use group_column to split series; histogram auto-bins a numeric column. No extra text.';
 
   const user =
     resolvedLanguage === "zh"
@@ -279,6 +302,7 @@ export async function runDataVisualize(
     low_column?: string;
     group_column?: string;
     size_column?: string;
+    z_column?: string;
     title: string;
   };
   try {
@@ -303,10 +327,12 @@ export async function runDataVisualize(
   if (low_column) config.low_column = low_column;
   if (group_column) config.group_column = group_column;
   if (size_column) config.size_column = size_column;
+  if (z_column) config.z_column = z_column;
   if (title) config.title = title;
 
   const chartConfig = {
     ...config,
+    z_column: z_column || config.z_column,
     theme,
     font_family,
     background_color,

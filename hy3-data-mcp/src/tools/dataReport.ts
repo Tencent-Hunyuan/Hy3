@@ -154,6 +154,7 @@ interface ReportPlan {
       low_column?: string;
       group_column?: string;
       size_column?: string;
+      z_column?: string;
       title: string;
     };
   }>;
@@ -182,6 +183,14 @@ const SUPPORTED_CHART_TYPES: ChartType[] = [
   "candlestick",
   "stacked_bar",
   "grouped_bar",
+  "bar3d",
+  "scatter3d",
+  "line3d",
+  "line_bar",
+  "area_bar",
+  "dual_axis",
+  "stacked_area",
+  "grouped_line",
 ];
 
 function buildChartConfig(
@@ -219,6 +228,7 @@ function buildChartConfig(
   if (chart.low_column) cfg.low_column = chart.low_column;
   if (chart.group_column) cfg.group_column = chart.group_column;
   if (chart.size_column) cfg.size_column = chart.size_column;
+  if (chart.z_column) cfg.z_column = chart.z_column;
   return cfg;
 }
 
@@ -292,6 +302,7 @@ export async function runDataReport(
         "value_column": "可选",
         "group_column": "可选",
         "size_column": "可选",
+        "z_column": "可选：3D 图表的第三维",
         "title": "图表标题"
       }
     }
@@ -317,6 +328,7 @@ export async function runDataReport(
         "value_column": "optional",
         "group_column": "optional",
         "size_column": "optional",
+        "z_column": "optional: third dimension for 3D charts",
         "title": "Chart title"
       }
     }

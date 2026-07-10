@@ -162,8 +162,8 @@ export async function runDataDashboard(
 
   const system =
     resolvedLanguage === "zh"
-      ? '你是一位数据大屏设计专家。请基于提供的数据文件，设计一个可视化大屏布局。支持的图表类型：bar、line、area、pie、donut、rose、scatter、bubble、scatter_trend、radar、heatmap、funnel、sankey、treemap、sunburst、gauge、histogram、boxplot、stacked_bar、grouped_bar。以纯 JSON 返回：{"title": string, "charts": [{"file_index": number, "chart_type": string, "x_column": string, "y_column": string, "value_column": string?, "group_column": string?, "size_column": string?, "title": string}] }。不要输出任何额外文字。'
-      : 'You are a dashboard design expert. Based on the provided data files, design a visualization dashboard layout. Supported chart types: bar, line, area, pie, donut, rose, scatter, bubble, scatter_trend, radar, heatmap, funnel, sankey, treemap, sunburst, gauge, histogram, boxplot, stacked_bar, grouped_bar. Return pure JSON: {"title": string, "charts": [{"file_index": number, "chart_type": string, "x_column": string, "y_column": string, "value_column": string?, "group_column": string?, "size_column": string?, "title": string}] }. No extra text.';
+      ? '你是一位数据大屏设计专家。请基于提供的数据文件，设计一个可视化大屏布局。支持的图表类型：bar、line、area、pie、donut、rose、scatter、bubble、scatter_trend、radar、heatmap、funnel、sankey、treemap、sunburst、gauge、histogram、boxplot、stacked_bar、grouped_bar、bar3d、scatter3d、line3d、line_bar、area_bar、dual_axis、stacked_area、grouped_line。以纯 JSON 返回：{"title": string, "charts": [{"file_index": number, "chart_type": string, "x_column": string, "y_column": string, "value_column": string?, "group_column": string?, "size_column": string?, "z_column": string?, "title": string}] }。不要输出任何额外文字。'
+      : 'You are a dashboard design expert. Based on the provided data files, design a visualization dashboard layout. Supported chart types: bar, line, area, pie, donut, rose, scatter, bubble, scatter_trend, radar, heatmap, funnel, sankey, treemap, sunburst, gauge, histogram, boxplot, stacked_bar, grouped_bar, bar3d, scatter3d, line3d, line_bar, area_bar, dual_axis, stacked_area, grouped_line. Return pure JSON: {"title": string, "charts": [{"file_index": number, "chart_type": string, "x_column": string, "y_column": string, "value_column": string?, "group_column": string?, "size_column": string?, "z_column": string?, "title": string}] }. No extra text.';
 
   let design: {
     title: string;
@@ -175,6 +175,7 @@ export async function runDataDashboard(
       value_column?: string;
       group_column?: string;
       size_column?: string;
+      z_column?: string;
       title: string;
     }>;
   };
@@ -211,6 +212,7 @@ export async function runDataDashboard(
           value_column: chart.value_column,
           group_column: chart.group_column,
           size_column: chart.size_column,
+          z_column: chart.z_column,
           title: chart.title,
         },
       };
@@ -224,6 +226,7 @@ export async function runDataDashboard(
       value_column?: string;
       group_column?: string;
       size_column?: string;
+      z_column?: string;
       title: string;
     };
   }>;

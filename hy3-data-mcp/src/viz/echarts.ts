@@ -1,4 +1,5 @@
 import * as echarts from "echarts";
+import { is3dChartType, render3dSvg } from "./3d.js";
 import { svgToPng } from "./png.js";
 import { applyTheme, getTheme } from "./themes.js";
 import type { Theme } from "./themes.js";
@@ -25,7 +26,17 @@ export type ChartType =
   | "boxplot"
   | "candlestick"
   | "stacked_bar"
-  | "grouped_bar";
+  | "grouped_bar"
+  // pseudo-3D charts rendered as SVG isometric projections
+  | "bar3d"
+  | "scatter3d"
+  | "line3d"
+  // composite charts
+  | "line_bar"
+  | "area_bar"
+  | "dual_axis"
+  | "stacked_area"
+  | "grouped_line";
 
 export interface ChartConfig {
   x_column: string;
@@ -40,6 +51,7 @@ export interface ChartConfig {
   low_column?: string;
   group_column?: string;
   size_column?: string;
+  z_column?: string;
   theme?: string;
   font_family?: string;
   background_color?: string;
@@ -83,6 +95,10 @@ export function renderChartSvg(
   table: DataTable,
   config: ChartConfig
 ): string {
+  if (is3dChartType(chartType)) {
+    return render3dSvg(chartType, table, config);
+  }
+
   const width = config.width ?? 800;
   const height = config.height ?? 500;
   const chart = echarts.init(null, null, {
@@ -122,6 +138,29 @@ export function renderChartHtml(
 ): string {
   const width = config.width ?? 800;
   const height = config.height ?? 500;
+
+  if (is3dChartType(chartType)) {
+    const svg = render3dSvg(chartType, table, config);
+    const theme = getTheme(config.theme, config.font_family, themeOverridesFromConfig(config));
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(config.title)}</title>
+  <style>
+    body { margin: 0; padding: 24px; background: ${theme.backgroundColor}; color: ${theme.textColor}; font-family: ${theme.fontFamily}; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .container { background: ${theme.name === "dark" ? "#1f1f1f" : theme.name === "premium" ? "#0F172A" : theme.backgroundColor}; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    ${svg}
+  </div>
+</body>
+</html>`;
+  }
+
   const option = buildEChartsOption(chartType, table, config);
   const theme = getTheme(config.theme, config.font_family, themeOverridesFromConfig(config));
   const containerBg = theme.name === "dark" ? "#1f1f1f" : theme.name === "premium" ? "#0F172A" : theme.backgroundColor;
@@ -290,35 +329,41 @@ export function renderDashboardHtml(
   const chartWidth = isCompact ? 360 : isColumns ? 520 : 500;
   const chartHeight = isCompact ? 260 : isColumns ? 360 : 350;
 
-  const chartOptions = charts.map((c) => ({
-    title: c.config.title,
-    option: buildEChartsOption(c.chartType, c.table, {
+  const chartItems = charts.map((c) => {
+    const config = {
       ...c.config,
       ...chartOverrides,
       theme: theme.name,
       font_family: theme.fontFamily,
       width: chartWidth,
       height: chartHeight,
-    }),
-  }));
+    };
+    if (is3dChartType(c.chartType)) {
+      return { title: c.config.title, svg: renderChartSvg(c.chartType, c.table, config) };
+    }
+    return { title: c.config.title, option: buildEChartsOption(c.chartType, c.table, config) };
+  });
 
-  const chartDivs = chartOptions
-    .map(
-      (c, i) =>
-        `<div class="chart-box ${isHero && i === 0 ? "chart-hero" : ""}"><h3>${escapeHtml(
-          c.title
-        )}</h3><div id="chart-${i}" class="chart"></div></div>`
-    )
+  const chartDivs = chartItems
+    .map((c, i) => {
+      const heroClass = isHero && i === 0 ? "chart-hero" : "";
+      const inner = "svg" in c && c.svg
+        ? `<img src="data:image/svg+xml;base64,${Buffer.from(c.svg, "utf-8").toString("base64")}" alt="${escapeHtml(c.title)}" style="width:100%;height:100%;" />`
+        : `<div id="chart-${i}" class="chart"></div>`;
+      return `<div class="chart-box ${heroClass}"><h3>${escapeHtml(c.title)}</h3>${inner}</div>`;
+    })
     .join("\n");
 
-  const initScript = chartOptions
-    .map(
-      (c, i) => `
+  const initScript = chartItems
+    .map((c, i) =>
+      "option" in c
+        ? `
     (function() {
       const chart = echarts.init(document.getElementById('chart-${i}'));
       chart.setOption(${JSON.stringify(c.option)});
       window.addEventListener('resize', () => chart.resize());
     })();`
+        : ""
     )
     .join("\n");
 
@@ -900,6 +945,89 @@ function buildEChartsOptionRaw(
           data: s.data,
           ...(isStacked ? { stack: "total" } : {}),
         })),
+      };
+    }
+    case "line_bar":
+    case "area_bar": {
+      const metric2 = config.value_column || config.group_column || config.y_column;
+      return {
+        ...base,
+        xAxis: { type: "category", data: xData },
+        yAxis: { type: "value" },
+        series: [
+          { data: yData, type: "bar", name: config.y_column },
+          {
+            data: table.rows.map((row) => toNumber(row[metric2])),
+            type: "line",
+            name: metric2,
+            smooth: true,
+            ...(chartType === "area_bar" ? { areaStyle: { opacity: 0.3 } } : {}),
+          },
+        ],
+        legend: { bottom: 0 },
+      };
+    }
+    case "dual_axis": {
+      const metric2 = config.value_column || config.group_column || config.y_column;
+      return {
+        ...base,
+        xAxis: { type: "category", data: xData },
+        yAxis: [
+          { type: "value", name: config.y_column },
+          { type: "value", name: metric2 },
+        ],
+        series: [
+          { data: yData, type: "bar", name: config.y_column },
+          {
+            data: table.rows.map((row) => toNumber(row[metric2])),
+            type: "line",
+            name: metric2,
+            yAxisIndex: 1,
+            smooth: true,
+          },
+        ],
+        legend: { bottom: 0 },
+      };
+    }
+    case "stacked_area": {
+      const { categories, series } = pivotSeries(
+        table,
+        config.x_column,
+        config.y_column,
+        config.group_column
+      );
+      return {
+        ...base,
+        xAxis: { type: "category", data: categories },
+        yAxis: { type: "value" },
+        series: series.map((s) => ({
+          name: s.name,
+          type: "line",
+          stack: "total",
+          areaStyle: {},
+          data: s.data,
+        })),
+        legend: { bottom: 0 },
+      };
+    }
+    case "grouped_line": {
+      const { categories, series } = pivotSeries(
+        table,
+        config.x_column,
+        config.y_column,
+        config.group_column
+      );
+      return {
+        ...base,
+        xAxis: { type: "category", data: categories },
+        yAxis: { type: "value" },
+        series: series.map((s) => ({
+          name: s.name,
+          type: "line",
+          smooth: true,
+          data: s.data,
+        })),
+        legend: { bottom: 0 },
       };
     }
     case "bar":

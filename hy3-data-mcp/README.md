@@ -30,7 +30,7 @@ Built for the **2026 Tencent RhinoBird Open Source Talent Program** issue: [Buil
 
 | Tool | What it does | Output formats |
 | --- | --- | --- |
-| `hy3_data_visualize` | Bar, line, area, pie, donut, rose, scatter, bubble, scatter_trend, radar, heatmap, funnel, sankey, treemap, sunburst, gauge, histogram, boxplot, candlestick, stacked_bar and grouped_bar charts from structured data. | `svg` / `html` / `png` |
+| `hy3_data_visualize` | Bar, line, area, pie, donut, rose, scatter, bubble, scatter_trend, radar, heatmap, funnel, sankey, treemap, sunburst, gauge, histogram, boxplot, candlestick, stacked_bar, grouped_bar, 3D bar/scatter/line (bar3d/scatter3d/line3d), and composite charts (line_bar, area_bar, dual_axis, stacked_area, grouped_line). | `svg` / `html` / `png` |
 | `hy3_wordcloud` | Extracts keywords with Hy3 and renders a word cloud. | `svg` / `html` / `png` |
 | `hy3_knowledge_graph` | Extracts entities and relationships and renders a force-directed graph. | `svg` / `html` / `png` |
 | `hy3_data_dashboard` | Combines multiple files into a multi-chart dashboard designed by Hy3. | `html` / `png` |
@@ -349,6 +349,54 @@ Open WebUI does not expose a stdio MCP host that `hdm init` can write to. To use
     "output_format": "html",
     "max_charts": 4,
     "theme": "professional",
+    "language": "en"
+  }
+}
+```
+
+### 3D bar chart
+
+```json
+{
+  "name": "hy3_data_visualize",
+  "arguments": {
+    "file_path": "./sales.csv",
+    "chart_type": "bar3d",
+    "output_format": "png",
+    "language": "en"
+  }
+}
+```
+
+### 3D scatter plot
+
+```json
+{
+  "name": "hy3_data_visualize",
+  "arguments": {
+    "file_path": "./sales.csv",
+    "chart_type": "scatter3d",
+    "x_column": "price",
+    "y_column": "sales",
+    "z_column": "profit",
+    "output_format": "png",
+    "language": "en"
+  }
+}
+```
+
+### Dual-axis combo chart
+
+```json
+{
+  "name": "hy3_data_visualize",
+  "arguments": {
+    "file_path": "./sales.csv",
+    "chart_type": "dual_axis",
+    "x_column": "month",
+    "y_column": "sales",
+    "value_column": "profit",
+    "output_format": "png",
     "language": "en"
   }
 }

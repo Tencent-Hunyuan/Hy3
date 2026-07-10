@@ -392,4 +392,81 @@ describe("integration tests", () => {
     expect(html).toContain("Multi-File Report");
     expect((html.match(/data:image\/png;base64,/g) || []).length).toBe(2);
   });
+
+  it("hy3_data_visualize renders a 3D bar chart", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
+    const dataFile = join(dir, "data.csv");
+    await writeFile(dataFile, "month,sales\nJan,100\nFeb,150\nMar,120\n");
+
+    process.env.HY3_OUTPUT_DIR = join(dir, "output");
+
+    const client = createMockClient(
+      JSON.stringify({ x_column: "month", y_column: "sales", title: "3D Sales" })
+    );
+    const result = await handleToolCall(
+      "hy3_data_visualize",
+      { file_path: dataFile, chart_type: "bar3d", language: "en" },
+      client
+    );
+
+    const match = result.content[0].text.match(/File path: (.+)/);
+    expect(match).toBeTruthy();
+    const svgPath = match![1].trim();
+    const svg = await readFile(svgPath, "utf-8");
+    expect(svg).toContain("<svg");
+    expect(svg).toContain("3D Sales");
+  });
+
+  it("hy3_data_visualize renders a 3D scatter chart", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
+    const dataFile = join(dir, "data.csv");
+    await writeFile(dataFile, "x,y,z\n10,20,5\n15,25,10\n20,30,15\n");
+
+    process.env.HY3_OUTPUT_DIR = join(dir, "output");
+
+    const client = createMockClient(
+      JSON.stringify({ x_column: "x", y_column: "y", z_column: "z", title: "3D Scatter" })
+    );
+    const result = await handleToolCall(
+      "hy3_data_visualize",
+      { file_path: dataFile, chart_type: "scatter3d", language: "en" },
+      client
+    );
+
+    const match = result.content[0].text.match(/File path: (.+)/);
+    expect(match).toBeTruthy();
+    const svgPath = match![1].trim();
+    const svg = await readFile(svgPath, "utf-8");
+    expect(svg).toContain("<svg");
+    expect(svg).toContain("3D Scatter");
+  });
+
+  it("hy3_data_visualize renders a dual-axis chart", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
+    const dataFile = join(dir, "data.csv");
+    await writeFile(dataFile, "month,sales,profit\nJan,100,20\nFeb,150,35\nMar,120,28\n");
+
+    process.env.HY3_OUTPUT_DIR = join(dir, "output");
+
+    const client = createMockClient(
+      JSON.stringify({
+        x_column: "month",
+        y_column: "sales",
+        value_column: "profit",
+        title: "Sales vs Profit",
+      })
+    );
+    const result = await handleToolCall(
+      "hy3_data_visualize",
+      { file_path: dataFile, chart_type: "dual_axis", language: "en" },
+      client
+    );
+
+    const match = result.content[0].text.match(/File path: (.+)/);
+    expect(match).toBeTruthy();
+    const svgPath = match![1].trim();
+    const svg = await readFile(svgPath, "utf-8");
+    expect(svg).toContain("<svg");
+    expect(svg).toContain("Sales vs Profit");
+  });
 });
