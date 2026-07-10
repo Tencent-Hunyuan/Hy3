@@ -21,10 +21,16 @@ def load_example(filename: str) -> ModuleType:
         raise RuntimeError(f"无法加载示例模块：{filename}")
 
     module = importlib.util.module_from_spec(spec)
+    module_was_present = module_name in sys.modules
+    previous_module = sys.modules.get(module_name)
     sys.modules[module_name] = module
     try:
         spec.loader.exec_module(module)
     except Exception as error:
+        if module_was_present:
+            sys.modules[module_name] = previous_module
+        else:
+            sys.modules.pop(module_name, None)
         raise RuntimeError(f"执行示例模块失败：{filename}") from error
     return module
 

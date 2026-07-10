@@ -8,6 +8,18 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Iterable, Mapping
 
 
+_FRAMING_HEADERS = {"content-length", "transfer-encoding"}
+_SERVER_CONTROLLED_HEADERS = _FRAMING_HEADERS | {"connection"}
+
+
+def _without_framing_headers(headers: Mapping[str, str]) -> dict[str, str]:
+    return {
+        name: value
+        for name, value in headers.items()
+        if name.lower() not in _FRAMING_HEADERS
+    }
+
+
 @dataclass
 class QueuedResponse:
     status: int
@@ -55,19 +67,25 @@ class _Handler(BaseHTTPRequestHandler):
             return
 
         response = server.responses.popleft()
+        self.close_connection = True
         self.send_response(response.status)
         for name, value in response.headers.items():
+            if name.lower() in _SERVER_CONTROLLED_HEADERS:
+                continue
             self.send_header(name, value)
         self.send_header("Content-Length", str(len(response.body)))
+        self.send_header("Connection", "close")
         self.end_headers()
         self.wfile.write(response.body)
         self.wfile.flush()
 
     def _send_json(self, status: int, payload: Mapping[str, Any]) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        self.close_connection = True
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
+        self.send_header("Connection", "close")
         self.end_headers()
         self.wfile.write(body)
         self.wfile.flush()
@@ -93,7 +111,7 @@ class FakeOpenAIServer:
     ) -> None:
         response_headers = {"Content-Type": "application/json"}
         if headers is not None:
-            response_headers.update(headers)
+            response_headers.update(_without_framing_headers(headers))
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.responses.append(QueuedResponse(status, response_headers, body))
 
@@ -114,7 +132,7 @@ class FakeOpenAIServer:
                 headers={
                     "Content-Type": "text/event-stream",
                     "Cache-Control": "no-cache",
-                    **dict(headers or {}),
+                    **_without_framing_headers(headers or {}),
                 },
                 body=body.encode("utf-8"),
             )
