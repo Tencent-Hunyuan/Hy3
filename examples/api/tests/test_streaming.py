@@ -122,6 +122,51 @@ class StreamAccumulatorTests(unittest.TestCase):
             ],
         )
 
+    def test_result_snapshots_do_not_share_nested_state(self) -> None:
+        accumulator = StreamAccumulator()
+        accumulator.add_chunk(
+            SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        delta=SimpleNamespace(
+                            reasoning_details=[
+                                {
+                                    "type": "reasoning.text",
+                                    "text": "original",
+                                    "metadata": {"steps": ["one"]},
+                                }
+                            ]
+                        ),
+                        finish_reason=None,
+                    )
+                ],
+                usage={
+                    "prompt_tokens": 4,
+                    "completion_tokens": 8,
+                    "total_tokens": 12,
+                    "details": {"cached_tokens": 2},
+                },
+            )
+        )
+
+        earlier = accumulator.result()
+        first = accumulator.result()
+        first.usage["total_tokens"] = 99
+        first.usage["details"]["cached_tokens"] = 99
+        first.reasoning_details[0]["text"] = "changed"
+        first.reasoning_details[0]["metadata"]["steps"].append("changed")
+
+        second = accumulator.result()
+
+        for snapshot in (earlier, second):
+            self.assertEqual(snapshot.usage["total_tokens"], 12)
+            self.assertEqual(snapshot.usage["details"]["cached_tokens"], 2)
+            self.assertEqual(snapshot.reasoning_details[0]["text"], "original")
+            self.assertEqual(
+                snapshot.reasoning_details[0]["metadata"]["steps"],
+                ["one"],
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

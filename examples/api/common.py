@@ -243,9 +243,9 @@ class StreamAccumulator:
         return StreamResult(
             content="".join(self._content),
             reasoning="".join(self._reasoning),
-            reasoning_details=list(self._reasoning_details),
+            reasoning_details=object_to_dict(self._reasoning_details),
             finish_reason=self._finish_reason,
-            usage=self._usage,
+            usage=object_to_dict(self._usage),
             tool_calls=[
                 object_to_dict(self._tool_calls[index])
                 for index in sorted(self._tool_calls)
