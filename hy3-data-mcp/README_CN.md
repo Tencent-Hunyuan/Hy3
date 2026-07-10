@@ -91,23 +91,21 @@
 
 ## 安装
 
-> 公共 npm 包已下线，请使用 `releases/` 目录下的本地安装包。
-
-使用 `npx` 免安装直接运行：
-
-```bash
-# 直接启动 MCP 服务
-npx -p ./releases/hy3-data-mcp-0.1.8.tgz hy3-data-mcp
-
-# 或运行交互式客户端配置
-npx -p ./releases/hy3-data-mcp-0.1.8.tgz hdm init
-```
-
-也可以将本地安装包全局安装，获得持久的 `hy3-data-mcp` / `hdm` 命令（无需访问 npm 公共仓库）：
+将本地安装包全局安装：
 
 ```bash
 npm install -g ./releases/hy3-data-mcp-0.1.8.tgz
+```
+
+启动 MCP 服务：
+
+```bash
 hy3-data-mcp
+```
+
+配置 MCP 客户端：
+
+```bash
 hdm init
 ```
 
@@ -121,12 +119,12 @@ hdm init
 
 前往 [TokenHub](https://tokenhub.tencentmaas.com) 注册并创建 Hy3 模型的 API Key。
 
-### 2. 使用 `npx` 免安装运行
+### 2. 启动 MCP 服务
 
 ```bash
 cp .env.example .env
 # 编辑 .env，填入 HY3_API_KEY
-npx -p ./releases/hy3-data-mcp-0.1.8.tgz hy3-data-mcp
+hy3-data-mcp
 ```
 
 ### 3. 一键配置客户端
@@ -134,7 +132,7 @@ npx -p ./releases/hy3-data-mcp-0.1.8.tgz hy3-data-mcp
 包内附带独立的 `hdm` CLI，用于自动配置 MCP 客户端：
 
 ```bash
-npx -p ./releases/hy3-data-mcp-0.1.8.tgz hdm init
+hdm init
 ```
 
 `hdm init` 会扫描系统中的 MCP 客户端（CodeBuddy、Cursor、Cline、Roo Code、Continue、Codex CLI、OpenCode 等），让你选择目标客户端，并自动写入 MCP 配置和 `.env` 文件。
@@ -172,8 +170,8 @@ HY3_OUTPUT_DIR=./hy3-data-output
   "mcpServers": {
     "hy3-data-mcp": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-p", "/path/to/hy3-data-mcp/releases/hy3-data-mcp-0.1.8.tgz", "hy3-data-mcp"],
+      "command": "hy3-data-mcp",
+      "args": [],
       "env": {
         "HY3_API_KEY": "your-tokenhub-api-key",
         "HY3_BASE_URL": "https://tokenhub.tencentmaas.com/v1",
@@ -191,7 +189,7 @@ HY3_OUTPUT_DIR=./hy3-data-output
 
 ### Open WebUI
 
-Open WebUI 没有暴露可供 `hdm init` 直接写入的 stdio MCP 宿主。要在 Open WebUI 中使用 Hy3 数据分析 MCP，可以创建一个 Open WebUI [Function / Tool](https://docs.openwebui.com/features/plugin/functions/)，通过 `npx -p /path/to/hy3-data-mcp/releases/hy3-data-mcp-0.1.8.tgz hy3-data-mcp` 启动子进程并代理 JSON-RPC 消息；或者单独运行服务端并通过管道转发 stdio。目前暂未提供 Open WebUI 的一键安装功能。
+Open WebUI 没有暴露可供 `hdm init` 直接写入的 stdio MCP 宿主。要在 Open WebUI 中使用 Hy3 数据分析 MCP，可以创建一个 Open WebUI [Function / Tool](https://docs.openwebui.com/features/plugin/functions/)，通过 `hy3-data-mcp` 启动子进程并代理 JSON-RPC 消息；或者单独运行服务端并通过管道转发 stdio。目前暂未提供 Open WebUI 的一键安装功能。
 
 ---
 

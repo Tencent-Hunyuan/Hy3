@@ -91,23 +91,21 @@ All screenshots are rendered with the **Professional** theme using the bundled s
 
 ## Installation
 
-> The public npm package has been removed. Use the prebuilt release tarball in `releases/` instead.
-
-Use `npx` to run directly without installing:
-
-```bash
-# Start the MCP server directly
-npx -p ./releases/hy3-data-mcp-0.1.8.tgz hy3-data-mcp
-
-# Or run the interactive client setup
-npx -p ./releases/hy3-data-mcp-0.1.8.tgz hdm init
-```
-
-Or install the local tarball globally for persistent `hy3-data-mcp` / `hdm` commands (no npm registry required):
+Install the local release tarball globally:
 
 ```bash
 npm install -g ./releases/hy3-data-mcp-0.1.8.tgz
+```
+
+Start the server:
+
+```bash
 hy3-data-mcp
+```
+
+Configure your MCP client:
+
+```bash
 hdm init
 ```
 
@@ -121,20 +119,20 @@ hdm init
 
 Sign up at [TokenHub](https://tokenhub.tencentmaas.com) and create an API key for the Hy3 model.
 
-### 2. Run with `npx` (no install)
+### 2. Start the server
 
 ```bash
 cp .env.example .env
 # Edit .env and set HY3_API_KEY
-npx -p ./releases/hy3-data-mcp-0.1.8.tgz hy3-data-mcp
+hy3-data-mcp
 ```
 
-### 3. One-click client setup
+### 3. Configure clients
 
 The package ships with a dedicated `hdm` CLI for client configuration:
 
 ```bash
-npx -p ./releases/hy3-data-mcp-0.1.8.tgz hdm init
+hdm init
 ```
 
 `hdm init` scans your system for MCP clients (CodeBuddy, Cursor, Cline, Roo Code, Continue, Codex CLI, OpenCode, etc.), lets you pick one, and writes the MCP configuration and `.env` file automatically.
@@ -172,8 +170,8 @@ Add to `~/.codebuddy/.mcp.json`:
   "mcpServers": {
     "hy3-data-mcp": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-p", "/path/to/hy3-data-mcp/releases/hy3-data-mcp-0.1.8.tgz", "hy3-data-mcp"],
+      "command": "hy3-data-mcp",
+      "args": [],
       "env": {
         "HY3_API_KEY": "your-tokenhub-api-key",
         "HY3_BASE_URL": "https://tokenhub.tencentmaas.com/v1",
@@ -191,7 +189,7 @@ Use `hdm init` to auto-configure.
 
 ### Open WebUI
 
-Open WebUI does not expose a stdio MCP host that `hdm init` can write to. To use Hy3 Data MCP there, create an Open WebUI [Function / Tool](https://docs.openwebui.com/features/plugin/functions/) that shells out to `npx -p /path/to/hy3-data-mcp/releases/hy3-data-mcp-0.1.8.tgz hy3-data-mcp` and proxies JSON-RPC messages, or run the server separately and forward stdio over a pipe. A one-click installer for Open WebUI is not available yet.
+Open WebUI does not expose a stdio MCP host that `hdm init` can write to. To use Hy3 Data MCP there, create an Open WebUI [Function / Tool](https://docs.openwebui.com/features/plugin/functions/) that shells out to `hy3-data-mcp` and proxies JSON-RPC messages, or run the server separately and forward stdio over a pipe. A one-click installer for Open WebUI is not available yet.
 
 ---
 
