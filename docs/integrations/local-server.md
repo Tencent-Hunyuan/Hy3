@@ -1,6 +1,6 @@
 # Run Hy3 Locally
 
-The integration guides assume that Hy3 is running as a local OpenAI-compatible chat completions server.
+This page documents the repository's local-server option. The verified tool guides use Tencent Cloud TokenHub unless stated otherwise.
 
 The root README documents deploying Hy3 with vLLM or SGLang first, then calling the OpenAI-compatible API.
 

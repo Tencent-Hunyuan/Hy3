@@ -8,8 +8,26 @@ Verification status: Roo Code with Hy3 through Tencent Cloud TokenHub mode was m
 
 ## Prerequisites
 
-- Roo Code version: `3.54.0`.
-- VS Code extension identifier: `rooveterinaryinc.cline`.
+- Verified Roo Code version: `3.54.0`.
+- VS Code extension identifier: `rooveterinaryinc.roo-cline`.
+- Install Roo Code from the VS Code Extensions view, or use:
+
+```powershell
+code --install-extension rooveterinaryinc.roo-cline
+```
+
+- Confirm the installed extension and version:
+
+```powershell
+code --list-extensions --show-versions | Select-String -Pattern "roo|veterinary|cline"
+```
+
+Expected verified result:
+
+```text
+rooveterinaryinc.roo-cline@3.54.0
+```
+
 - Choose one Hy3 setup mode:
   - TokenHub cloud API mode: manually verified.
   - Local self-hosted mode: Not verified in this PR.
@@ -24,17 +42,19 @@ The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.
 
 | Setting | Value |
 |:---|:---|
-| Base URL | `https://tokenhub.tencentmaas.com/v1` |
-| Model | `hy3` |
+| API configuration label | `Hy3 TokenHub` (user-defined display name) |
 | API provider | OpenAI Compatible |
+| Base URL | `https://tokenhub.tencentmaas.com/v1` |
+| Chat Completions endpoint | `https://tokenhub.tencentmaas.com/v1/chat/completions` |
+| Model | `hy3` |
 | API key | User-created TokenHub API key, not committed and not documented |
-| Protocol | OpenAI-compatible |
+| Protocol | OpenAI-compatible Chat Completions |
 
 If the TokenHub API key access scope is limited, Hy3 must be included in that scope.
 
 ## Option B: Local Self-hosted Mode
 
-Use local self-hosted mode when Hy3 is running as a local OpenAI-compatible chat completions server.
+Use local self-hosted mode when Hy3 is running as a local OpenAI-compatible Chat Completions server.
 
 See [local-server.md](local-server.md) for the repository-documented vLLM and SGLang serving examples.
 
@@ -43,9 +63,8 @@ See [local-server.md](local-server.md) for the repository-documented vLLM and SG
 | Base URL | `http://127.0.0.1:8000/v1` |
 | Model | `hy3` |
 | API key for local testing | `EMPTY` |
-| API protocol | OpenAI-compatible chat completions |
-
-## Start Hy3 as an OpenAI-compatible Server
+| API protocol | OpenAI-compatible Chat Completions |
+| Verification status | Not verified in this PR |
 
 For TokenHub cloud API mode, no local Hy3 server is required.
 
@@ -61,40 +80,35 @@ For the verified TokenHub configuration:
 
 | Field | Verified value |
 |:---|:---|
+| API configuration label | `Hy3 TokenHub` |
 | API provider | OpenAI Compatible |
 | Base URL | `https://tokenhub.tencentmaas.com/v1` |
 | Model | `hy3` |
 | API key | User-created TokenHub API key, not committed and not documented |
 
-Exact Roo Code secret storage behavior and advanced options are future verification items.
+`Hy3 TokenHub` is only a user-defined display label for the Roo Code API configuration. The actual connection is determined by the provider, base URL, model, and API key fields.
+
+Exact Roo Code secret-storage behavior and untested advanced options are outside the scope of this verification.
 
 ## First Chat
 
 Prompt:
 
 ```text
-Hello Hy3. Please introduce yourself in two sentences.
+Reply only in English and write exactly two sentences. Describe how you can help with code review, debugging, testing, explanation, and refactoring. Do not identify yourself, mention any company or organization, refer to the current repository or workspace, inspect files, or use tools.
 ```
 
-Result: completed successfully.
+Result: Roo Code returned exactly two English sentences describing code-review, debugging, testing, explanation, and refactoring capabilities. It did not inspect files or use tools for this first-chat task.
 
 ## Real Task Demo
 
 Task:
 
 ```text
-Please inspect README.md in this workspace and summarize what Hy3 is in three bullet points. Do not edit any files.
+Reply only in English. Read README.md only, without printing the full file, and summarize the Model Introduction in exactly three concise bullet points: architecture and scale; core capabilities; open-source and deployment. Use tools only as needed to read README.md. Do not inspect any other files, run unrelated commands, or edit, create, delete, or modify anything.
 ```
 
-Result: Roo Code completed the task and did not edit files.
-
-Observed README demo summary:
-
-1. Hy3 is a large open-source Mixture-of-Experts language model developed by the Tencent Hy Team, with 295B total parameters, 21B active parameters, 3.8B MTP layer parameters, 256K context length, and BF16 precision.
-2. Hy3 is agent-focused, with strong tool-calling and reasoning capabilities.
-3. Hy3 is deployable and customizable, released under Apache 2.0, with OpenAI-compatible APIs served via vLLM or SGLang, plus finetuning pipelines and quantization tooling.
-
-The demo screenshot shows README references such as `README.md:50`, `README.md:55`, `README.md:71`, `README.md:83`, `README.md:140`, and `README.md:204`.
+Result: Roo Code read `README.md` and returned three English bullet points covering architecture and scale, core capabilities, and open-source deployment. No repository files were edited.
 
 ## Screenshots / GIF
 
@@ -112,24 +126,30 @@ Screenshots and GIFs must not reveal API keys.
 
 ## Troubleshooting
 
-- TokenHub API key handling: verified by using a user-created TokenHub API key without committing or documenting it.
+- Verify the installed extension identifier with `code --list-extensions --show-versions`; the verified identifier is `rooveterinaryinc.roo-cline`.
+- A custom API configuration label such as `Hy3 TokenHub` can make the active TokenHub profile easier to identify in screenshots and normal use. The label itself does not change connection behavior.
+- TokenHub API key handling was verified by using a user-created key without committing, documenting, or displaying it.
 - TokenHub API key access scope for Hy3: Future verification item.
 - Local endpoint connection issue: Not verified in this PR.
 - Local self-hosted authentication or API key handling: Not verified in this PR.
 - Model selection issue: TokenHub mode verified with `hy3`.
-- Streaming or tool-use behavior: Not verified in this PR.
+- Roo Code used its built-in file-reading flow for the README demo. Dedicated OpenAI-protocol tool-calling behavior was not independently tested in this PR.
+- Dedicated streaming-behavior testing was not performed in this PR.
 
 ## Verified Environment
 
 | Item | Value |
 |:---|:---|
-| OS | Windows 10.0.26200 |
+| OS | Windows 11 25H2 (build 26200) |
 | Editor | VS Code |
-| Extension | Roo Code (`rooveterinaryinc.cline`) |
+| Extension | Roo Code (`rooveterinaryinc.roo-cline`) |
 | Roo Code version | `3.54.0` |
+| Roo mode | Architect |
+| API configuration label | `Hy3 TokenHub` |
 | Setup mode | Tencent Cloud TokenHub cloud API mode |
 | Hy3 server backend | TokenHub cloud API |
 | API provider | OpenAI Compatible |
 | Base URL | `https://tokenhub.tencentmaas.com/v1` |
 | Model | `hy3` |
-| Verification date | 2026-07-08 |
+| Verified modes | First chat without tool use and read-only README summary |
+| Verification date | 2026-07-10 |

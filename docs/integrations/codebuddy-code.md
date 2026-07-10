@@ -38,7 +38,7 @@ The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.
 | `supportsToolCall` | `true` |
 | `supportsImages` | `false` |
 | `supportsReasoning` | `false` |
-| Protocol | OpenAI-compatible |
+| Protocol | OpenAI-compatible Chat Completions |
 
 If the TokenHub API key access scope is limited, Hy3 must be included in that scope.
 
@@ -106,6 +106,8 @@ Verified `models.json` shape:
 }
 ```
 
+The capability flags above describe the CodeBuddy model profile used in this verification. `supportsToolCall: true` was present in the verified configuration, but no dedicated tool-calling task was tested. `supportsImages: false` and `supportsReasoning: false` are conservative client-profile settings and should not be interpreted as general Hy3 or TokenHub capability claims.
+
 This guide verifies CLI print mode (`-p`). Interactive login mode is not verified.
 
 ## First Chat
@@ -172,13 +174,13 @@ Screenshots and GIFs must not reveal API keys.
 
 TokenHub expects model `hy3`.
 - Interactive mode: `codebuddy --model hy3` opened the interactive UI but prompted for CodeBuddy login; interactive login mode was not used for this verification flow.
-- Streaming or tool-use behavior: Not verified in this PR.
+- Dedicated streaming-behavior and tool-calling tasks: Not verified in this PR.
 
 ## Verified Environment
 
 | Item | Value |
 |:---|:---|
-| OS | Windows 10.0.26200 |
+| OS | Windows 11 25H2 (build 26200) |
 | Shell | PowerShell |
 | Node.js | `v24.14.1` |
 | npm | `11.11.0` |

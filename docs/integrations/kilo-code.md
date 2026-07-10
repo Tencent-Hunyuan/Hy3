@@ -8,10 +8,24 @@ Verification status: Kilo Code with Hy3 through Tencent Cloud TokenHub mode was 
 
 ## Prerequisites
 
-- Kilo Code version: `7.4.1`.
+- Verified Kilo Code version: `7.4.1`.
 - VS Code extension name: Kilo Code: AI Coding Agent, Copilot, and Autocomplete.
 - Publisher: Kilo Code / kilocode.ai.
 - VS Code extension identifier: `kilocode.kilo-code`.
+- Install Kilo Code from the VS Code Extensions view, or run:
+
+```powershell
+code --install-extension kilocode.kilo-code
+```
+
+- Confirm the installed extension and version:
+
+```powershell
+code --list-extensions --show-versions | Select-String -Pattern "kilo"
+```
+
+The screenshots and original verification in this guide were produced with Kilo Code `7.4.1`. A later local extension update does not change the recorded verification environment.
+
 - Choose one Hy3 setup mode:
   - TokenHub cloud API mode: manually verified.
   - Local self-hosted mode: Not verified in this PR.
@@ -27,6 +41,7 @@ The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.
 | Setting | Value |
 |:---|:---|
 | Base URL | `https://tokenhub.tencentmaas.com/v1` |
+| Chat Completions endpoint | `https://tokenhub.tencentmaas.com/v1/chat/completions` |
 | Model ID | `hy3` |
 | Model name | `hy3` |
 | Provider type | Custom provider |
@@ -36,13 +51,13 @@ The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.
 | API key | User-created TokenHub API key, not committed and not documented |
 | Reasoning option | Not enabled |
 | Headers | Left empty |
-| Protocol | OpenAI-compatible |
+| Protocol | OpenAI-compatible Chat Completions |
 
 If the TokenHub API key access scope is limited, Hy3 must be included in that scope.
 
 ## Option B: Local Self-hosted Mode
 
-Use local self-hosted mode when Hy3 is running as a local OpenAI-compatible chat completions server.
+Use local self-hosted mode when Hy3 is running as a local OpenAI-compatible Chat Completions server.
 
 See [local-server.md](local-server.md) for the repository-documented vLLM and SGLang serving examples.
 
@@ -51,9 +66,8 @@ See [local-server.md](local-server.md) for the repository-documented vLLM and SG
 | Base URL | `http://127.0.0.1:8000/v1` |
 | Model | `hy3` |
 | API key for local testing | `EMPTY` |
-| API protocol | OpenAI-compatible chat completions |
-
-## Start Hy3 as an OpenAI-compatible Server
+| API protocol | OpenAI-compatible Chat Completions |
+| Verification status | Not verified in this PR |
 
 For TokenHub cloud API mode, no local Hy3 server is required.
 
@@ -79,11 +93,11 @@ For the verified TokenHub configuration, Kilo Code was configured as a custom pr
 | Headers | Left empty |
 | Selected model display | Hy3 TokenHub / hy3 |
 
-This guide verifies the TokenHub custom provider setup. It does not verify Kilo Gateway or the built-in Tencent Hy3 FREE model.
+This guide verifies the TokenHub custom-provider setup. It does not verify Kilo Gateway or the built-in Tencent Hy3 FREE model.
 
-Verified setup path: Kilo Code sidebar -> Settings -> Providers -> Custom provider -> Connect.
+Verified setup path: **Kilo Code sidebar -> Settings -> Providers -> Custom provider -> Connect**.
 
-Exact secret storage behavior and advanced options are future verification items.
+Exact Kilo Code secret-storage behavior and untested advanced options are outside the scope of this verification.
 
 ## First Chat
 
@@ -113,7 +127,9 @@ Please inspect README.md in this workspace and summarize what Hy3 is in three bu
 
 Mode: Ask.
 
-Result: Kilo Code read `README.md`, completed the task, and returned three bullet points. No files were edited; this was confirmed with `git status -sb` after the demo.
+Result: Kilo Code used its built-in workspace file-reading flow to read `README.md`, completed the task, and returned three bullet points. No files were edited; this was confirmed with `git status -sb` after the demo.
+
+This verifies Kilo Code's workspace-reading flow in the demonstrated task. It does not independently establish compatibility for every OpenAI-protocol tool-calling behavior.
 
 Observed README demo summary:
 
@@ -137,18 +153,20 @@ Screenshots and GIFs must not reveal API keys.
 
 ## Troubleshooting
 
-- TokenHub API key handling: verified by using a user-created TokenHub API key without committing or documenting it.
+- Install or verify the extension with `code --install-extension kilocode.kilo-code` and `code --list-extensions --show-versions`.
+- TokenHub API key handling was verified by using a user-created TokenHub API key without committing, documenting, or displaying it.
 - TokenHub API key access scope for Hy3: Future verification item.
 - Local endpoint connection issue: Not verified in this PR.
 - Local self-hosted authentication or API key handling: Not verified in this PR.
-- Model selection issue: TokenHub custom provider mode verified with Hy3 TokenHub / hy3.
-- Streaming or tool-use behavior: Not verified in this PR.
+- Model selection issue: TokenHub custom-provider mode was verified with Hy3 TokenHub / `hy3`.
+- Kilo Code used its built-in workspace file-reading flow for the README demo. Dedicated OpenAI-protocol tool-calling behavior was not independently tested in this PR.
+- Dedicated streaming-behavior testing was not performed in this PR.
 
 ## Verified Environment
 
 | Item | Value |
 |:---|:---|
-| OS | Windows 10.0.26200 |
+| OS | Windows 11 25H2 (build 26200) |
 | Editor | VS Code |
 | Extension | Kilo Code (`kilocode.kilo-code`) |
 | Extension name | Kilo Code: AI Coding Agent, Copilot, and Autocomplete |
@@ -161,6 +179,8 @@ Screenshots and GIFs must not reveal API keys.
 | Provider ID | `hy3-tokenhub` |
 | Display name | Hy3 TokenHub |
 | Base URL | `https://tokenhub.tencentmaas.com/v1` |
+| Chat Completions endpoint | `https://tokenhub.tencentmaas.com/v1/chat/completions` |
 | Model | `hy3` |
 | Selected model display | Hy3 TokenHub / hy3 |
+| Verified modes | First chat and read-only workspace README summary |
 | Verification date | 2026-07-08 |
