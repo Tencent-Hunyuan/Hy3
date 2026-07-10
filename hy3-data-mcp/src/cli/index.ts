@@ -2,7 +2,7 @@
 import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
-import { initCommand } from "./init.js";
+import { initCommand, mcpCommand } from "./init.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,6 +23,9 @@ async function main() {
     case "init":
       await initCommand();
       break;
+    case "mcp":
+      await mcpCommand();
+      break;
     case "--version":
     case "-v":
       console.log(await getVersion());
@@ -34,7 +37,10 @@ async function main() {
       console.log("");
       console.log("Commands:");
       console.log(
-        "  init       Interactive installer to configure hy3-data-mcp for your MCP client"
+        "  init       Full interactive installer (create .env + configure MCP hosts)"
+      );
+      console.log(
+        "  mcp        Configure/reconfigure MCP hosts only, reusing the existing .env"
       );
       console.log("  --version  Show installed version");
       console.log("  --help     Show this help message");

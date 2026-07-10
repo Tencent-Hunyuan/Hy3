@@ -4,43 +4,74 @@ import { existsSync } from "fs";
 import { readFile, writeFile, stat, mkdir } from "fs/promises";
 import { resolve, join } from "path";
 import { homedir } from "os";
+import { config as dotenvParse } from "dotenv";
 import { detectClients, type DetectedClient } from "./detect.js";
-import { installMcpConfig } from "./config.js";
+import { installMcpConfig, type ServerConfig } from "./config.js";
 
 const DEFAULT_OUTPUT_DIR = "./hy3-data-mcp";
+const DEFAULT_ENV_DIR = join(homedir(), "hy3-data-mcp");
+const DEFAULT_BASE_URL = "https://tokenhub.tencentmaas.com/v1";
+const DEFAULT_MODEL = "hy3-preview";
 
-async function ensureEnvDir(dir: string): Promise<string> {
+async function ensureEnvDir(dir: string): Promise<void> {
   if (!existsSync(dir)) {
     await mkdir(dir, { recursive: true });
   }
-  return dir;
 }
 
-async function ensureEnvFile(envDir: string, apiKey: string): Promise<string> {
+async function writeEnvFile(envDir: string, config: ServerConfig): Promise<string> {
   await ensureEnvDir(envDir);
   const envPath = resolve(envDir, ".env");
   const lines = [
-    "HY3_API_KEY=" + apiKey,
-    "HY3_BASE_URL=https://tokenhub.tencentmaas.com/v1",
-    "HY3_MODEL=hy3-preview",
-    "HY3_OUTPUT_DIR=" + DEFAULT_OUTPUT_DIR,
+    "HY3_API_KEY=" + config.apiKey,
+    "HY3_BASE_URL=" + config.baseURL,
+    "HY3_MODEL=" + config.model,
+    "HY3_OUTPUT_DIR=" + config.outputDir,
   ];
 
   if (existsSync(envPath)) {
     const content = await readFile(envPath, "utf-8");
-    if (content.includes("HY3_API_KEY=")) {
-      const updated = content
-        .split("\n")
-        .map((line) => (line.startsWith("HY3_API_KEY=") ? "HY3_API_KEY=" + apiKey : line))
-        .join("\n");
-      await writeFile(envPath, updated, "utf-8");
-    } else {
-      await writeFile(envPath, content + "\n" + lines.join("\n") + "\n", "utf-8");
+    const merged = new Map<string, string>();
+    for (const line of content.split("\n")) {
+      const idx = line.indexOf("=");
+      if (idx > 0) {
+        merged.set(line.slice(0, idx), line.slice(idx + 1));
+      }
     }
+    merged.set("HY3_API_KEY", config.apiKey);
+    merged.set("HY3_BASE_URL", config.baseURL);
+    merged.set("HY3_MODEL", config.model);
+    merged.set("HY3_OUTPUT_DIR", config.outputDir);
+    await writeFile(
+      envPath,
+      Array.from(merged.entries())
+        .map(([k, v]) => `${k}=${v}`)
+        .join("\n") + "\n",
+      "utf-8"
+    );
   } else {
     await writeFile(envPath, lines.join("\n") + "\n", "utf-8");
   }
   return envPath;
+}
+
+async function readEnvConfig(envDir: string): Promise<(ServerConfig & { envPath: string }) | null> {
+  const envPath = resolve(envDir, ".env");
+  if (!existsSync(envPath)) {
+    return null;
+  }
+  const result = dotenvParse({ path: envPath });
+  const parsed = result.parsed;
+  if (!parsed?.HY3_API_KEY) {
+    return null;
+  }
+  return {
+    apiKey: parsed.HY3_API_KEY,
+    baseURL: parsed.HY3_BASE_URL || DEFAULT_BASE_URL,
+    model: parsed.HY3_MODEL || DEFAULT_MODEL,
+    outputDir: parsed.HY3_OUTPUT_DIR || DEFAULT_OUTPUT_DIR,
+    envPath,
+  };
 }
 
 function clientLabel(client: DetectedClient): string {
@@ -69,14 +100,8 @@ async function pickDefaultProjectDir(): Promise<string> {
   return cwd;
 }
 
-function pickDefaultEnvDir(): string {
-  return join(homedir(), "hy3-data-mcp");
-}
-
-export async function initCommand(): Promise<void> {
-  intro(pc.cyan("🚀 Hy3 Data MCP Installer"));
-
-  const apiKey = await text({
+async function askApiKey(): Promise<string> {
+  const value = await text({
     message: "Enter your Hy3 / TokenHub API key:",
     placeholder: "sk-...",
     validate(value) {
@@ -84,70 +109,76 @@ export async function initCommand(): Promise<void> {
       return undefined;
     },
   });
-
-  if (isCancel(apiKey)) {
+  if (isCancel(value)) {
     cancel("Installation cancelled.");
     process.exit(0);
   }
+  return value as string;
+}
 
-  const baseURL = await text({
+async function askBaseURL(): Promise<string> {
+  const value = await text({
     message: "Hy3 Base URL:",
-    initialValue: "https://tokenhub.tencentmaas.com/v1",
+    initialValue: DEFAULT_BASE_URL,
   });
-
-  if (isCancel(baseURL)) {
+  if (isCancel(value)) {
     cancel("Installation cancelled.");
     process.exit(0);
   }
+  return (value as string) || DEFAULT_BASE_URL;
+}
 
-  const model = await text({
+async function askModel(): Promise<string> {
+  const value = await text({
     message: "Hy3 model name:",
-    initialValue: "hy3-preview",
+    initialValue: DEFAULT_MODEL,
   });
-
-  if (isCancel(model)) {
+  if (isCancel(value)) {
     cancel("Installation cancelled.");
     process.exit(0);
   }
+  return (value as string) || DEFAULT_MODEL;
+}
 
-  const envDirInput = await text({
+async function askEnvDir(): Promise<string> {
+  const value = await text({
     message: "Directory for the shared .env file:",
-    initialValue: pickDefaultEnvDir(),
+    initialValue: DEFAULT_ENV_DIR,
     validate(value) {
       if (!value) return ".env directory is required";
       return undefined;
     },
   });
-
-  if (isCancel(envDirInput)) {
+  if (isCancel(value)) {
     cancel("Installation cancelled.");
     process.exit(0);
   }
+  return resolve(value as string);
+}
 
-  const envDir = resolve(envDirInput as string);
-
+async function askProjectDir(): Promise<string> {
   const defaultProjectDir = await pickDefaultProjectDir();
-  const projectDirInput = await text({
-    message: "Project directory for project-scoped MCP configs and output preview:",
+  const value = await text({
+    message: "Project directory for project-scoped MCP configs:",
     initialValue: defaultProjectDir,
     validate(value) {
       if (!value) return "Project directory is required";
       return undefined;
     },
   });
-
-  if (isCancel(projectDirInput)) {
+  if (isCancel(value)) {
     cancel("Installation cancelled.");
     process.exit(0);
   }
-
-  const projectDir = resolve(projectDirInput as string);
-  if (!(await looksLikeProjectDir(projectDir))) {
-    cancel(`Directory does not exist: ${projectDir}`);
+  const dir = resolve(value as string);
+  if (!(await looksLikeProjectDir(dir))) {
+    cancel(`Directory does not exist: ${dir}`);
     process.exit(1);
   }
+  return dir;
+}
 
-  const detected = await detectClients(projectDir);
+async function selectHosts(detected: DetectedClient[]): Promise<string[]> {
   const installed = detected.filter((c) => c.installed);
 
   if (installed.length === 0) {
@@ -179,7 +210,10 @@ export async function initCommand(): Promise<void> {
     cancel("No MCP hosts selected.");
     process.exit(0);
   }
+  return paths;
+}
 
+async function confirmInstall(paths: string[]): Promise<void> {
   const shouldInstall = await confirm({
     message: `Install hy3-data-mcp into ${pc.yellow(String(paths.length))} selected host(s)?`,
   });
@@ -188,30 +222,78 @@ export async function initCommand(): Promise<void> {
     cancel("Installation cancelled.");
     process.exit(0);
   }
+}
+
+async function installIntoHosts(paths: string[], config: ServerConfig): Promise<void> {
+  for (const targetPath of paths) {
+    await installMcpConfig(targetPath, config);
+  }
+}
+
+async function finalize(paths: string[], envPath: string): Promise<void> {
+  outro(pc.green("✅ hy3-data-mcp installed successfully!"));
+  console.log(pc.gray("Next steps:"));
+  console.log(pc.gray("  1. Restart your MCP client(s)."));
+  console.log(pc.gray("  2. Try: 'Analyze ./sample_data/sales.csv with hy3_data_insight'"));
+  for (const targetPath of paths) {
+    console.log(pc.gray(`  • Config: ${targetPath}`));
+  }
+  console.log(pc.gray(`  • Environment file: ${envPath}`));
+  console.log(pc.gray(`  • Generated outputs will go to: ${DEFAULT_OUTPUT_DIR} (relative to the opened project)`));
+}
+
+export async function initCommand(): Promise<void> {
+  intro(pc.cyan("🚀 Hy3 Data MCP Installer"));
+
+  const apiKey = await askApiKey();
+  const baseURL = await askBaseURL();
+  const model = await askModel();
+  const envDir = await askEnvDir();
+  const projectDir = await askProjectDir();
+
+  const detected = await detectClients(projectDir);
+  const paths = await selectHosts(detected);
+  await confirmInstall(paths);
 
   try {
-    for (const targetPath of paths) {
-      await installMcpConfig(targetPath, {
-        apiKey: apiKey as string,
-        baseURL: baseURL as string,
-        model: model as string,
-        outputDir: DEFAULT_OUTPUT_DIR,
-      });
-    }
-    const envPath = await ensureEnvFile(envDir, apiKey as string);
-
-    outro(pc.green("✅ hy3-data-mcp installed successfully!"));
-    console.log(pc.gray("Next steps:"));
-    console.log(pc.gray("  1. Restart your MCP client(s)."));
-    console.log(pc.gray("  2. Try: 'Analyze ./sample_data/sales.csv with hy3_data_insight'"));
-    for (const targetPath of paths) {
-      console.log(pc.gray(`  • Config: ${targetPath}`));
-    }
-    console.log(pc.gray(`  • Environment file: ${envPath}`));
-    console.log(pc.gray(`  • Generated outputs will go to: ${DEFAULT_OUTPUT_DIR} (relative to the opened project)`));
+    const config: ServerConfig = { apiKey, baseURL, model, outputDir: DEFAULT_OUTPUT_DIR };
+    await installIntoHosts(paths, config);
+    const envPath = await writeEnvFile(envDir, config);
+    await finalize(paths, envPath);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     outro(pc.red(`❌ Installation failed: ${message}`));
+    process.exit(1);
+  }
+}
+
+export async function mcpCommand(): Promise<void> {
+  intro(pc.cyan("🔌 Hy3 Data MCP Host Configurator"));
+
+  const envDir = await askEnvDir();
+  let envConfig = await readEnvConfig(envDir);
+
+  if (!envConfig) {
+    console.log(pc.yellow("No valid .env found. Let's create one first."));
+    const apiKey = await askApiKey();
+    const baseURL = await askBaseURL();
+    const model = await askModel();
+    const config: ServerConfig = { apiKey, baseURL, model, outputDir: DEFAULT_OUTPUT_DIR };
+    const envPath = await writeEnvFile(envDir, config);
+    envConfig = { ...config, envPath };
+  }
+
+  const projectDir = await askProjectDir();
+  const detected = await detectClients(projectDir);
+  const paths = await selectHosts(detected);
+  await confirmInstall(paths);
+
+  try {
+    await installIntoHosts(paths, envConfig);
+    await finalize(paths, envConfig.envPath);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    outro(pc.red(`❌ Configuration failed: ${message}`));
     process.exit(1);
   }
 }
