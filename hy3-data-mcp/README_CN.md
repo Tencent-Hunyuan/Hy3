@@ -65,6 +65,9 @@
     <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/09-knowledge-graph.png" width="420" alt="知识图谱"><br/>知识图谱</td>
     <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/10-dashboard.png" width="420" alt="数据大屏"><br/>综合数据大屏</td>
   </tr>
+  <tr>
+    <td align="center" colspan="2"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/dashboard_2024_Sales___Profit_Dashboard_1783662671334.png" width="860" alt="2024 销售与利润大屏"><br/>2024 销售与利润数据大屏（PNG 合成图）</td>
+  </tr>
 </table>
 
 ---

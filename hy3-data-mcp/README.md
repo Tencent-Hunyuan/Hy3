@@ -65,6 +65,9 @@ All screenshots are rendered with the default **Nature** theme using the bundled
     <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/09-knowledge-graph.png" width="420" alt="Knowledge graph"><br/>Knowledge graph</td>
     <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/10-dashboard.png" width="420" alt="Dashboard"><br/>Composite dashboard</td>
   </tr>
+  <tr>
+    <td align="center" colspan="2"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/dashboard_2024_Sales___Profit_Dashboard_1783662671334.png" width="860" alt="2024 Sales & Profit Dashboard"><br/>2024 Sales &amp; Profit Dashboard (PNG composite)</td>
+  </tr>
 </table>
 
 ---
