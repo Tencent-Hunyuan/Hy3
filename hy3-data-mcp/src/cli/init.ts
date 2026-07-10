@@ -162,28 +162,6 @@ async function askEnvDir(): Promise<string> {
   return resolve(value as string);
 }
 
-async function askProjectDir(): Promise<string> {
-  const defaultProjectDir = await pickDefaultProjectDir();
-  const value = await text({
-    message: "Project directory for project-scoped MCP configs:",
-    initialValue: defaultProjectDir,
-    validate(value) {
-      if (!value) return "Project directory is required";
-      return undefined;
-    },
-  });
-  if (isCancel(value)) {
-    cancel("Installation cancelled.");
-    process.exit(0);
-  }
-  const dir = resolve(value as string);
-  if (!(await looksLikeProjectDir(dir))) {
-    cancel(`Directory does not exist: ${dir}`);
-    process.exit(1);
-  }
-  return dir;
-}
-
 async function selectHosts(detected: DetectedClient[]): Promise<string[]> {
   const installed = detected.filter((c) => c.installed);
   const notInstalled = detected.filter((c) => !c.installed);
@@ -261,7 +239,7 @@ export async function initCommand(): Promise<void> {
   const baseURL = await askBaseURL();
   const model = await askModel();
   const envDir = await askEnvDir();
-  const projectDir = await askProjectDir();
+  const projectDir = await pickDefaultProjectDir();
 
   const detected = await detectClients(projectDir);
   const paths = await selectHosts(detected);
@@ -295,7 +273,7 @@ export async function mcpCommand(): Promise<void> {
     envConfig = { ...config, envPath };
   }
 
-  const projectDir = await askProjectDir();
+  const projectDir = await pickDefaultProjectDir();
   const detected = await detectClients(projectDir);
   const paths = await selectHosts(detected);
   await confirmInstall(paths);
