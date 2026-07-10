@@ -124,7 +124,7 @@ function normalizeRow(columns: string[]) {
   };
 }
 
-function maybeNumber(value: string): string | number {
+export function maybeNumber(value: string): string | number {
   const trimmed = value.trim();
   if (trimmed === "") return "";
   const num = Number(trimmed);

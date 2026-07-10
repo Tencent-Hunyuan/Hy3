@@ -5,6 +5,7 @@ import { dirname } from "path";
 import * as XLSX from "xlsx";
 import {
   detectDocumentType,
+  extractTablesFromPdf,
   extractTextFromDocument,
   parseXlsx,
 } from "../src/documents.js";
@@ -47,6 +48,18 @@ describe("extractTextFromDocument", () => {
   it("reads plain text files as-is", async () => {
     const text = await extractTextFromDocument(join(sampleDir, "article.txt"));
     expect(text.length).toBeGreaterThan(0);
+  });
+});
+
+describe("extractTablesFromPdf", () => {
+  it("extracts the quarterly performance table from report.pdf", async () => {
+    const tables = await extractTablesFromPdf(join(sampleDir, "report.pdf"));
+    expect(tables.length).toBeGreaterThanOrEqual(1);
+    const table = tables[0];
+    expect(table.columns).toEqual(["Quarter", "Revenue ($)", "Units Sold"]);
+    expect(table.rows).toHaveLength(4);
+    expect(table.rows[0]).toMatchObject({ Quarter: "Q1", "Revenue ($)": "120,000", "Units Sold": "3,400" });
+    expect(table.rows[3]).toMatchObject({ Quarter: "Q4", "Revenue ($)": "152,000", "Units Sold": "4,100" });
   });
 });
 
