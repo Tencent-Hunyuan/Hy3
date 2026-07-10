@@ -333,5 +333,82 @@ class BasicChatExampleTests(unittest.TestCase):
         )
 
 
+class ReasoningExampleTests(unittest.TestCase):
+    @staticmethod
+    def _completion(
+        content: str,
+        reasoning: str = "",
+    ) -> SimpleNamespace:
+        return SimpleNamespace(
+            model="hy3",
+            choices=[
+                SimpleNamespace(
+                    finish_reason="stop",
+                    message=SimpleNamespace(
+                        role="assistant",
+                        content=content,
+                        reasoning=reasoning,
+                        model_extra={},
+                    ),
+                )
+            ],
+            usage=SimpleNamespace(total_tokens=7),
+        )
+
+    def test_compares_no_think_and_high_reasoning_modes(self) -> None:
+        module = load_example("05_reasoning_mode.py")
+        client = MagicMock()
+        client.chat.completions.create.side_effect = [
+            self._completion("60 km/h"),
+            self._completion(
+                "60 km/h",
+                reasoning="distance divided by time",
+            ),
+        ]
+        config = Hy3Config.from_mapping({})
+        question = (
+            "A train travels 120 km in 2 hours. What is its average speed?"
+        )
+
+        no_think = module.run_mode(
+            client,
+            config,
+            "no_think",
+            question,
+            clock=iter((1.0, 1.1)).__next__,
+        )
+        high = module.run_mode(
+            client,
+            config,
+            "high",
+            question,
+            clock=iter((2.0, 2.3)).__next__,
+        )
+
+        no_think_request = client.chat.completions.create.call_args_list[0].kwargs
+        high_request = client.chat.completions.create.call_args_list[1].kwargs
+        for name in ("model", "messages", "temperature", "top_p", "max_tokens"):
+            with self.subTest(name=name):
+                self.assertEqual(no_think_request[name], high_request[name])
+        self.assertEqual(
+            no_think_request["messages"],
+            [{"role": "user", "content": question}],
+        )
+        self.assertEqual(no_think_request["temperature"], 0.9)
+        self.assertEqual(no_think_request["top_p"], 1.0)
+        self.assertEqual(no_think_request["max_tokens"], 512)
+        self.assertEqual(
+            no_think_request["extra_body"],
+            {"chat_template_kwargs": {"reasoning_effort": "no_think"}},
+        )
+        self.assertEqual(
+            high_request["extra_body"],
+            {"chat_template_kwargs": {"reasoning_effort": "high"}},
+        )
+        self.assertEqual(no_think.reasoning, "")
+        self.assertEqual(high.reasoning, "distance divided by time")
+        self.assertAlmostEqual(high.elapsed, 0.3)
+
+
 if __name__ == "__main__":
     unittest.main()
