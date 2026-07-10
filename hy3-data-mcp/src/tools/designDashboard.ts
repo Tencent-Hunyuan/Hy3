@@ -48,18 +48,13 @@ export const designDashboardDefinition = {
   },
 };
 
-export const designDashboardSchema = z
-  .object({
-    file_paths: z.array(z.string().min(1)).optional(),
-    data: z.string().optional(),
-    title: z.string().optional(),
-    layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).default("grid"),
-    language: z.enum(["zh", "en", "auto"]).default("auto"),
-  })
-  .refine(
-    (args) => (args.file_paths && args.file_paths.length > 0) || (args.data && args.data.trim().length > 0),
-    { message: "Either file_paths or data is required", path: ["file_paths"] }
-  );
+export const designDashboardSchema = z.object({
+  file_paths: z.array(z.string().min(1)).optional(),
+  data: z.string().optional(),
+  title: z.string().optional(),
+  layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).default("grid"),
+  language: z.enum(["zh", "en", "auto"]).default("auto"),
+});
 
 export type DashboardDesign = {
   title: string;
@@ -85,6 +80,10 @@ export async function runDesignDashboard(
   _onOutput?: (chunk: string) => void
 ): Promise<{ content: Array<{ type: "text"; text: string }> }> {
   const { file_paths, data, title, layout, language } = designDashboardSchema.parse(args);
+
+  if ((!file_paths || file_paths.length === 0) && (!data || data.trim().length === 0)) {
+    throw new Error("Either file_paths or data is required");
+  }
 
   await onProgress?.(10, 100);
 

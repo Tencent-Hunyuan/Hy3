@@ -105,34 +105,29 @@ const chartDesignSchema = z.object({
   title: z.string(),
 });
 
-export const renderDashboardSchema = z
-  .object({
-    file_paths: z.array(z.string().min(1)).optional(),
-    data: z.string().optional(),
-    design: z.object({
-      title: z.string(),
-      layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).optional(),
-      charts: z.array(chartDesignSchema).min(1),
-    }),
-    output_format: z.enum(["html", "png"]).default("html"),
-    title: z.string().optional(),
-    theme: z
-      .enum(["light", "dark", "colorful", "minimal", "professional", "retro", "science", "nature"])
-      .default("nature"),
-    font_family: z.string().optional(),
-    background_color: z.string().optional(),
-    text_color: z.string().optional(),
-    axis_color: z.string().optional(),
-    split_line_color: z.string().optional(),
-    palette: z.array(z.string()).optional(),
-    primary_color: z.string().optional(),
+export const renderDashboardSchema = z.object({
+  file_paths: z.array(z.string().min(1)).optional(),
+  data: z.string().optional(),
+  design: z.object({
+    title: z.string(),
     layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).optional(),
-    language: z.enum(["zh", "en", "auto"]).default("auto"),
-  })
-  .refine(
-    (args) => (args.file_paths && args.file_paths.length > 0) || (args.data && args.data.trim().length > 0),
-    { message: "Either file_paths or data is required", path: ["file_paths"] }
-  );
+    charts: z.array(chartDesignSchema).min(1),
+  }),
+  output_format: z.enum(["html", "png"]).default("html"),
+  title: z.string().optional(),
+  theme: z
+    .enum(["light", "dark", "colorful", "minimal", "professional", "retro", "science", "nature"])
+    .default("nature"),
+  font_family: z.string().optional(),
+  background_color: z.string().optional(),
+  text_color: z.string().optional(),
+  axis_color: z.string().optional(),
+  split_line_color: z.string().optional(),
+  palette: z.array(z.string()).optional(),
+  primary_color: z.string().optional(),
+  layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).optional(),
+  language: z.enum(["zh", "en", "auto"]).default("auto"),
+});
 
 export async function runRenderDashboard(
   args: unknown,
@@ -155,6 +150,10 @@ export async function runRenderDashboard(
     layout,
     language,
   } = renderDashboardSchema.parse(args);
+
+  if ((!file_paths || file_paths.length === 0) && (!data || data.trim().length === 0)) {
+    throw new Error("Either file_paths or data is required");
+  }
 
   await onProgress?.(10, 100);
 

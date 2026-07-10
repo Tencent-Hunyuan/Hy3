@@ -92,15 +92,14 @@ export const dataReportDefinition = {
         default: "auto",
       },
     },
-    required: ["file_paths"],
+    required: [],
   },
 };
 
-export const dataReportSchema = z
-  .object({
-    file_paths: z.array(z.string().min(1)).optional(),
-    file_path: z.string().min(1).optional(),
-    question: z.string().default("Generate a comprehensive data analysis report"),
+export const dataReportSchema = z.object({
+  file_paths: z.array(z.string().min(1)).optional(),
+  file_path: z.string().min(1).optional(),
+  question: z.string().default("Generate a comprehensive data analysis report"),
   output_format: z.enum(["html", "markdown"]).default("html"),
   max_charts: z.number().int().min(1).max(8).default(4),
   width: z.number().int().min(200).max(2000).default(800),
@@ -126,15 +125,7 @@ export const dataReportSchema = z
   palette: z.array(z.string()).optional(),
   primary_color: z.string().optional(),
   language: z.enum(["zh", "en", "auto"]).default("auto"),
-})
-  .refine(
-    (data) =>
-      (data.file_paths && data.file_paths.length > 0) || Boolean(data.file_path),
-    {
-      message: "Either file_paths or file_path must be provided",
-      path: ["file_paths"],
-    }
-  );
+});
 
 interface ReportPlan {
   title: string;
@@ -261,6 +252,10 @@ export async function runDataReport(
     primary_color,
     language,
   } = dataReportSchema.parse(args);
+
+  if ((!file_paths || file_paths.length === 0) && !file_path) {
+    throw new Error("Either file_paths or file_path must be provided");
+  }
 
   await onProgress?.(5, 100);
 
