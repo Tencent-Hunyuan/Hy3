@@ -52,38 +52,8 @@ const CLIENT_CANDIDATES: Candidate[] = [
     id: "cline",
     name: "Cline",
     command: "cline",
-    getPaths: () => [
-      home(
-        "AppData",
-        "Roaming",
-        "Code",
-        "User",
-        "globalStorage",
-        "saoudrizwan.claude-dev",
-        "settings",
-        "cline_mcp_settings.json"
-      ),
-      home(
-        ".config",
-        "Code",
-        "User",
-        "globalStorage",
-        "saoudrizwan.claude-dev",
-        "settings",
-        "cline_mcp_settings.json"
-      ),
-    ],
-    getDefaultPath: () =>
-      home(
-        "AppData",
-        "Roaming",
-        "Code",
-        "User",
-        "globalStorage",
-        "saoudrizwan.claude-dev",
-        "settings",
-        "cline_mcp_settings.json"
-      ),
+    getPaths: () => [clineMcpSettingsPath()],
+    getDefaultPath: () => clineMcpSettingsPath(),
     scope: "global",
     format: "json",
   },
@@ -91,11 +61,7 @@ const CLIENT_CANDIDATES: Candidate[] = [
     id: "roo",
     name: "Roo Code",
     command: "roo",
-    getPaths: (root) => [
-      join(root, ".roo", "mcp.json"),
-      home(".roo", "mcp_settings.json"),
-      home(".roo", "mcp.json"),
-    ],
+    getPaths: (root) => [join(root, ".roo", "mcp.json"), home(".roo", "mcp_settings.json")],
     getDefaultPath: (root) => join(root, ".roo", "mcp.json"),
     scope: "project",
     format: "json",
@@ -143,6 +109,27 @@ const CLIENT_CANDIDATES: Candidate[] = [
 
 function openCodeConfigPath(): string {
   return home(".config", "opencode", "opencode.json");
+}
+
+function clineMcpSettingsPath(): string {
+  const extensionId = "saoudrizwan.claude-dev";
+  const fileName = "cline_mcp_settings.json";
+  if (process.platform === "win32") {
+    return home("AppData", "Roaming", "Code", "User", "globalStorage", extensionId, "settings", fileName);
+  }
+  if (process.platform === "darwin") {
+    return home(
+      "Library",
+      "Application Support",
+      "Code",
+      "User",
+      "globalStorage",
+      extensionId,
+      "settings",
+      fileName
+    );
+  }
+  return home(".config", "Code", "User", "globalStorage", extensionId, "settings", fileName);
 }
 
 async function exists(path: string): Promise<boolean> {
