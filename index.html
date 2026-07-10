@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小说设定编写器</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1f232c;
+    --border: #2a2f3a;
+    --text: #e6e8ec;
+    --muted: #9aa3b2;
+    --accent: #6c8cff;
+    --accent-2: #4f6fe0;
+    --danger: #ff6b6b;
+    --ok: #4ec98a;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header h1 { font-size: 16px; margin: 0; font-weight: 600; letter-spacing: .5px; }
+  header .logo { font-size: 20px; }
+  nav { display: flex; gap: 8px; margin-left: 8px; }
+  nav button {
+    background: transparent; color: var(--muted);
+    border: 1px solid transparent; padding: 7px 14px;
+    border-radius: 20px; cursor: pointer; font-size: 13px;
+    transition: all .15s;
+  }
+  nav button:hover { color: var(--text); background: var(--panel-2); }
+  nav button.active {
+    color: #fff; background: var(--accent-2);
+    border-color: var(--accent);
+  }
+  nav .spacer { flex: 1; }
+  main { flex: 1; overflow: hidden; position: relative; }
+  .view { display: none; height: 100%; }
+  .view.active { display: block; overflow-y: auto; }
+
+  /* generic */
+  .wrap { max-width: 760px; margin: 0 auto; padding: 22px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 16px 0 6px; }
+  input[type=text], input[type=password], select, textarea {
+    width: 100%; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 11px 12px; font-size: 14px; font-family: inherit;
+    outline: none; transition: border-color .15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+  .row { display: flex; gap: 12px; }
+  .row > * { flex: 1; }
+  .btn {
+    background: var(--accent-2); color: #fff; border: none;
+    border-radius: 10px; padding: 11px 18px; font-size: 14px;
+    cursor: pointer; transition: filter .15s; font-family: inherit;
+  }
+  .btn:hover { filter: brightness(1.1); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn.ghost { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
+  .btn.danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .section-title { font-size: 15px; font-weight: 600; margin: 4px 0 4px; }
+
+  .status { font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .status.ok { color: var(--ok); }
+  .status.err { color: var(--danger); }
+
+  /* authors */
+  .author-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px; margin-bottom: 12px;
+  }
+  .author-card .head { display: flex; gap: 10px; align-items: center; }
+  .author-card .head strong { font-size: 14px; }
+  .author-card .head .acts { margin-left: auto; display: flex; gap: 8px; }
+  .author-card .head .acts button {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 8px; padding: 5px 10px; font-size: 12px; cursor: pointer;
+  }
+  .author-card .head .acts button:hover { color: var(--text); border-color: var(--accent); }
+  .author-card textarea { margin-top: 10px; min-height: 70px; }
+  .empty { color: var(--muted); text-align: center; padding: 30px 0; font-size: 13px; }
+
+  /* chat */
+  .chat-layout { display: flex; flex-direction: column; height: 100%; }
+  .composer {
+    border-top: 1px solid var(--border); background: var(--panel);
+    padding: 12px 16px;
+  }
+  .composer .opts { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .composer .opts .field { flex: 1; min-width: 140px; }
+  .composer .opts label { margin: 0 0 4px; }
+  .composer .opts select { padding: 8px 10px; font-size: 13px; }
+  .composer .input-row { display: flex; gap: 10px; align-items: flex-end; }
+  .composer textarea { flex: 1; min-height: 52px; max-height: 160px; }
+  .composer .send-btn { height: 52px; padding: 0 22px; }
+
+  .messages { flex: 1; overflow-y: auto; padding: 18px 16px; }
+  .msg { display: flex; margin-bottom: 16px; }
+  .msg .bubble {
+    max-width: 78%; padding: 12px 14px; border-radius: 14px;
+    font-size: 14px; line-height: 1.7; white-space: pre-wrap; word-break: break-word;
+  }
+  .msg.user { justify-content: flex-end; }
+  .msg.user .bubble { background: var(--accent-2); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.user .bubble.imported { background: var(--panel-2); color: var(--text); border: 1px dashed var(--accent); }
+  .msg.ai { justify-content: flex-start; }
+  .msg.ai .bubble { background: var(--panel); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .msg .meta {
+    font-size: 11px; color: var(--muted); margin-top: 4px;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .msg.ai .meta { margin-left: 2px; }
+  .msg .meta button {
+    background: transparent; border: none; color: var(--muted);
+    cursor: pointer; font-size: 11px; padding: 0;
+  }
+  .msg .meta button:hover { color: var(--accent); }
+  .msg .avatar {
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+    margin: 0 10px;
+  }
+  .msg.user .avatar { background: var(--accent-2); order: 2; }
+  .msg.ai .avatar { background: var(--panel-2); border: 1px solid var(--border); }
+  .thinking { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--muted); animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:.3} 50%{opacity:1} }
+  .toolbar { display: flex; gap: 8px; align-items: center; padding: 8px 16px;
+    border-bottom: 1px solid var(--border); background: var(--panel); }
+  .toolbar .spacer { flex: 1; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #000; color: #fff; padding: 9px 16px; border-radius: 20px;
+    font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none;
+  }
+  .toast.show { opacity: .92; }
+
+  .pwd-wrap { position: relative; }
+  .pwd-wrap .toggle {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">📖</span>
+  <h1>小说设定编写器</h1>
+  <nav>
+    <button data-view="settings" class="active">① API 设置</button>
+    <button data-view="authors">② 作者风格</button>
+    <button data-view="chat">③ 创作</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ========== ① API 设置 ========== -->
+  <section class="view active" id="view-settings">
+    <div class="wrap">
+      <div class="section-title">API 配置</div>
+      <p class="hint">本程序直接调用腾讯混元（Hunyuan）OpenAI 兼容接口。密钥仅保存在你本机浏览器（localStorage），不会上传到任何第三方。</p>
+
+      <label>API Key</label>
+      <div class="pwd-wrap">
+        <input type="password" id="cfg-key" placeholder="粘贴你的 Hunyuan API Key" autocomplete="off">
+        <button class="toggle" id="key-toggle">显示</button>
+      </div>
+
+      <label>Base URL</label>
+      <input type="text" id="cfg-base" placeholder="https://api.hunyuan.cloud.tencent.com/v1">
+
+      <label>模型</label>
+      <div class="row">
+        <select id="cfg-model"></select>
+        <input type="text" id="cfg-model-custom" placeholder="自定义模型名（可选）" style="display:none">
+      </div>
+
+      <div style="margin-top:20px; display:flex; gap:10px;">
+        <button class="btn" id="btn-save-cfg">保存配置</button>
+        <button class="btn ghost" id="btn-test">测试连接</button>
+      </div>
+      <div class="status" id="cfg-status"></div>
+
+      <hr style="border:none; border-top:1px solid var(--border); margin:28px 0;">
+      <div class="section-title">关于 CORS</div>
+      <p class="hint">浏览器直连若被跨域拦截（控制台报 CORS 错误），可启用随附的 <code>proxy.js</code> 本地代理：将 Base URL 改为 <code>http://localhost:8787/v1</code> 后重试。代理仅在你本机运行，转发你的请求。</p>
+    </div>
+  </section>
+
+  <!-- ========== ② 作者风格 ========== -->
+  <section class="view" id="view-authors">
+    <div class="wrap">
+      <div class="section-title">作者风格库</div>
+      <p class="hint">提前写好你欣赏的作者的写作风格，创作时可一键套用。点击「新建作者」添加。</p>
+      <div id="authors-list" style="margin-top:16px;"></div>
+      <button class="btn ghost" id="btn-new-author" style="margin-top:6px;">＋ 新建作者</button>
+    </div>
+  </section>
+
+  <!-- ========== ③ 创作聊天 ========== -->
+  <section class="view" id="view-chat">
+    <div class="chat-layout">
+      <div class="toolbar" style="flex-wrap:wrap;">
+        <span style="font-size:13px; color:var(--muted);" id="chat-status">未连接</span>
+        <div class="spacer"></div>
+        <select id="session-select" title="切换会话" style="padding:6px 8px; font-size:12px; width:auto;"></select>
+        <button class="btn ghost" id="btn-new-session" style="padding:6px 10px; font-size:12px;">＋新建</button>
+        <button class="btn ghost" id="btn-rename-session" style="padding:6px 10px; font-size:12px;">重命名</button>
+        <button class="btn ghost" id="btn-del-session" style="padding:6px 10px; font-size:12px;">删除</button>
+        <span style="width:1px; height:18px; background:var(--border); margin:0 2px;"></span>
+        <button class="btn ghost" id="btn-import-txt" style="padding:6px 10px; font-size:12px;">导入 txt</button>
+        <button class="btn ghost" id="btn-export-txt" style="padding:6px 10px; font-size:12px;">导出 txt</button>
+        <button class="btn ghost" id="btn-clear-chat" style="padding:6px 10px; font-size:12px;">清空记录</button>
+        <input type="file" id="import-file" accept=".txt,text/plain" style="display:none;">
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="composer">
+        <div class="opts">
+          <div class="field">
+            <label>字数规模</label>
+            <select id="opt-length">
+              <option value="300">短篇（约 300 字）</option>
+              <option value="800" selected>中篇（约 800 字）</option>
+              <option value="2000">长篇（约 2000 字）</option>
+              <option value="custom">自定义</option>
+            </select>
+            <input type="text" id="opt-length-custom" placeholder="输入目标字数" style="display:none; margin-top:6px;">
+          </div>
+          <div class="field">
+            <label>作者风格</label>
+            <select id="opt-author"><option value="">无特定风格</option></select>
+          </div>
+        </div>
+        <div class="input-row">
+          <textarea id="input-keywords" placeholder="输入关键词，例如：废土世界，少女机械师，寻找失踪的哥哥"></textarea>
+          <button class="btn send-btn" id="btn-send">生成</button>
+        </div>
+        <div class="hint">支持多轮对话，AI 会参考上方历史保持上下文。</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ---------- 存储工具 ---------- */
+const KEYS = { cfg: 'hy_cfg', authors: 'hy_authors', sessions: 'hy_sessions', current: 'hy_current' };
+const MAX_SESSIONS = 10;
+const MODELS = ['hunyuan-turbos-latest', 'hunyuan-turbos', 'hunyuan-lite', 'hunyuan-standard'];
+
+function load(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch { return fallback; }
+}
+function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+/* ---------- 会话（多会话） ---------- */
+function getSessions() { return load(KEYS.sessions, []); }
+function saveSessions(arr) { save(KEYS.sessions, arr); }
+function getCurrentId() {
+  const sessions = getSessions();
+  if (!sessions.length) return null;
+  let id = load(KEYS.current, null);
+  if (!id || !sessions.some(s => s.id === id)) id = sessions[0].id;
+  return id;
+}
+function setCurrent(id) { save(KEYS.current, id); }
+function getCurrentSession() {
+  const sessions = getSessions();
+  const id = getCurrentId();
+  return sessions.find(s => s.id === id) || sessions[0] || null;
+}
+function makeSession(name, messages) {
+  return { id: 's' + Date.now() + Math.random().toString(36).slice(2,6), name, messages };
+}
+// 启动迁移：旧版 hy_chat 包裹为「会话 1」；无数据则建默认会话
+function ensureSession() {
+  let sessions = load(KEYS.sessions, null);
+  if (sessions === null) {
+    const oldChat = localStorage.getItem('hy_chat');
+    if (oldChat) {
+      let arr = [];
+      try { arr = JSON.parse(oldChat); } catch {}
+      if (!Array.isArray(arr)) arr = [];
+      sessions = [makeSession('会话 1', arr)];
+    } else {
+      sessions = [makeSession('会话 1', [])];
+    }
+    saveSessions(sessions); setCurrent(sessions[0].id);
+  } else if (!sessions.length) {
+    sessions = [makeSession('会话 1', [])];
+    saveSessions(sessions); setCurrent(sessions[0].id);
+  } else {
+    const id = load(KEYS.current, null);
+    if (!id || !sessions.some(x => x.id === id)) setCurrent(sessions[0].id);
+  }
+}
+
+/* ---------- UI 辅助 ---------- */
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+// ── [CodeBuddy 协作] 复制助手：带 file:// 降级方案并校验空内容 ──
+async function copyText(text) {
+  text = (text || '').toString();
+  if (!text.trim()) { toast('内容为空，无法复制'); return; }
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      const ok = document.execCommand('copy'); document.body.removeChild(ta);
+      if (!ok) throw new Error('execCommand failed');
+    }
+    toast('已复制到剪贴板');
+  } catch (e) {
+    toast('复制失败，请手动选择文本复制');
+  }
+}
+function $(id) { return document.getElementById(id); }
+
+/* ---------- Tab 切换 ---------- */
+const tabs = document.querySelectorAll('nav button');
+tabs.forEach(btn => btn.addEventListener('click', () => {
+  tabs.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  $('view-' + btn.dataset.view).classList.add('active');
+  if (btn.dataset.view === 'authors') renderAuthors();
+  if (btn.dataset.view === 'chat') { refreshAuthorSelect(); refreshChatStatus(); }
+}));
+
+/* ========== ① API 设置 ========== */
+function initSettings() {
+  // 填充模型下拉
+  const sel = $('cfg-model');
+  MODELS.forEach(m => {
+    const o = document.createElement('option'); o.value = m; o.textContent = m; sel.appendChild(o);
+  });
+  const oc = document.createElement('option'); oc.value = '__custom'; oc.textContent = '自定义…'; sel.appendChild(oc);
+
+  const cfg = load(KEYS.cfg, {});
+  $('cfg-key').value = cfg.apiKey || '';
+  $('cfg-base').value = cfg.baseUrl || 'https://api.hunyuan.cloud.tencent.com/v1';
+  if (cfg.model && !MODELS.includes(cfg.model)) { sel.value = '__custom'; $('cfg-model-custom').style.display=''; $('cfg-model-custom').value = cfg.model; }
+  else if (cfg.model) sel.value = cfg.model;
+
+  $('key-toggle').addEventListener('click', () => {
+    const i = $('cfg-key'); const show = i.type === 'password';
+    i.type = show ? 'text' : 'password';
+    $('key-toggle').textContent = show ? '隐藏' : '显示';
+  });
+  sel.addEventListener('change', () => {
+    $('cfg-model-custom').style.display = sel.value === '__custom' ? '' : 'none';
+  });
+
+  $('btn-save-cfg').addEventListener('click', () => {
+    const model = sel.value === '__custom' ? $('cfg-model-custom').value.trim() : sel.value;
+    if (!model) { setStatus('cfg-status', '请选择或填写模型', true); return; }
+    save(KEYS.cfg, {
+      apiKey: $('cfg-key').value.trim(),
+      baseUrl: $('cfg-base').value.trim().replace(/\/+$/, ''),
+      model
+    });
+    setStatus('cfg-status', '配置已保存到本机 ✓', false);
+    refreshChatStatus();
+  });
+
+  $('btn-test').addEventListener('click', async () => {
+    const cfg = readCfg(true);
+    if (!cfg) return;
+    setStatus('cfg-status', '正在测试连接…', false);
+    $('btn-test').disabled = true;
+    try {
+      const r = await fetch(cfg.baseUrl + '/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey },
+        body: JSON.stringify({ model: cfg.model, stream: false,
+          messages: [{ role: 'user', content: '回复一个字：好' }] })
+      });
+      if (!r.ok) { const txt = await r.text(); throw new Error('HTTP ' + r.status + ' ' + txt.slice(0, 120)); }
+      setStatus('cfg-status', '连接成功 ✓ API Key 有效', false);
+    } catch (e) {
+      setStatus('cfg-status', '连接失败：' + e.message, true);
+    } finally { $('btn-test').disabled = false; }
+  });
+}
+function readCfg(silent) {
+  const cfg = load(KEYS.cfg, {});
+  if (!cfg.apiKey || !cfg.baseUrl || !cfg.model) {
+    if (!silent) { setStatus('cfg-status', '请先填写并保存 API 配置', true); switchView('settings'); }
+    return null;
+  }
+  return cfg;
+}
+function setStatus(id, msg, isErr) {
+  const el = $(id); el.textContent = msg;
+  el.className = 'status ' + (isErr ? 'err' : 'ok');
+}
+function switchView(name) {
+  tabs.forEach(b => b.classList.toggle('active', b.dataset.view === name));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  $('view-' + name).classList.add('active');
+}
+
+/* ========== ② 作者风格 ========== */
+function getAuthors() { return load(KEYS.authors, []); }
+function renderAuthors() {
+  const list = $('authors-list'); const authors = getAuthors();
+  list.innerHTML = '';
+  if (!authors.length) { list.innerHTML = '<div class="empty">还没有作者，点击下方「新建作者」添加。</div>'; return; }
+  authors.forEach(a => {
+    const card = document.createElement('div'); card.className = 'author-card';
+    card.innerHTML = `
+      <div class="head">
+        <strong>${escapeHtml(a.name)}</strong>
+        <div class="acts">
+          <button data-act="save">保存</button>
+          <button data-act="del">删除</button>
+        </div>
+      </div>
+      <textarea data-field="style" placeholder="描述该作者的写作风格，例如：武侠、快意恩仇、短句凌厉、善用留白…">${escapeHtml(a.style || '')}</textarea>`;
+    // 名称可编辑
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text'; nameInput.value = a.name; nameInput.placeholder = '作者名';
+    nameInput.style.cssText = 'margin-top:8px;';
+    nameInput.dataset.field = 'name';
+    card.appendChild(nameInput);
+
+    card.querySelector('[data-act="save"]').addEventListener('click', () => {
+      const name = card.querySelector('[data-field=name]').value.trim();
+      const style = card.querySelector('[data-field=style]').value.trim();
+      if (!name) { toast('作者名不能为空'); return; }
+      const arr = getAuthors(); const idx = arr.findIndex(x => x.id === a.id);
+      arr[idx] = { id: a.id, name, style }; save(KEYS.authors, arr);
+      toast('已保存'); refreshAuthorSelect();
+    });
+    card.querySelector('[data-act="del"]').addEventListener('click', () => {
+      save(KEYS.authors, getAuthors().filter(x => x.id !== a.id));
+      renderAuthors(); refreshAuthorSelect();
+    });
+    list.appendChild(card);
+  });
+}
+function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+$('btn-new-author').addEventListener('click', () => {
+  const arr = getAuthors();
+  arr.push({ id: 'a' + Date.now(), name: '新作者', style: '' });
+  save(KEYS.authors, arr); renderAuthors();
+  // 滚动到新卡片
+  $('authors-list').lastElementChild?.scrollIntoView({ behavior: 'smooth' });
+});
+
+/* ========== ③ 创作聊天 ========== */
+function getChat() {
+  const s = getCurrentSession();
+  return s ? s.messages : [];
+}
+function saveChat(arr) {
+  const sessions = getSessions();
+  const id = getCurrentId();
+  const s = sessions.find(x => x.id === id);
+  if (s) { s.messages = arr; saveSessions(sessions); }
+}
+
+function refreshAuthorSelect() {
+  const sel = $('opt-author'); const cur = sel.value;
+  sel.innerHTML = '<option value="">无特定风格</option>';
+  getAuthors().forEach(a => {
+    const o = document.createElement('option'); o.value = a.id; o.textContent = a.name; sel.appendChild(o);
+  });
+  if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+}
+function refreshChatStatus() {
+  const cfg = load(KEYS.cfg, {});
+  $('chat-status').textContent = (cfg.apiKey && cfg.model) ? ('已就绪 · ' + cfg.model) : '未配置 API，请先到 ① 设置';
+}
+
+function appendMessage(role, text, opts = {}) {
+  const arr = getChat();
+  const msg = { id: 'm' + Date.now() + Math.random().toString(36).slice(2,6),
+    role, text, ts: Date.now(),
+    authorId: opts.authorId || null,
+    wordCount: (opts.wordCount != null) ? opts.wordCount : null,
+    imported: !!opts.imported };
+  arr.push(msg); saveChat(arr);
+  renderMessage(msg, opts);
+  scrollMessages();
+  return msg;
+}
+function renderMessage(msg, opts = {}) {
+  const box = $('messages');
+  const wrap = document.createElement('div'); wrap.className = 'msg ' + msg.role; wrap.dataset.id = msg.id;
+  const avatar = document.createElement('div'); avatar.className = 'avatar';
+  avatar.textContent = msg.role === 'user' ? '🧑' : '✨';
+
+  const col = document.createElement('div'); col.style.cssText = 'display:flex; flex-direction:column; max-width:78%;';
+  const bubble = document.createElement('div'); bubble.className = 'bubble';
+  if (msg.imported) bubble.classList.add('imported');
+  bubble.textContent = msg.text || (msg.role === 'ai' && opts.thinking ? '思考中' : '');
+  if (opts.thinking) { const s = document.createElement('span'); s.className='thinking'; bubble.appendChild(s); }
+
+  const meta = document.createElement('div'); meta.className = 'meta';
+  if (msg.role === 'ai') {
+    const copy = document.createElement('button'); copy.textContent = '复制';
+    copy.addEventListener('click', () => copyText(bubble.textContent));
+    const regen = document.createElement('button'); regen.textContent = '重新生成';
+    regen.addEventListener('click', () => regenerate(msg));
+    meta.appendChild(copy); meta.appendChild(regen);
+  } else if (msg.imported) {
+    const copy = document.createElement('button'); copy.textContent = '复制';
+    copy.addEventListener('click', () => copyText(msg.text));
+    meta.appendChild(copy);
+    const tag = document.createElement('span'); tag.textContent = '📄 导入设定（只读）';
+    tag.style.cssText = 'color:var(--muted); font-size:12px;';
+    meta.appendChild(tag);
+  } else {
+    const copy = document.createElement('button'); copy.textContent = '复制';
+    copy.addEventListener('click', () => copyText(msg.text));
+    const edit = document.createElement('button'); edit.textContent = '修改';
+    edit.addEventListener('click', () => editUserMessage(msg, bubble, meta));
+    meta.appendChild(copy); meta.appendChild(edit);
+  }
+  col.appendChild(bubble); col.appendChild(meta);
+  wrap.appendChild(avatar); wrap.appendChild(col); box.appendChild(wrap);
+}
+// ── [CodeBuddy 协作] 用户消息「修改」：就地编辑并可在保存后自动重新生成 ──
+function editUserMessage(msg, bubble, meta) {
+  const arr = getChat();
+  const idx = arr.findIndex(m => m.id === msg.id);
+  const ta = document.createElement('textarea');
+  ta.value = msg.text || '';
+  ta.style.cssText = 'width:100%; min-height:72px; font:inherit; padding:10px; border-radius:10px; border:1px solid var(--border); resize:vertical; box-sizing:border-box;';
+  bubble.replaceWith(ta);
+  meta.innerHTML = '';
+  const saveBtn = document.createElement('button'); saveBtn.textContent = '保存';
+  const cancelBtn = document.createElement('button'); cancelBtn.textContent = '取消';
+  meta.appendChild(saveBtn); meta.appendChild(cancelBtn);
+  ta.focus(); ta.select();
+  saveBtn.addEventListener('click', () => {
+    const newText = ta.value.trim();
+    if (!newText) { toast('内容不能为空'); return; }
+    if (idx >= 0) { arr[idx].text = newText; saveChat(arr); }
+    renderChat();
+    if (idx >= 0 && arr[idx + 1] && arr[idx + 1].role === 'ai') regenerate(arr[idx + 1]);
+  });
+  cancelBtn.addEventListener('click', () => renderChat());
+}
+function scrollMessages() { $('messages').scrollTop = $('messages').scrollHeight; }
+
+function renderChat() {
+  const box = $('messages'); box.innerHTML = '';
+  const arr = getChat();
+  if (!arr.length) {
+    box.innerHTML = '<div class="empty" style="padding-top:60px;">还没有对话，在下方输入关键词开始创作吧～</div>';
+    return;
+  }
+  arr.forEach(m => renderMessage(m));
+}
+
+// ── [CodeBuddy 协作] 系统提示：新增「输出规范」约束规范中文、术语一致、禁止夹杂无意义英文词 ──
+function buildSystem(author, wordCount) {
+  return `你是一位专业的小说设定助手。
+${author ? `请严格模仿以下作者的写作风格来撰写设定：\n${author.style}\n` : ''}
+当用户给出关键词时，请生成结构完整的小说设定，包含【世界观】【主要人物】【情节主线】【风格基调】等板块，
+总字数控制在约 ${wordCount} 字左右，使用中文输出，风格自然连贯。
+用户可能先提供已有设定文本（以「📄 导入设定」标记），请在其基础上进行对应风格的续写与补充。
+
+【输出规范（必须严格遵守）】
+1. 使用规范、通顺的现代中文写作，不要夹杂无意义的英文单词或代码式术语（如英文单词原形、变量名等）；若确需引用外语专有名词，必须用中文给出对应译名，并在首次出现时以「中文译名（原文）」形式标注。
+2. 术语与表述必须前后统一：同一概念在全文只能使用同一种中文说法，不要一会儿用中文、一会儿又冒出英文同义词。
+3. 各板块标题使用【xxx】格式，段落清晰、层级分明，不要用乱码、未渲染的标记或残缺的句子结尾。
+4. 内容要具体可续写，避免空泛套话；时间线、历史演进等须以连贯的中文叙述呈现，保持逻辑一致。`;
+}
+
+function renderSessionSelect() {
+  const sel = $('session-select');
+  const sessions = getSessions();
+  const cur = getCurrentId();
+  sel.innerHTML = '';
+  sessions.forEach(s => {
+    const o = document.createElement('option'); o.value = s.id; o.textContent = s.name; sel.appendChild(o);
+  });
+  sel.value = cur;
+}
+
+function newSession() {
+  const sessions = getSessions();
+  if (sessions.length >= MAX_SESSIONS) {
+    toast('最多同时存在 ' + MAX_SESSIONS + ' 个会话，请先删除一个');
+    return;
+  }
+  const s = makeSession('会话 ' + (sessions.length + 1), []);
+  sessions.push(s); saveSessions(sessions); setCurrent(s.id);
+  renderSessionSelect(); renderChat();
+  toast('已新建会话');
+}
+
+function renameSession() {
+  const sessions = getSessions();
+  const id = getCurrentId();
+  const s = sessions.find(x => x.id === id);
+  if (!s) return;
+  const name = prompt('请输入会话名称', s.name);
+  if (name === null) return;
+  const trimmed = name.trim();
+  if (!trimmed) { toast('名称不能为空'); return; }
+  s.name = trimmed; saveSessions(sessions); renderSessionSelect();
+}
+
+function deleteSession() {
+  let sessions = getSessions();
+  if (sessions.length <= 1) { toast('至少保留一个会话'); return; }
+  if (!confirm('确定删除当前会话？该会话内的所有记录将丢失。')) return;
+  const id = getCurrentId();
+  sessions = sessions.filter(x => x.id !== id);
+  saveSessions(sessions);
+  setCurrent(sessions[0].id);
+  renderSessionSelect(); renderChat();
+  toast('已删除会话');
+}
+
+function switchSession(id) {
+  if (id === getCurrentId()) return;
+  setCurrent(id);
+  renderChat();
+}
+
+function importTxt(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const text = (reader.result || '').trim();
+    if (!text) { toast('文件内容为空'); return; }
+    appendMessage('user', text, { imported: true });
+    toast('已导入设定，可在下方继续补充并生成');
+  };
+  reader.onerror = () => toast('读取文件失败');
+  reader.readAsText(file, 'UTF-8');
+}
+
+function exportTxt() {
+  const arr = getChat();
+  let target = null;
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (arr[i].role === 'ai' && arr[i].text) { target = arr[i]; break; }
+  }
+  if (!target) { toast('还没有可导出的生成内容'); return; }
+  if (!confirm('注意：导出只会包含最新一条 AI 生成内容。确定继续？')) return;
+  const defName = '小说设定_' + new Date().toISOString().slice(0, 10);
+  const fname = prompt('请输入文件名（无需扩展名）', defName);
+  if (fname === null) return;
+  const name = fname.trim() || defName;
+  const blob = new Blob([target.text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name + '.txt';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('已导出 ' + name + '.txt');
+}
+
+async function send() {
+  const keywords = $('input-keywords').value.trim();
+  if (!keywords) { toast('请输入关键词'); return; }
+  const cfg = readCfg();
+  if (!cfg) return;
+
+  const authorId = $('opt-author').value;
+  const author = getAuthors().find(a => a.id === authorId);
+  const lengthSel = $('opt-length').value;
+  const wordCount = lengthSel === 'custom'
+    ? Math.max(50, parseInt($('opt-length-custom').value) || 800)
+    : parseInt(lengthSel);
+
+  const sys = buildSystem(author, wordCount);
+  // ── [CodeBuddy 协作] 历史角色映射：ai → assistant，避免混元接口 400 ──
+  // 历史上下文（最多最近 10 条，且不含即将发送的关键词）
+  const hist = getChat().slice(-10).map(m => ({ role: m.role === 'ai' ? 'assistant' : m.role, content: m.text }));
+
+  appendMessage('user', keywords, { authorId, wordCount });
+  $('input-keywords').value = '';
+
+  // 自动命名：若会话名仍为默认「会话 N」，取首条关键词前若干字
+  const sessions = getSessions();
+  const sess = sessions.find(s => s.id === getCurrentId());
+  if (sess && /^会话\s*\d+$/.test(sess.name)) {
+    const nm = keywords.replace(/\s+/g, ' ').trim().slice(0, 12);
+    if (nm) { sess.name = nm; saveSessions(sessions); renderSessionSelect(); }
+  }
+
+  // 创建 AI 占位消息
+  const aiMsg = appendMessage('ai', '', { thinking: true, wordCount, authorId });
+  const box = document.querySelector(`.msg[data-id="${aiMsg.id}"] .bubble`);
+
+  const fullMsgs = [{ role: 'system', content: sys },
+    ...hist, { role: 'user', content: keywords }];
+
+  let acc = '';
+  try {
+    await streamChat(cfg, fullMsgs, delta => {
+      acc += delta;
+      box.textContent = acc;
+      scrollMessages();
+    }, () => {
+      box.textContent = acc || '(无内容返回)';
+      // 更新存储
+      const arr = getChat(); const idx = arr.findIndex(m => m.id === aiMsg.id);
+      if (idx >= 0) { arr[idx].text = acc; saveChat(arr); }
+    });
+  // ── [CodeBuddy 协作] 失败时撤销 AI 占位，避免把报错写入历史污染后续上下文 ──
+  } catch (e) {
+    toast('生成失败：' + e.message + '（已撤销本次 AI 回复，不影响历史）');
+    const arr = getChat(); const idx = arr.findIndex(m => m.id === aiMsg.id);
+    if (idx >= 0) { arr.splice(idx, 1); saveChat(arr); }
+    renderChat();
+  }
+}
+
+async function regenerate(origMsg) {
+  const arr = getChat();
+  const idx = arr.findIndex(m => m.id === origMsg.id);
+  if (idx < 0) return;
+  // 优先取该 ai 之前最近的非导入 user 关键词；没有则退而求其次取最近任意 user（含导入设定）
+  let kw = '';
+  for (let i = idx - 1; i >= 0; i--) { if (arr[i].role === 'user' && !arr[i].imported) { kw = arr[i].text; break; } }
+  if (!kw) { for (let i = idx - 1; i >= 0; i--) { if (arr[i].role === 'user') { kw = arr[i].text; break; } } }
+  if (!kw) { toast('未找到对应关键词'); return; }
+
+  const cfg = readCfg(); if (!cfg) return;
+  const authorId = origMsg.authorId;
+  const author = getAuthors().find(a => a.id === authorId);
+  // 严格沿用该条原本的字数规模（旧数据缺失则回退当前下拉或默认 800）
+  const wordCount = origMsg.wordCount || (parseInt($('opt-length').value) || 800);
+  const sys = buildSystem(author, wordCount);
+
+  // 用该消息之前的完整上下文重建（含多轮历史）
+  // ── [CodeBuddy 协作] 历史角色映射：ai → assistant，避免混元接口 400 / invalid role ──
+  const hist = arr.slice(0, idx).map(m => ({ role: m.role === 'ai' ? 'assistant' : m.role, content: m.text }));
+  const fullMsgs = [{ role: 'system', content: sys }, ...hist, { role: 'user', content: kw }];
+
+  const box = document.querySelector(`.msg[data-id="${origMsg.id}"] .bubble`);
+  // 失败兜底：保留原 AI 文本，避免清空后把报错写入历史污染上下文
+  const originalText = arr[idx].text || '';
+  let acc = '';
+  box.textContent = '';
+  // ── [CodeBuddy 协作] 失败时撤销本次重生成，恢复原文本，不影响历史 ──
+  try {
+    await streamChat(cfg, fullMsgs, d => { acc += d; box.textContent = acc; scrollMessages(); },
+      () => { arr[idx].text = acc; saveChat(arr); });
+  } catch (e) {
+    toast('重新生成失败：' + e.message + '（已恢复原内容，不影响历史）');
+    arr[idx].text = originalText;
+    saveChat(arr);
+    box.textContent = originalText;
+  }
+}
+
+async function streamChat(cfg, messages, onDelta, onDone) {
+  const res = await fetch(cfg.baseUrl + '/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey },
+    body: JSON.stringify({ model: cfg.model, messages, stream: true })
+  });
+  if (!res.ok) {
+    let detail = '';
+    try { const t = await res.text(); detail = t.slice(0, 200); } catch {}
+    throw new Error('HTTP ' + res.status + (detail ? ' · ' + detail : ''));
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t.startsWith('data:')) continue;
+      const data = t.slice(5).trim();
+      if (data === '[DONE]') { onDone && onDone(); return; }
+      try {
+        const json = JSON.parse(data);
+        const delta = json.choices?.[0]?.delta?.content || '';
+        if (delta) onDelta(delta);
+      } catch (_) {}
+    }
+  }
+  onDone && onDone();
+}
+
+$('btn-send').addEventListener('click', send);
+$('input-keywords').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); send(); }
+});
+$('opt-length').addEventListener('change', () => {
+  $('opt-length-custom').style.display = $('opt-length').value === 'custom' ? '' : 'none';
+});
+$('btn-clear-chat').addEventListener('click', () => {
+  if (!confirm('确定清空当前会话的所有记录？')) return;
+  saveChat([]); renderChat();
+});
+
+/* 会话管理 */
+$('session-select').addEventListener('change', e => switchSession(e.target.value));
+$('btn-new-session').addEventListener('click', newSession);
+$('btn-rename-session').addEventListener('click', renameSession);
+$('btn-del-session').addEventListener('click', deleteSession);
+
+/* 导入 / 导出 txt */
+$('btn-import-txt').addEventListener('click', () => $('import-file').click());
+$('import-file').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!/\.txt$/i.test(file.name)) { toast('仅支持 .txt 文件'); e.target.value = ''; return; }
+  importTxt(file);
+  e.target.value = '';
+});
+$('btn-export-txt').addEventListener('click', exportTxt);
+
+/* ---------- 启动 ---------- */
+initSettings();
+ensureSession();
+refreshAuthorSelect();
+refreshChatStatus();
+renderSessionSelect();
+renderChat();
+</script>
+</body>
+</html>
