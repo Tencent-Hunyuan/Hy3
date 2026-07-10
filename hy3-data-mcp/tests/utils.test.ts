@@ -11,6 +11,7 @@ import {
   tableSummary,
   loadOutputDir,
   writeOutputFile,
+  selectTextColumn,
 } from "../src/utils.js";
 
 describe("parseData", () => {
@@ -172,5 +173,44 @@ describe("writeOutputFile", () => {
     expect(filePath).toBe(join(tempDir, "charts", "test.svg"));
     const content = await (await import("fs/promises")).readFile(filePath, "utf-8");
     expect(content).toBe("<svg></svg>");
+  });
+});
+
+describe("selectTextColumn", () => {
+  it("prefers a long text column over an ID column", () => {
+    const column = selectTextColumn(
+      ["review_id", "comment", "rating"],
+      [
+        { review_id: 1, comment: "产品质量非常好，物流也很快，下次还会购买。", rating: 5 },
+        { review_id: 2, comment: "包装有点破损，但是产品本身没问题。", rating: 3 },
+      ]
+    );
+    expect(column).toBe("comment");
+  });
+
+  it("excludes ID-like columns even if their names contain text keywords", () => {
+    const column = selectTextColumn(
+      ["review_id", "user_id", "text"],
+      [
+        { review_id: 1, user_id: "u1", text: "这是一条真实的用户评论内容" },
+        { review_id: 2, user_id: "u2", text: "另一条评论内容" },
+      ]
+    );
+    expect(column).toBe("text");
+  });
+
+  it("falls back to the first column when all columns look like IDs", () => {
+    const column = selectTextColumn(
+      ["id", "key", "idx"],
+      [
+        { id: 1, key: "a", idx: 0 },
+        { id: 2, key: "b", idx: 1 },
+      ]
+    );
+    expect(column).toBe("id");
+  });
+
+  it("returns null for an empty column list", () => {
+    expect(selectTextColumn([], [])).toBeNull();
   });
 });

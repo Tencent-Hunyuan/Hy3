@@ -144,6 +144,49 @@ export function tableSummary(table: DataTable): string {
   return `Columns: ${columns}\nRows: ${table.rows.length}\nPreview:\n${preview}`;
 }
 
+const ID_COLUMN_PATTERN = /\b(id|key|index|no|num|timestamp|date|time|score|rating|price|age|amount|count|qty|quantity)\b|_id$|_key$/i;
+const TEXT_COLUMN_PATTERN = /text|content|comment|review|description|title|摘要|描述|内容|评论|标题/i;
+
+/**
+ * Heuristically select the column most likely to contain free text.
+ * Excludes obvious ID / numeric metadata columns and prefers columns
+ * whose names hint at text content and whose values are long strings.
+ */
+export function selectTextColumn(
+  columns: string[],
+  rows: Record<string, string | number>[]
+): string | null {
+  if (columns.length === 0) return null;
+
+  const candidates = columns
+    .filter((col) => !ID_COLUMN_PATTERN.test(col))
+    .map((col) => {
+      const values = rows.map((row) => String(row[col] ?? ""));
+      const lengths = values.map((v) => v.length);
+      const avgLen = lengths.reduce((a, b) => a + b, 0) / lengths.length;
+      const maxLen = Math.max(...lengths);
+      const isTextName = TEXT_COLUMN_PATTERN.test(col) ? 1 : 0;
+      return { col, avgLen, maxLen, isTextName };
+    });
+
+  if (candidates.length === 0) {
+    return columns[0];
+  }
+
+  const hasTextLike = candidates.some((c) => c.isTextName === 1 || c.avgLen > 3);
+  if (!hasTextLike) {
+    return columns[0];
+  }
+
+  candidates.sort((a, b) => {
+    if (b.isTextName !== a.isTextName) return b.isTextName - a.isTextName;
+    if (b.avgLen !== a.avgLen) return b.avgLen - a.avgLen;
+    return b.maxLen - a.maxLen;
+  });
+
+  return candidates[0].col;
+}
+
 export async function askHy3(
   client: Hy3Client,
   system: string,

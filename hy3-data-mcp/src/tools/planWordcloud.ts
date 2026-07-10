@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { extname } from "path";
 import { Hy3Client } from "../client.js";
-import { askHy3, loadDataTable, loadInputText, resolveLanguage, sampleText } from "../utils.js";
+import { askHy3, loadDataTable, loadInputText, resolveLanguage, sampleText, selectTextColumn } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
 export const planWordcloudDefinition = {
@@ -62,9 +62,7 @@ export async function runPlanWordcloud(
     const ext = extname(file_path!);
     if (ext === ".csv" || ext === ".json" || ext === ".jsonl" || ext === ".xlsx" || ext === ".xls") {
       const table = await loadDataTable(file_path!);
-      const targetColumn =
-        table.columns.find((c) => /text|content|comment|review|title|描述|内容|评论/i.test(c)) ||
-        table.columns[0];
+      const targetColumn = selectTextColumn(table.columns, table.rows) || table.columns[0];
       inputText = table.rows.map((row) => String(row[targetColumn] ?? "")).join("\n");
     } else {
       inputText = await loadInputText({ file_path: file_path! });

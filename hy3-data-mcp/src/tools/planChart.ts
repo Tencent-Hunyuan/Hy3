@@ -136,11 +136,16 @@ export async function runPlanChart(
   let plan: ChartPlan;
   try {
     const parsed = JSON.parse(answer);
+    const chartType = parsed.chart_type || "bar";
+    const xColumn = parsed.x_column || table.columns[0];
+    const yColumn = parsed.y_column || table.columns[1] || table.columns[0];
     plan = {
-      chart_type: parsed.chart_type || "bar",
-      x_column: parsed.x_column || table.columns[0],
-      y_column: parsed.y_column || table.columns[1] || table.columns[0],
-      value_column: parsed.value_column,
+      chart_type: chartType,
+      x_column: xColumn,
+      y_column: yColumn,
+      value_column:
+        parsed.value_column ||
+        (["sunburst", "treemap"].includes(chartType) ? yColumn : undefined),
       open_column: parsed.open_column,
       close_column: parsed.close_column,
       high_column: parsed.high_column,

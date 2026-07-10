@@ -256,8 +256,11 @@ export async function runRenderChart(
     throw new Error(`y_column '${y_column}' not found in data. Available columns: ${table.columns.join(", ")}`);
   }
 
+  const effectiveValueColumn =
+    value_column || (["sunburst", "treemap"].includes(chart_type) ? y_column : undefined);
+
   validateChartColumns(chart_type as ChartType, table.columns, {
-    value_column,
+    value_column: effectiveValueColumn,
     open_column,
     close_column,
     high_column,
@@ -274,7 +277,7 @@ export async function runRenderChart(
   const config = {
     x_column,
     y_column,
-    value_column,
+    value_column: effectiveValueColumn,
     open_column,
     close_column,
     high_column,

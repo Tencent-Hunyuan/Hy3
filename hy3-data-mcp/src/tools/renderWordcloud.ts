@@ -3,7 +3,7 @@ import { extname } from "path";
 import { renderWordcloudSvg } from "../viz/wordcloud.js";
 import { svgToPng } from "../viz/png.js";
 import { getTheme } from "../viz/themes.js";
-import { buildThemeOverrides, loadDataTable, loadInputText, resolveLanguage, writeOutputFile } from "../utils.js";
+import { buildThemeOverrides, loadDataTable, loadInputText, resolveLanguage, selectTextColumn, writeOutputFile } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
 export const renderWordcloudDefinition = {
@@ -151,9 +151,7 @@ export async function runRenderWordcloud(
       const ext = extname(file_path!);
       if (ext === ".csv" || ext === ".json" || ext === ".jsonl" || ext === ".xlsx" || ext === ".xls") {
         const table = await loadDataTable(file_path!);
-        const targetColumn =
-          table.columns.find((c) => /text|content|comment|review|title|描述|内容|评论/i.test(c)) ||
-          table.columns[0];
+        const targetColumn = selectTextColumn(table.columns, table.rows) || table.columns[0];
         rawText = table.rows.map((row) => String(row[targetColumn] ?? "")).join("\n");
       } else {
         rawText = await loadInputText({ file_path: file_path! });
