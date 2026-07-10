@@ -1,5 +1,5 @@
 import { access, readFile } from "fs/promises";
-import { homedir, platform } from "os";
+import { homedir } from "os";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { basename, dirname, join, resolve } from "path";
@@ -142,9 +142,6 @@ const CLIENT_CANDIDATES: Candidate[] = [
 ];
 
 function openCodeConfigPath(): string {
-  if (platform() === "win32") {
-    return home("AppData", "Roaming", "opencode", "opencode.json");
-  }
   return home(".config", "opencode", "opencode.json");
 }
 
