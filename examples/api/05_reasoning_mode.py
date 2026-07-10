@@ -37,6 +37,9 @@ def run_mode(
     clock: Callable[[], float] = time.perf_counter,
 ) -> ModeResult:
     """使用指定推理强度执行同一个问题并记录耗时。"""
+    if effort not in ("no_think", "high"):
+        raise ValueError("effort must be no_think or high")
+
     started = clock()
     completion = client.chat.completions.create(
         model=config.model,

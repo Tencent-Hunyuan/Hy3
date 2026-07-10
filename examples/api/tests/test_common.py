@@ -409,6 +409,27 @@ class ReasoningExampleTests(unittest.TestCase):
         self.assertEqual(high.reasoning, "distance divided by time")
         self.assertAlmostEqual(high.elapsed, 0.3)
 
+    def test_rejects_modes_outside_the_comparison_contract(self) -> None:
+        module = load_example("05_reasoning_mode.py")
+        client = MagicMock()
+        config = Hy3Config.from_mapping({})
+        clock = MagicMock()
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "effort must be no_think or high",
+        ):
+            module.run_mode(
+                client,
+                config,
+                "low",
+                module.QUESTION,
+                clock=clock,
+            )
+
+        client.chat.completions.create.assert_not_called()
+        clock.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
