@@ -134,16 +134,7 @@ const CLIENT_CANDIDATES: Candidate[] = [
     id: "opencode",
     name: "OpenCode",
     command: "opencode",
-    getPaths: () => {
-      const paths = [openCodeConfigPath()];
-      if (platform() === "win32") {
-        paths.push(home(".config", "opencode", "opencode.json"));
-      } else {
-        paths.push(home("AppData", "Roaming", "opencode", "opencode.json"));
-      }
-      paths.push(home(".opencode", "opencode.json"));
-      return paths;
-    },
+    getPaths: (root) => [openCodeConfigPath(), join(root, "opencode.json")],
     getDefaultPath: () => openCodeConfigPath(),
     scope: "global",
     format: "json",
