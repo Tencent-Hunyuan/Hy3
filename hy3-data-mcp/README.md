@@ -42,7 +42,7 @@ Built for the **2026 Tencent RhinoBird Open Source Talent Program** issue: [Buil
 
 ## Demo Gallery
 
-All screenshots are rendered with the **Premium** theme using the bundled sample datasets.
+All screenshots are rendered with the **Professional** theme using the bundled sample datasets.
 
 <table>
   <tr>

@@ -562,7 +562,7 @@ function buildEChartsOption(
   const option = buildEChartsOptionRaw(chartType, table, config);
   const theme = getTheme(config.theme, config.font_family, themeOverridesFromConfig(config));
   const themed = applyTheme(option, theme);
-  if (theme.name === "premium") {
+  if (theme.name === "premium" || theme.name === "professional") {
     applyPremiumStyling(themed, theme);
   }
   return themed;
@@ -939,7 +939,7 @@ function alpha(hex: string, a: number): string {
   return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${a})`;
 }
 
-function premiumGradient(color: string, vertical = true): any {
+function premiumGradient(color: string, vertical = true, dark = true): any {
   return new echarts.graphic.LinearGradient(
     0,
     0,
@@ -947,7 +947,7 @@ function premiumGradient(color: string, vertical = true): any {
     vertical ? 1 : 0,
     [
       { offset: 0, color },
-      { offset: 1, color: shade(color, 0.5) },
+      { offset: 1, color: shade(color, dark ? 0.5 : 0.2) },
     ]
   );
 }
@@ -955,6 +955,11 @@ function premiumGradient(color: string, vertical = true): any {
 function applyPremiumStyling(option: echarts.EChartsOption, theme: Theme): void {
   if (!option.series) return;
   const seriesArr = Array.isArray(option.series) ? option.series : [option.series];
+  const isDark = theme.name === "premium";
+  const barShadow = isDark ? "rgba(0,0,0,0.25)" : "rgba(0,0,0,0.1)";
+  const lineShadow = isDark ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.12)";
+  const scatterShadow = isDark ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.15)";
+  const graphShadow = isDark ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.15)";
 
   seriesArr.forEach((series: any, index) => {
     if (!series) return;
@@ -965,8 +970,8 @@ function applyPremiumStyling(option: echarts.EChartsOption, theme: Theme): void 
         series.itemStyle = {
           borderRadius: [6, 6, 0, 0],
           shadowBlur: 6,
-          shadowColor: "rgba(0,0,0,0.25)",
-          color: premiumGradient(color),
+          shadowColor: barShadow,
+          ...(isDark ? { color: premiumGradient(color, true, true) } : {}),
           ...series.itemStyle,
         };
         break;
@@ -977,14 +982,14 @@ function applyPremiumStyling(option: echarts.EChartsOption, theme: Theme): void 
         series.symbolSize = 6;
         series.itemStyle = {
           shadowBlur: 8,
-          shadowColor: "rgba(0,0,0,0.3)",
+          shadowColor: lineShadow,
           ...series.itemStyle,
         };
         if (series.areaStyle) {
           series.areaStyle = {
             opacity: 0.3,
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: alpha(color, 0.45) },
+              { offset: 0, color: alpha(color, isDark ? 0.45 : 0.35) },
               { offset: 1, color: alpha(color, 0.05) },
             ]),
             ...series.areaStyle,
@@ -997,7 +1002,7 @@ function applyPremiumStyling(option: echarts.EChartsOption, theme: Theme): void 
         series.itemStyle = {
           opacity: 0.85,
           shadowBlur: 8,
-          shadowColor: "rgba(0,0,0,0.4)",
+          shadowColor: scatterShadow,
           ...series.itemStyle,
         };
         break;
@@ -1056,7 +1061,7 @@ function applyPremiumStyling(option: echarts.EChartsOption, theme: Theme): void 
         series.symbolSize = 6;
         series.itemStyle = {
           shadowBlur: 8,
-          shadowColor: "rgba(0,0,0,0.3)",
+          shadowColor: lineShadow,
           ...series.itemStyle,
         };
         break;
@@ -1065,7 +1070,7 @@ function applyPremiumStyling(option: echarts.EChartsOption, theme: Theme): void 
         series.lineStyle = { opacity: 0.6, curveness: 0.2, ...series.lineStyle };
         series.itemStyle = {
           shadowBlur: 8,
-          shadowColor: "rgba(0,0,0,0.4)",
+          shadowColor: graphShadow,
           ...series.itemStyle,
         };
         break;
