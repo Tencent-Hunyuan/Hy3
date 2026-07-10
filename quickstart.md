@@ -75,7 +75,7 @@ The script makes a single-turn request, appends the assistant content to the con
 
 ## curl
 
-Self-hosted raw HTTP JSON uses `chat_template_kwargs` at the top level:
+Self-hosted raw HTTP JSON uses `chat_template_kwargs` at the top level. In Bash:
 
 ```bash
 curl http://127.0.0.1:8000/v1/chat/completions \
@@ -91,7 +91,26 @@ curl http://127.0.0.1:8000/v1/chat/completions \
   }'
 ```
 
-OpenRouter raw HTTP JSON uses `reasoning` at the top level and reads the key from `${HY3_API_KEY}`:
+In Windows PowerShell, use a single-quoted here-string to preserve the same raw JSON:
+
+```powershell
+$body = @'
+{
+  "model": "hy3",
+  "messages": [{"role": "user", "content": "Hello!"}],
+  "temperature": 0.9,
+  "top_p": 1.0,
+  "max_tokens": 256,
+  "chat_template_kwargs": {"reasoning_effort": "no_think"}
+}
+'@
+
+curl.exe http://127.0.0.1:8000/v1/chat/completions `
+  -H "Content-Type: application/json" `
+  --data-raw $body
+```
+
+OpenRouter raw HTTP JSON uses `reasoning` at the top level and reads the key from `${HY3_API_KEY}`. In Bash:
 
 ```bash
 curl https://openrouter.ai/api/v1/chat/completions \
@@ -105,6 +124,26 @@ curl https://openrouter.ai/api/v1/chat/completions \
     "max_tokens": 256,
     "reasoning": {"effort": "none"}
   }'
+```
+
+In Windows PowerShell, use the environment variable without copying the key into the command:
+
+```powershell
+$body = @'
+{
+  "model": "tencent/hy3:free",
+  "messages": [{"role": "user", "content": "Hello!"}],
+  "temperature": 0.9,
+  "top_p": 1.0,
+  "max_tokens": 256,
+  "reasoning": {"effort": "none"}
+}
+'@
+
+curl.exe https://openrouter.ai/api/v1/chat/completions `
+  -H "Authorization: Bearer $env:HY3_API_KEY" `
+  -H "Content-Type: application/json" `
+  --data-raw $body
 ```
 
 These are wire-format bodies. Neither curl body contains an SDK-only wrapper field.

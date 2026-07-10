@@ -73,12 +73,16 @@ class DocumentationContractTests(unittest.TestCase):
                 "chat_template_kwargs",
                 "extra_body",
                 "tencent/hy3:free",
+                "curl.exe",
+                "$env:HY3_API_KEY",
+                "--data-raw $body",
             ):
                 with self.subTest(
                     path=path.relative_to(ROOT),
                     required_text=required_text,
                 ):
                     self.assertIn(required_text, text)
+            self.assertEqual(text.count("curl.exe"), 2)
             self.assertNotIn('"extra_body": {', text)
 
     def test_markdown_relative_links_resolve(self) -> None:

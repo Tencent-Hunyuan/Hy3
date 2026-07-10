@@ -75,7 +75,7 @@ python examples/api/01_basic_chat.py
 
 ## curl
 
-自部署的原始 HTTP JSON 在顶层使用 `chat_template_kwargs`：
+自部署的原始 HTTP JSON 在顶层使用 `chat_template_kwargs`。Bash 示例：
 
 ```bash
 curl http://127.0.0.1:8000/v1/chat/completions \
@@ -91,7 +91,26 @@ curl http://127.0.0.1:8000/v1/chat/completions \
   }'
 ```
 
-OpenRouter 的原始 HTTP JSON 在顶层使用 `reasoning`，key 仅从 `${HY3_API_KEY}` 读取：
+在 Windows PowerShell 中，使用单引号 here-string 保留完全相同的原始 JSON：
+
+```powershell
+$body = @'
+{
+  "model": "hy3",
+  "messages": [{"role": "user", "content": "Hello!"}],
+  "temperature": 0.9,
+  "top_p": 1.0,
+  "max_tokens": 256,
+  "chat_template_kwargs": {"reasoning_effort": "no_think"}
+}
+'@
+
+curl.exe http://127.0.0.1:8000/v1/chat/completions `
+  -H "Content-Type: application/json" `
+  --data-raw $body
+```
+
+OpenRouter 的原始 HTTP JSON 在顶层使用 `reasoning`，key 仅从 `${HY3_API_KEY}` 读取。Bash 示例：
 
 ```bash
 curl https://openrouter.ai/api/v1/chat/completions \
@@ -105,6 +124,26 @@ curl https://openrouter.ai/api/v1/chat/completions \
     "max_tokens": 256,
     "reasoning": {"effort": "none"}
   }'
+```
+
+在 Windows PowerShell 中，直接使用环境变量，无需把 key 复制到命令中：
+
+```powershell
+$body = @'
+{
+  "model": "tencent/hy3:free",
+  "messages": [{"role": "user", "content": "Hello!"}],
+  "temperature": 0.9,
+  "top_p": 1.0,
+  "max_tokens": 256,
+  "reasoning": {"effort": "none"}
+}
+'@
+
+curl.exe https://openrouter.ai/api/v1/chat/completions `
+  -H "Authorization: Bearer $env:HY3_API_KEY" `
+  -H "Content-Type: application/json" `
+  --data-raw $body
 ```
 
 以上是线上传输格式。两个 curl 请求体都不包含 SDK 专用包装字段。
