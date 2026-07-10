@@ -92,6 +92,11 @@ export const renderDashboardDefinition = {
         description: "Language of the returned summary.",
         default: "auto",
       },
+      show_kpi: {
+        type: "boolean",
+        description: "Whether to render a KPI summary row at the top of the dashboard (HTML only).",
+        default: true,
+      },
     },
     required: ["design"],
   },
@@ -132,6 +137,7 @@ export const renderDashboardSchema = z.object({
   primary_color: z.string().optional(),
   layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).optional(),
   language: z.enum(["zh", "en", "auto"]).default("auto"),
+  show_kpi: z.boolean().default(true),
 });
 
 export async function runRenderDashboard(
@@ -155,6 +161,7 @@ export async function runRenderDashboard(
     primary_color,
     layout,
     language,
+    show_kpi,
   } = renderDashboardSchema.parse(args);
 
   if ((!file_paths || file_paths.length === 0) && !data_file_path && (!data || data.trim().length === 0)) {
@@ -239,7 +246,9 @@ export async function runRenderDashboard(
       theme,
       font_family,
       themeOverrides,
-      resolvedLayout
+      resolvedLayout,
+      show_kpi,
+      resolvedLanguage
     );
     outputPath = await writeOutputFile(`dashboard_${safeTitle}_${Date.now()}.html`, html);
   }

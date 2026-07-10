@@ -42,4 +42,16 @@ describe("renderDashboardHtml", () => {
     expect(html).toContain("#fafbfc");
     expect(html).toContain("#111111");
   });
+
+  it("renders KPI cards by default", () => {
+    const html = renderDashboardHtml([chart], "KPI Test", "nature");
+    expect(html).toContain("kpi-row");
+    expect(html).toContain("Total sales");
+    expect(html).toContain("370");
+  });
+
+  it("can disable KPI cards", () => {
+    const html = renderDashboardHtml([chart], "No KPI Test", "nature", undefined, {}, "grid", false);
+    expect(html).not.toContain('<div class="kpi-row">');
+  });
 });

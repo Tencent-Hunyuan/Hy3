@@ -331,7 +331,9 @@ export function renderDashboardHtml(
   themeName?: string,
   fontFamily?: string,
   overrides?: Partial<Omit<Theme, "name">>,
-  layout: DashboardLayout = "grid"
+  layout: DashboardLayout = "grid",
+  showKpi = true,
+  language: "zh" | "en" = "en"
 ): string {
   const theme = getTheme(themeName, fontFamily, overrides);
   const cardBg = theme.name === "dark" ? "#1f1f1f" : theme.name === "premium" ? "#0F172A" : "#ffffff";
@@ -359,6 +361,8 @@ export function renderDashboardHtml(
     }
     return { title: c.config.title, option: buildEChartsOption(c.chartType, c.table, config) };
   });
+
+  const kpiCards = showKpi ? buildKpiCards(charts, theme, cardBg, language) : "";
 
   const chartDivs = chartItems
     .map((c, i) => {
@@ -409,17 +413,61 @@ export function renderDashboardHtml(
     .chart-box h3 { margin: 0 0 12px 0; font-size: ${isCompact ? "14px" : "16px"}; }
     .chart { width: 100%; height: ${isCompact ? "280px" : isColumns ? "420px" : "400px"}; }
     .chart-hero { grid-column: 1 / -1; }
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .kpi-card { background: ${cardBg}; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; }
+    .kpi-label { font-size: 13px; opacity: 0.8; margin-bottom: 6px; }
+    .kpi-value { font-size: 22px; font-weight: bold; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>${escapeHtml(title)}</h1>
+    ${kpiCards}
     <div class="grid">${chartDivs}</div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <script>${initScript}</script>
 </body>
 </html>`;
+}
+
+function buildKpiCards(
+  charts: Array<{ chartType: ChartType; table: DataTable; config: ChartConfig }>,
+  theme: Theme,
+  cardBg: string,
+  language: "zh" | "en"
+): string {
+  if (charts.length === 0) return "";
+  const first = charts[0];
+  const yCol = first.config.y_column;
+  const numericValues = first.table.rows
+    .map((row) => Number(row[yCol]))
+    .filter((v) => Number.isFinite(v));
+  if (numericValues.length === 0) return "";
+
+  const total = numericValues.reduce((a, b) => a + b, 0);
+  const avg = total / numericValues.length;
+  const max = Math.max(...numericValues);
+  const min = Math.min(...numericValues);
+
+  const fmt = (n: number) => n.toLocaleString(language === "zh" ? "zh-CN" : "en-US");
+  const labels =
+    language === "zh"
+      ? [`总计 ${yCol}`, `平均 ${yCol}`, `最大 ${yCol}`, `最小 ${yCol}`]
+      : [`Total ${yCol}`, `Avg ${yCol}`, `Max ${yCol}`, `Min ${yCol}`];
+  const values = [fmt(total), fmt(Number(avg.toFixed(2))), fmt(max), fmt(min)];
+
+  const cards = labels
+    .map(
+      (label, i) => `
+    <div class="kpi-card" style="background:${cardBg};color:${theme.textColor};font-family:${theme.fontFamily};">
+      <div class="kpi-label">${escapeHtml(label)}</div>
+      <div class="kpi-value">${escapeHtml(values[i])}</div>
+    </div>`
+    )
+    .join("");
+
+  return `<div class="kpi-row">${cards}</div>`;
 }
 
 export async function renderDashboardPng(
