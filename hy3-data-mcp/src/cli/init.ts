@@ -1,4 +1,4 @@
-import { intro, outro, multiselect, text, confirm, isCancel, cancel } from "@clack/prompts";
+import { intro, outro, multiselect, text, confirm, isCancel, cancel, note } from "@clack/prompts";
 import pc from "picocolors";
 import { existsSync } from "fs";
 import { readFile, writeFile, stat, mkdir } from "fs/promises";
@@ -180,12 +180,18 @@ async function askProjectDir(): Promise<string> {
 
 async function selectHosts(detected: DetectedClient[]): Promise<string[]> {
   const installed = detected.filter((c) => c.installed);
+  const notInstalled = detected.filter((c) => !c.installed);
 
   if (installed.length === 0) {
     cancel(
       "No supported MCP hosts detected. Install one of: CodeBuddy / WorkBuddy, Cursor, Cline, Roo Code, Continue, Codex CLI, Claude Code, or OpenCode, then run 'hdm init' again."
     );
     process.exit(0);
+  }
+
+  if (notInstalled.length > 0) {
+    const list = notInstalled.map((c) => `• ${c.name}`).join("\n");
+    note(list, "Supported but not installed");
   }
 
   const options = installed.map((client) => ({
