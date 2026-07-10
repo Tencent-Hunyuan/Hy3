@@ -17,14 +17,16 @@ async function getVersion(): Promise<string> {
 }
 
 const command = process.argv[2];
+const subcommand = process.argv[3];
 
 async function main() {
   switch (command) {
     case "init":
-      await initCommand();
-      break;
-    case "mcp":
-      await mcpCommand();
+      if (subcommand === "mcp") {
+        await mcpCommand();
+      } else {
+        await initCommand();
+      }
       break;
     case "--version":
     case "-v":
@@ -33,17 +35,13 @@ async function main() {
     case "--help":
     case "-h":
     case undefined:
-      console.log("Usage: hdm <command>");
+      console.log("Usage: hdm <command> [subcommand]");
       console.log("");
       console.log("Commands:");
-      console.log(
-        "  init       Full interactive installer (create .env + configure MCP hosts)"
-      );
-      console.log(
-        "  mcp        Configure/reconfigure MCP hosts only, reusing the existing .env"
-      );
-      console.log("  --version  Show installed version");
-      console.log("  --help     Show this help message");
+      console.log("  init           Full interactive installer (create .env + configure MCP hosts)");
+      console.log("  init mcp       Configure/reconfigure MCP hosts only, reusing the existing .env");
+      console.log("  --version      Show installed version");
+      console.log("  --help         Show this help message");
       break;
     default:
       console.error(`Unknown command: ${command}`);
