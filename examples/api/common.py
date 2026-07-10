@@ -141,10 +141,10 @@ def object_to_dict(value: Any) -> Any:
 
 
 def extract_reasoning(message: Any) -> tuple[str, list[Any]]:
-    reasoning = _field(message, "reasoning")
-    if reasoning is None:
-        reasoning = _field(message, "reasoning_content")
-    reasoning = "" if reasoning is None else str(reasoning)
+    reasoning = _field(message, "reasoning") or _field(
+        message, "reasoning_content"
+    )
+    reasoning = str(reasoning or "")
 
     raw_details = _field(message, "reasoning_details")
     normalized_details = object_to_dict(raw_details)

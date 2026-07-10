@@ -168,6 +168,19 @@ class CompletionNormalizationTests(unittest.TestCase):
         self.assertEqual(reasoning, "legacy plan")
         self.assertEqual(details, [])
 
+    def test_falls_back_when_reasoning_is_empty(self) -> None:
+        messages = (
+            SimpleNamespace(reasoning="", reasoning_content="legacy plan"),
+            {"reasoning": "", "reasoning_content": "legacy plan"},
+        )
+
+        for message in messages:
+            with self.subTest(message=message):
+                reasoning, details = extract_reasoning(message)
+
+                self.assertEqual(reasoning, "legacy plan")
+                self.assertEqual(details, [])
+
     def test_derives_text_from_structured_details(self) -> None:
         message = SimpleNamespace(
             model_extra={
