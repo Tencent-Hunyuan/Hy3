@@ -111,6 +111,27 @@ Model usefulness is not fully captured by benchmarks. Based on extensive product
 
 ## Quickstart
 
+### Cloud API (TokenHub)
+
+Get started in 5 minutes with the hosted API — no GPU required:
+
+- [**Quickstart Guide**](./api/quickstart.md) — API basics, base URL, authentication, parameters, troubleshooting
+- [**Examples**](./api/examples/) — 6 runnable demos covering chat, streaming, tool calling, reasoning mode, and error handling
+
+```bash
+# 1. Install dependencies
+pip install openai python-dotenv
+
+# 2. Configure environment
+cp .env.example .env
+# Edit .env: set HY3_API_KEY, HY3_BASE_URL, HY3_MODEL
+
+# 3. Run an example
+python api/examples/01_basic_chat/basic_chat.py
+```
+
+### Self-hosted (vLLM / SGLang)
+
 Deploy Hy3 with [vLLM](#vllm) or [SGLang](#sglang) first, then call the OpenAI-compatible API:
 
 ```python
@@ -125,7 +146,6 @@ response = client.chat.completions.create(
     ],
     temperature=0.9,
     top_p=1.0,
-    # reasoning_effort: "no_think" (default, direct response), "low", "high" (deep chain-of-thought)
     extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
 )
 print(response.choices[0].message.content)
