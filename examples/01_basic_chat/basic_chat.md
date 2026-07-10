@@ -82,14 +82,14 @@
 
 ### 关键字段说明
 
-| 字段                          | 说明                                                          |
-| ----------------------------- | ------------------------------------------------------------- |
-| `id`                        | 唯一请求标识，可用于日志追踪                                  |
-| `choices[].message.content` | 模型生成的回答内容                                            |
-| `choices[].finish_reason`   | 结束原因：`stop`（正常结束）、`length`（达到 token 上限） |
-| `usage.prompt_tokens`       | 输入消息的 token 数                                           |
-| `usage.completion_tokens`   | 模型生成内容的 token 数                                       |
-| `usage.total_tokens`        | 总 token 数                                                   |
+|字段|说明|
+|:-|:-|
+|`id`|唯一请求标识，可用于日志追踪|
+|`choices[].message.content`|模型生成的回答内容|
+|`choices[].finish_reason`|结束原因：`stop`（正常结束）、`length`（达到 token 上限）|
+|`usage.prompt_tokens`|输入消息的 token 数|
+|`usage.completion_tokens`|模型生成内容的 token 数|
+|`usage.total_tokens`|总 token 数|
 
 ---
 

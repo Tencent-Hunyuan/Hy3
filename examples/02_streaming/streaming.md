@@ -77,12 +77,12 @@ data: [DONE]
 
 ### 各阶段 chunk 特征
 
-| 阶段 | delta.role | delta.content | finish_reason |
-|------|-----------|--------------|---------------|
-| 首个 chunk | `"assistant"` | `""` 或空 | `null` |
-| 中间 chunk | `null` | 文本片段 | `null` |
-| 最后一个 chunk | `null` | `""` 或空 | `"stop"` |
-| 结束标记 | — | — | `[DONE]` |
+|阶段|delta.role|delta.content|finish_reason|
+|:-|:-|:-|:-|
+|首个 chunk|`"assistant"`|`""` 或空|`null`|
+|中间 chunk|`null`|文本片段|`null`|
+|最后一个 chunk|`null`|`""` 或空|`"stop"`|
+|结束标记|—|—|`[DONE]`|
 
 ---
 

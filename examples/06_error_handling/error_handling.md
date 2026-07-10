@@ -4,12 +4,12 @@
 
 生产环境中 API 调用可能遇到各种错误，本示例演示如何优雅地处理它们：
 
-| 错误类型 | 触发条件 | 处理策略 |
-|---------|---------|---------|
-| **超时 (APITimeoutError)** | 请求超过设定的 timeout | 增加超时 + 重试 |
-| **限流 (RateLimitError)** | HTTP 429，请求过频 | 指数退避 + jitter + 重试 |
-| **连接错误 (APIConnectionError)** | 网络不通、服务不可达 | 检查网络 + 重试 |
-| **其他 API 错误** | 400/401/500 等 | 根据状态码分别处理 |
+|错误类型|触发条件|处理策略|
+|:-|:-|:-|
+|**超时 (APITimeoutError)**|请求超过设定的 timeout|增加超时 + 重试|
+|**限流 (RateLimitError)**|HTTP 429，请求过频|指数退避 + jitter + 重试|
+|**连接错误 (APIConnectionError)**|网络不通、服务不可达|检查网络 + 重试|
+|**其他 API 错误**|400/401/500 等|根据状态码分别处理|
 
 ---
 
@@ -93,6 +93,8 @@ client = OpenAI(
 ### 2. 异常处理优先级
 
 ```python
+from openai import OpenAI, APITimeoutError, RateLimitError, APIConnectionError, APIError
+
 try:
     response = client.chat.completions.create(...)
 except APITimeoutError:

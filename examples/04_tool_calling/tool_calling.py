@@ -95,9 +95,25 @@ def execute_tool(tool_call):
 
     elif fn_name == "calculate":
         try:
-            # 安全起见仅做简单运算，生产环境请使用更安全的方案
-            result = eval(args["expression"], {"__builtins__": {}}, {})
-            return json.dumps({"expression": args["expression"], "result": result})
+            import ast
+            import operator as op
+            OPS = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
+                   ast.Div: op.truediv, ast.FloorDiv: op.floordiv,
+                   ast.Mod: op.mod, ast.Pow: op.pow}
+            UOPS = {ast.UAdd: op.pos, ast.USub: op.neg}
+            def _eval(node):
+                if isinstance(node, ast.Expression):
+                    return _eval(node.body)
+                if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+                    return node.value
+                if isinstance(node, ast.BinOp) and type(node.op) in OPS:
+                    return OPS[type(node.op)](_eval(node.left), _eval(node.right))
+                if isinstance(node, ast.UnaryOp) and type(node.op) in UOPS:
+                    return UOPS[type(node.op)](_eval(node.operand))
+                raise ValueError("不支持的表达式")
+            expr = args["expression"]
+            result = _eval(ast.parse(expr, mode="eval"))
+            return json.dumps({"expression": expr, "result": result})
         except Exception as e:
             return json.dumps({"error": str(e)})
 
