@@ -1,227 +1,99 @@
-<p align="left">
-    <a href="README_CN.md">中文</a>&nbsp;｜&nbsp;English
-</p>
-<br>
+# 小说设定编写器
 
-<p align="center">
- <img src="assets/logo-en.png" width="400"/> <br>
-</p>
+一个**纯前端、零依赖、单文件**的小说设定生成工具。调用腾讯混元（Hunyuan）OpenAI 兼容接口，根据关键词生成结构完整的小说设定，支持流式逐字输出。
 
-<div align="center" style="line-height: 1;">
+## Hy3 在系统中的角色
 
+**Hy3** 是驱动本工具开发协作的 AI 编程助手（CodeBuddy 底层模型）。在本项目中，Hy3 并不参与小说内容的「创作」——小说文本由用户在界面输入关键词、由**腾讯混元大模型**实时生成；Hy3 承担的是**工程实现与维护**角色：
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](#license)
-&nbsp;&nbsp;
-[![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Tencent%20Hy-ffc107?color=ffc107&logoColor=white)](https://huggingface.co/tencent/Hy3)
-&nbsp;&nbsp;
-[![ModelScope](https://img.shields.io/badge/ModelScope-Tencent%20Hy-624aff)](https://modelscope.cn/models/Tencent-Hunyuan/Hy3)
-&nbsp;&nbsp;
-[![cnb.cool](https://img.shields.io/badge/cnb.cool-Tencent%20Hy-blue?logoColor=white)](https://cnb.cool/ai-models/tencent/Hy3)
-&nbsp;&nbsp;
-[![GitCode](https://img.shields.io/badge/GitCode-Tencent%20Hy-red?logoColor=white)](https://ai.gitcode.com/tencent_hunyuan/Hy3)
+- **需求落地**：将用户对交互、稳定性、观感的要求转化为可运行的代码（如气泡复制/修改功能、连续多轮对话的角色兼容处理）。
+- **缺陷修复**：定位并修复运行期问题（如混元接口 `HTTP 400 · invalid role 'ai'`、本地 `file://` 下复制失灵、AI 生成内容混入无意义英文词等）。
+- **代码协作记录**：在相关代码块上方以 `// ── [CodeBuddy 协作] ──` 注释标注其参与实现的位置，便于追溯（见文末「哪些代码块由 CodeBuddy 协作完成」）。
 
-</div>
+简言之：**混元 = 内容生成引擎；Hy3 = 该工具的开发与维护协作者。**
 
-<p align="center">
-    🖥️&nbsp;<a href="https://aistudio.tencent.com/"><b>Official Website</b></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    💬&nbsp;<a href="https://github.com/Tencent-Hunyuan/Hy3"><b>GitHub</b></a></p>
+## 功能
 
----
+1. **API 设置**：填写并保存自己的 Hunyuan API Key（仅存于本机浏览器 `localStorage`），支持「测试连接」验证有效性。
+2. **作者风格库**：提前写好你欣赏的作者的写作风格，创作时一键套用（单选）。
+3. **创作聊天**：输入关键词 + 选择字数规模 + 选择作者风格，像聊天室一样生成小说设定，AI 逐字流式显示，支持复制、修改、重新生成、清空记录、多轮上下文。
 
-## Table of Contents
+## 增强功能
 
-- [Model Introduction](#model-introduction)
-- [Stronger Agent Capabilities](#stronger-agent-capabilities)
-- [More Reliable Product Experiences](#more-reliable-product-experiences)
-- [Benchmark Appendix](#benchmark-appendix)
-- [News](#news)
-- [Model Links](#model-links)
-- [Quickstart](#quickstart)
-- [Deployment](#deployment)
-  - [vLLM](#vllm)
-  - [SGLang](#sglang)
-- [Finetuning](#finetuning)
-- [Quantization](#quantization)
-- [License](#license)
-- [Contact Us](#contact-us)
+- **气泡操作区**
+  - **AI 气泡**：「复制」（复制当前气泡真实文本，含流式生成后的完整内容）与「重新生成」（沿用原条目的字数规模与作者风格并重跑）。
+  - **用户气泡**：「复制」（复制你输入的关键词原文）与「修改」（就地编辑文本，保存后若下一条是 AI 生成内容会自动重新生成以反映修改）。
+  - **导入设定气泡**：「复制」原文，并标注「📄 导入设定（只读）」不可编辑。
+  - 复制采用 `navigator.clipboard`，在 `file://` 等非安全上下文自动降级到 `textarea + execCommand`，确保本地打开也能复制成功。
+- **多轮上下文兼容**：本地消息中 AI 角色标识为 `ai`，发送给混元前会自动映射为 `assistant`，避免连续多轮对话触发 `HTTP 400 · invalid role 'ai'`。失败时**撤销**本次 AI 占位，不再把报错文本写入历史，从而避免污染后续上下文（解决「限制太死 / 连续输出必报错」问题）。
+- **输出规范**：系统提示新增「输出规范（必须严格遵守）」，约束模型使用规范中文、术语前后统一、不夹杂无意义英文词（如 `stride` 这类原形英文词），板块以 `【xxx】` 格式呈现，观感更统一。
+- **重新生成沿用设定**：点「重新生成」时，会严格沿用该条最初的字数规模与作者风格，并带上该消息之前的多轮历史，保证结果可复现、上下文连贯。
+- **导入 txt 设定**：点「导入 txt」可上传**仅限 `.txt`** 的文本文件。导入内容会作为一条「📄 导入设定（只读）」气泡插入**当前会话**并成为历史上下文；你可在输入框继续补充或让 AI 重新生成，从而基于该设定进行对应风格的续写（上传的 txt 原文气泡不可编辑）。系统提示已告知 AI 在导入设定基础上续写。
+- **导出 txt**：点「导出 txt」会先提示「只会导出最新一条 AI 生成内容」，确认后让你为文件命名，再以 `Blob` 下载。若最新一条不是 AI 消息，会自动向前回溯最后一条 AI 生成内容。
+- **多会话**：最多同时存在 **10 个**会话，可新建 / 重命名 / 删除 / 切换。
+  - 新建：达 10 个上限时禁止新建并提示先删除一个。
+  - 自动命名：发送首条消息后，若会话名仍为默认「会话 N」，自动取该条关键词前 12 字作为名称；也可随时「重命名」。
+  - 删除：至少保留一个会话；删除当前会话会自动切到列表首个。
+  - 「清空记录」作用域为**当前会话**。
 
----
+## 文件
 
-## Model Introduction
+| 文件 | 说明 |
+|------|------|
+| `index.html` | 主程序（HTML + CSS + JS 全部内联），双击即可打开 |
+| `proxy.js`   | 可选本地 CORS 代理，仅当浏览器直连被跨域拦截时使用 |
 
-**Hy3** is a 295B-parameter Mixture-of-Experts (MoE) model with 21B active parameters and 3.8B MTP layer parameters, developed by the Tencent Hy Team. Following the Hy3 Preview launch in late April, we gathered feedback from 50+ products and scaled up post-training with higher quality data. Today, we introduce Hy3, which outperforms similar-size models and rivals flagship open-source models with 2-5x parameters. It also shows significant gains in utility across various products and productivity tasks.
+## 哪些代码块由 CodeBuddy 协作完成
 
+以下代码块由 **Hy3（CodeBuddy 协作）** 参与实现，在 `index.html` 中以 `// ── [CodeBuddy 协作] ──` 注释标注，可直接检索定位：
 
-| Property | Value |
-|:---|:---|
-| Architecture | Mixture-of-Experts (MoE) |
-| Total Parameters | 295B |
-| Activated Parameters | 21B |
-| MTP Layer Parameters | 3.8B |
-| Number of Layers (excluding MTP layer) | 80 |
-| Number of MTP Layers | 1 |
-| Attention Heads | 64 (GQA, 8 KV heads, head dim 128) |
-| Hidden Size | 4096 |
-| Intermediate Size | 13312 |
-| Context Length | 256K |
-| Vocabulary Size | 120832 |
-| Number of Experts | 192 experts, top-8 activated |
-| Supported Precisions | BF16 |
+| 位置（函数 / 区块） | 协作内容 |
+|--------------------|----------|
+| `copyText()` | 复制助手：带 `file://` 降级方案并校验空内容，解决 AI 气泡复制失灵 |
+| `renderMessage()` 的 `meta` 构建块 | 气泡操作区：AI 复制读实时 DOM 文本、用户气泡新增「复制 / 修改」、导入设定加「复制」 |
+| `editUserMessage()` | 用户消息「修改」：就地编辑并可在保存后自动重新生成 |
+| `send()` 历史角色映射 | `ai → assistant` 映射，避免混元接口 `HTTP 400` |
+| `send()` 的 `catch` 兜底 | 失败时撤销 AI 占位，避免报错写入历史污染后续上下文 |
+| `regenerate()` 历史角色映射 | 重新生成历史 `ai → assistant` 映射 |
+| `regenerate()` 流式调用 | 重新生成流式调用加错误兜底 |
+| `buildSystem()` 的「输出规范」 | 系统提示新增规范中文、术语一致、禁止夹杂无意义英文词的约束 |
 
-## Stronger Agent Capabilities
+> 其余代码（项目骨架、存储层、会话管理、CORS 代理等）为原有实现，未在此清单中标注。
 
-Building on Hy3 Preview, we further improved the quality and diversity of post-training data while scaling up RL training. Hy3 shows solid gains across reasoning, agentic, and long-context tasks, competitive with much larger flagship models.
+## 快速开始
 
-<p align="center">
-  <img src="assets/benchmark.png" width="100%"/>
-</p>
+1. 准备一个腾讯混元 API Key（腾讯云控制台 → 混元大模型 → 创建密钥）。
+2. 双击 `index.html` 在浏览器打开。
+3. 进入 **① API 设置**，粘贴 Key，选模型，点「测试连接」确认可用，点「保存配置」。
+4. 进入 **② 作者风格**，新建你想要的作者风格（如「金庸 / 武侠快意恩仇」）。
+5. 进入 **③ 创作**，输入关键词、选字数与风格，点「生成」（或 `Ctrl/Cmd + Enter`）。
 
-In productivity scenarios such as coding, office work, financial modeling, frontend design, and game development, Hy3 has made remarkable progress and can now serve as a reliable, cost-effective model option.
+## 关于 CORS（跨域）
 
-We don't think public benchmark scores tell the full story. So we ran a blind evaluation with 270 experts using tasks from their work, and Hy3 scored 2.67/4, outperforming GLM-5.1 at 2.51/4. The advantage was most substantial in frontend development, data & storage, and CI/CD tasks.
-
-## More Reliable Product Experiences
-
-Model usefulness is not fully captured by benchmarks. Based on extensive product feedback, we identified and fixed the following issues, receiving consistently positive feedback from product teams.
-
-**Stability of tool calls and output formats**: We fixed multiple baseline reliability issues, bringing the model to production-grade standards across tool configurations and output constraints. Tool-call error recovery and overall efficiency improved. Hy3 also generalizes across different agent scaffoldings. On SWE-Bench Verified, accuracy variance across scaffoldings like CodeBuddy, Cline, and KiloCode remains within 4%.
-
-**Knowledge and anti-hallucination**: Guided by the ideal of "answer when grounded, state when evidence is missing, do not conflate sources or fabricate data," we implemented fine-grained data cleaning and training constraints. In internal evaluations based on real-world scenarios, Hy3's hallucination rate dropped from 12.5% to 5.4%, and commonsense error rates fell from 25.4% to 12.7%. These improvements materially reduce fact conflation, fabrication, and logical contradiction.
-
-**Complex context retention and multi-turn intent tracking**: Through joint optimization of SFT and RL, Hy3 improved on operational pain points like coreference resolution, ellipsis recovery, and multi-turn constraint inheritance. On internal comprehensive multi-turn tests, the issue rate dropped from 17.4% to 7.9%. Hy3 also improved markedly on long-dialogue evals like MRCR. Its outputs are more concise while ensuring complex intents do not decay or drift over long-horizon interactions.
-
-## Benchmark Appendix
-
-<p align="center">
-  <img src="assets/benchmark-appendix.png" width="100%"/>
-</p>
-
-## News
-
-
-* 🔥 We open-source **Hy3** and **Hy3-FP8** model weights on [Hugging Face](https://huggingface.co/tencent/Hy3), [ModelScope](https://modelscope.cn/models/Tencent-Hunyuan/Hy3), [GitCode](https://ai.gitcode.com/tencent_hunyuan/Hy3), and [CNB](https://cnb.cool/ai-models/tencent/Hy3).
-
-## Model Links
-
-
-| Model Name | Description | Hugging Face | ModelScope | GitCode | CNB |
-|:---|:---|:---:|:---:|:---:|:---:|
-| Hy3 | Instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3) | [Model](https://cnb.cool/ai-models/tencent/Hy3) |
-| Hy3-FP8 | FP8 quantized instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3-FP8) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3-FP8) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3-FP8) | [Model](https://cnb.cool/ai-models/tencent/Hy3-FP8) |
-
-## Quickstart
-
-Deploy Hy3 with [vLLM](#vllm) or [SGLang](#sglang) first, then call the OpenAI-compatible API:
-
-```python
-from openai import OpenAI
-
-client = OpenAI(base_url="http://127.0.0.1:8000/v1", api_key="EMPTY")
-
-response = client.chat.completions.create(
-    model="hy3",
-    messages=[
-        {"role": "user", "content": "Hello! Can you briefly introduce yourself?"},
-    ],
-    temperature=0.9,
-    top_p=1.0,
-    # reasoning_effort: "no_think" (default, direct response), "low", "high" (deep chain-of-thought)
-    extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
-)
-print(response.choices[0].message.content)
-```
-
-> **Recommended parameters**: `temperature=0.9`, `top_p=1.0`.
->
-> **Reasoning mode**: Set `reasoning_effort` to `"high"` for complex tasks (math, coding, reasoning) or `"no_think"` for direct responses.
-
-See the [Deployment](#deployment) section below for how to start the API server.
-
-## Deployment
-
-Hy3 has 295B parameters in total. To serve it on 8 GPUs, we recommend using H20-3e or other GPUs with larger memory capacity.
-
-For production serving, we recommend using vLLM or SGLang, both of which provide dedicated recipes for Hy3:
-
-- [vLLM](https://github.com/vllm-project/vllm) - see [vLLM recipes](https://recipes.vllm.ai/tencent/Hy3)
-
-- [SGLang](https://docs.sglang.io/) - see [SGLang cookbook](https://lmsysorg.mintlify.app/cookbook/autoregressive/Tencent/Hy3)
-
-### vLLM
-
-Build vLLM from source:
-```bash
-uv venv --python 3.12 --seed --managed-python
-source .venv/bin/activate
-git clone https://github.com/vllm-project/vllm.git
-cd vllm
-uv pip install --editable . --torch-backend=auto
-```
-
-Start the vLLM server with MTP enabled:
+本程序默认**直接调用混元接口**。若浏览器控制台报 CORS 错误导致生成失败，启用随附的本地代理：
 
 ```bash
-# Switch to trtllm backend to work-around mnnvl workspace size issue.
-export VLLM_FLASHINFER_ALLREDUCE_BACKEND=trtllm
-vllm serve tencent/Hy3 \
-  --tensor-parallel-size 8 \
-  --speculative-config.method mtp \
-  --speculative-config.num_speculative_tokens 2 \
-  --tool-call-parser hy_v3 \
-  --reasoning-parser hy_v3 \
-  --enable-auto-tool-choice \
-  --port 8000 \
-  --served-model-name hy3
+# 需要已安装 Node.js
+node proxy.js
 ```
 
-### SGLang
+启动后把 **① API 设置**里的 Base URL 改为：
 
-Build SGLang from source:
-```bash
-git clone https://github.com/sgl-project/sglang
-cd sglang
-pip3 install pip --upgrade
-pip3 install "transformers>=5.6.0"
-pip3 install -e "python"
+```
+http://localhost:8787/v1
 ```
 
-Launch SGLang server with MTP enabled:
+代理只在你本机运行，转发你的请求，密钥不经过任何第三方。用完 `Ctrl + C` 关闭即可。
 
-```bash
-python3 -m sglang.launch_server \
-  --model tencent/Hy3 \
-  --tp-size 8 \
-  --tool-call-parser hunyuan \
-  --reasoning-parser hunyuan \
-  --speculative-num-steps 2 \
-  --speculative-eagle-topk 1 \
-  --speculative-num-draft-tokens 3 \
-  --speculative-algorithm EAGLE \
-  --port 8000 \
-  --served-model-name hy3
-```
+## 数据说明
 
-## Finetuning
+所有数据（API 配置、作者库、会话与聊天记录）均保存在浏览器的 `localStorage`，清除浏览器数据即会丢失，不会上传到任何服务器。旧的「单一聊天记录」会在首次启动时自动迁移为「会话 1」，不会丢失。
 
-Hy3 provides a complete model finetuning pipeline. For detailed documentation, please refer to: [Finetuning Guide](./finetune/README.md)
+## 接口信息
 
-## Quantization
+- 接口地址：`https://api.hunyuan.cloud.tencent.com/v1/chat/completions`
+- 鉴权方式：`Authorization: Bearer <API Key>`
+- 流式协议：SSE（`stream: true`，按 `choices[0].delta.content` 增量返回，结束符 `data: [DONE]`）
+- 默认模型：`hunyuan-turbos-latest`（另可选 `hunyuan-turbos`、`hunyuan-lite`、`hunyuan-standard` 或自定义）
 
-We provide [AngelSlim](https://github.com/tencent/AngelSlim), a more accessible, comprehensive, and efficient toolkit for large model compression. AngelSlim supports a comprehensive suite of compression tools for large-scale multimodal models, including common quantization algorithms, low-bit quantization, and speculative sampling.
-
-## License
-
-
-Hy3 is released under the **Apache License 2.0**. See [LICENSE](./LICENSE) for details.
-
-## Contact Us
-
-If you would like to leave a message for our R&D and product teams, welcome to contact us. You can also reach us via email:
-
-📧 **hunyuan_opensource@tencent.com**
-
----
-
-<p align="center">
-  <i>Hy3 is developed by the Tencent Hy Team.</i>
-</p>
+> 混元能力正逐步迁移至 TokenHub，若将来接口地址变化，只需在「① API 设置」里修改 Base URL。
