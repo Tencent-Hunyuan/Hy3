@@ -1,8 +1,8 @@
 import { access, readFile } from "fs/promises";
-import { homedir } from "os";
+import { homedir, platform } from "os";
 import { exec } from "child_process";
 import { promisify } from "util";
-import { join, resolve } from "path";
+import { basename, join, resolve } from "path";
 
 const execAsync = promisify(exec);
 
@@ -103,14 +103,30 @@ const CLIENT_CANDIDATES: Candidate[] = [
     scope: "global",
   },
   {
-    id: "opencodes",
-    name: "OpenCode / OpenCodes",
+    id: "opencode",
+    name: "OpenCode",
     command: "opencode",
-    getPaths: () => [home(".opencodes", "mcp.json"), home(".opencode", "mcp.json")],
-    getDefaultPath: () => home(".opencodes", "mcp.json"),
+    getPaths: () => {
+      const paths = [openCodeConfigPath()];
+      if (platform() === "win32") {
+        paths.push(home(".config", "opencode", "opencode.json"));
+      } else {
+        paths.push(home("AppData", "Roaming", "opencode", "opencode.json"));
+      }
+      paths.push(home(".opencode", "opencode.json"));
+      return paths;
+    },
+    getDefaultPath: () => openCodeConfigPath(),
     scope: "global",
   },
 ];
+
+function openCodeConfigPath(): string {
+  if (platform() === "win32") {
+    return home("AppData", "Roaming", "opencode", "opencode.json");
+  }
+  return home(".config", "opencode", "opencode.json");
+}
 
 async function exists(path: string): Promise<boolean> {
   try {
@@ -132,11 +148,21 @@ async function commandExists(command?: string): Promise<boolean> {
   }
 }
 
+function isOpenCodeConfigPath(path: string): boolean {
+  return basename(path) === "opencode.json";
+}
+
 async function isConfigured(path: string): Promise<boolean> {
   if (!(await exists(path))) return false;
   try {
     const content = await readFile(path, "utf-8");
     const config = JSON.parse(content);
+
+    if (isOpenCodeConfigPath(path)) {
+      const mcp = config.mcp ?? {};
+      return Object.keys(mcp).some((key) => key.toLowerCase().includes("hy3-data-mcp"));
+    }
+
     const servers = config.mcpServers ?? config.servers ?? config.mcp?.servers ?? {};
     return Object.keys(servers).some((key) => key.toLowerCase().includes("hy3-data-mcp"));
   } catch {
