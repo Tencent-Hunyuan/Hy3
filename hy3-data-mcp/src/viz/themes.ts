@@ -1,7 +1,7 @@
 import type { EChartsOption } from "echarts";
 
 export type ThemeName =
-  "light" | "dark" | "colorful" | "minimal" | "professional" | "retro" | "science" | "nature";
+  "light" | "dark" | "colorful" | "minimal" | "professional" | "premium" | "retro" | "science" | "nature";
 
 export interface Theme {
   name: ThemeName;
@@ -117,6 +117,25 @@ export const themes: Record<ThemeName, Theme> = {
       "#0369a1",
       "#075985",
       "#0c4a6e",
+    ],
+  },
+  premium: {
+    name: "premium",
+    backgroundColor: "#0B1120",
+    textColor: "#E2E8F0",
+    axisColor: "#475569",
+    splitLineColor: "#1E293B",
+    fontFamily: natureFont,
+    palette: [
+      "#38BDF8",
+      "#818CF8",
+      "#34D399",
+      "#FBBF24",
+      "#F87171",
+      "#A78BFA",
+      "#22D3EE",
+      "#F472B6",
+      "#94A3B8",
     ],
   },
   retro: {

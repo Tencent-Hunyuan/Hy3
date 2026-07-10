@@ -124,7 +124,7 @@ export function renderChartHtml(
   const height = config.height ?? 500;
   const option = buildEChartsOption(chartType, table, config);
   const theme = getTheme(config.theme, config.font_family, themeOverridesFromConfig(config));
-  const containerBg = theme.name === "dark" ? "#1f1f1f" : theme.backgroundColor;
+  const containerBg = theme.name === "dark" ? "#1f1f1f" : theme.name === "premium" ? "#0F172A" : theme.backgroundColor;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -240,7 +240,7 @@ export function renderKnowledgeGraphHtml(
 ): string {
   const theme = getTheme(themeName, fontFamily, overrides);
   const option = applyTheme(buildKnowledgeGraphOption(nodes, links, title, true), theme);
-  const containerBg = theme.name === "dark" ? "#1f1f1f" : theme.backgroundColor;
+  const containerBg = theme.name === "dark" ? "#1f1f1f" : theme.name === "premium" ? "#0F172A" : theme.backgroundColor;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -279,7 +279,7 @@ export function renderDashboardHtml(
   layout: DashboardLayout = "grid"
 ): string {
   const theme = getTheme(themeName, fontFamily, overrides);
-  const cardBg = theme.name === "dark" ? "#1f1f1f" : "#ffffff";
+  const cardBg = theme.name === "dark" ? "#1f1f1f" : theme.name === "premium" ? "#0F172A" : "#ffffff";
   const chartOverrides: Partial<ChartConfig> = themeOverridesToChartConfig(overrides);
 
   const isHero = layout === "hero";
@@ -561,7 +561,11 @@ function buildEChartsOption(
 ): echarts.EChartsOption {
   const option = buildEChartsOptionRaw(chartType, table, config);
   const theme = getTheme(config.theme, config.font_family, themeOverridesFromConfig(config));
-  return applyTheme(option, theme);
+  const themed = applyTheme(option, theme);
+  if (theme.name === "premium") {
+    applyPremiumStyling(themed, theme);
+  }
+  return themed;
 }
 
 function buildEChartsOptionRaw(
@@ -907,6 +911,169 @@ function buildEChartsOptionRaw(
         series: [{ data: yData, type: "bar" }],
       };
   }
+}
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const clean = hex.replace("#", "");
+  if (clean.length !== 6) return null;
+  const r = parseInt(clean.slice(0, 2), 16);
+  const g = parseInt(clean.slice(2, 4), 16);
+  const b = parseInt(clean.slice(4, 6), 16);
+  if (isNaN(r) || isNaN(g) || isNaN(b)) return null;
+  return { r, g, b };
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  return `#${[r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("")}`;
+}
+
+function shade(hex: string, factor: number): string {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return hex;
+  return rgbToHex(rgb.r * (1 - factor) + 0 * factor, rgb.g * (1 - factor) + 0 * factor, rgb.b * (1 - factor) + 0 * factor);
+}
+
+function alpha(hex: string, a: number): string {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return hex;
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${a})`;
+}
+
+function premiumGradient(color: string, vertical = true): any {
+  return new echarts.graphic.LinearGradient(
+    0,
+    0,
+    vertical ? 0 : 1,
+    vertical ? 1 : 0,
+    [
+      { offset: 0, color },
+      { offset: 1, color: shade(color, 0.5) },
+    ]
+  );
+}
+
+function applyPremiumStyling(option: echarts.EChartsOption, theme: Theme): void {
+  if (!option.series) return;
+  const seriesArr = Array.isArray(option.series) ? option.series : [option.series];
+
+  seriesArr.forEach((series: any, index) => {
+    if (!series) return;
+    const color = theme.palette[index % theme.palette.length];
+
+    switch (series.type) {
+      case "bar": {
+        series.itemStyle = {
+          borderRadius: [6, 6, 0, 0],
+          shadowBlur: 6,
+          shadowColor: "rgba(0,0,0,0.25)",
+          color: premiumGradient(color),
+          ...series.itemStyle,
+        };
+        break;
+      }
+      case "line": {
+        series.smooth = true;
+        series.lineStyle = { width: 3, ...series.lineStyle };
+        series.symbolSize = 6;
+        series.itemStyle = {
+          shadowBlur: 8,
+          shadowColor: "rgba(0,0,0,0.3)",
+          ...series.itemStyle,
+        };
+        if (series.areaStyle) {
+          series.areaStyle = {
+            opacity: 0.3,
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: alpha(color, 0.45) },
+              { offset: 1, color: alpha(color, 0.05) },
+            ]),
+            ...series.areaStyle,
+          };
+        }
+        break;
+      }
+      case "scatter": {
+        series.symbolSize = series.symbolSize ?? 10;
+        series.itemStyle = {
+          opacity: 0.85,
+          shadowBlur: 8,
+          shadowColor: "rgba(0,0,0,0.4)",
+          ...series.itemStyle,
+        };
+        break;
+      }
+      case "pie": {
+        series.itemStyle = {
+          borderRadius: 8,
+          borderColor: theme.backgroundColor,
+          borderWidth: 3,
+          ...series.itemStyle,
+        };
+        series.label = { color: theme.textColor, ...series.label };
+        break;
+      }
+      case "boxplot": {
+        series.itemStyle = {
+          color: alpha(color, 0.25),
+          borderColor: color,
+          borderWidth: 2,
+          ...series.itemStyle,
+        };
+        break;
+      }
+      case "candlestick": {
+        series.itemStyle = {
+          color: "#34D399",
+          color0: "#F87171",
+          borderColor: "#34D399",
+          borderColor0: "#F87171",
+          ...series.itemStyle,
+        };
+        break;
+      }
+      case "funnel": {
+        series.gap = 2;
+        series.itemStyle = {
+          borderColor: theme.backgroundColor,
+          borderWidth: 2,
+          ...series.itemStyle,
+        };
+        series.label = { color: theme.textColor, ...series.label };
+        break;
+      }
+      case "sunburst": {
+        series.itemStyle = {
+          borderRadius: 6,
+          borderColor: theme.backgroundColor,
+          borderWidth: 2,
+          ...series.itemStyle,
+        };
+        break;
+      }
+      case "radar": {
+        series.lineStyle = { width: 3, ...series.lineStyle };
+        series.areaStyle = { opacity: 0.2, ...series.areaStyle };
+        series.symbolSize = 6;
+        series.itemStyle = {
+          shadowBlur: 8,
+          shadowColor: "rgba(0,0,0,0.3)",
+          ...series.itemStyle,
+        };
+        break;
+      }
+      case "graph": {
+        series.lineStyle = { opacity: 0.6, curveness: 0.2, ...series.lineStyle };
+        series.itemStyle = {
+          shadowBlur: 8,
+          shadowColor: "rgba(0,0,0,0.4)",
+          ...series.itemStyle,
+        };
+        break;
+      }
+      default:
+        break;
+    }
+  });
 }
 
 function escapeHtml(text: string): string {

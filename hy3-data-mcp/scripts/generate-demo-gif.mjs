@@ -133,7 +133,7 @@ async function main() {
       },
     ],
     "电商与营销活动综合数据大屏",
-    "dark"
+    "premium"
   );
   const dashPath = nextFramePath();
   writeFileSync(dashPath, dashPng);
@@ -146,7 +146,7 @@ async function main() {
       "-framerate", "0.5",
       "-i", join(outDir, "frame-%03d.png"),
       "-vf",
-      "scale=800:600:force_original_aspect_ratio=decrease:flags=lanczos,pad=800:600:(ow-iw)/2:(oh-ih)/2:black,format=rgb24",
+      "scale=800:600:force_original_aspect_ratio=decrease:flags=lanczos,pad=800:600:(ow-iw)/2:(oh-ih)/2:#0B1120,format=rgb24",
       "-y",
       join(outDir, "norm-%03d.png"),
     ],

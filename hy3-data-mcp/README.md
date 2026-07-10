@@ -42,7 +42,7 @@ Built for the **2026 Tencent RhinoBird Open Source Talent Program** issue: [Buil
 
 ## Demo Gallery
 
-All screenshots are rendered with the **Dark** theme using the bundled sample datasets.
+All screenshots are rendered with the **Premium** theme using the bundled sample datasets.
 
 <table>
   <tr>
@@ -359,6 +359,7 @@ Built-in themes:
 | `colorful` | Vibrant palette for presentations. |
 | `minimal` | Subdued, single-hue friendly palette. |
 | `professional` | Slate/grey palette for business reports. |
+| `premium` | Dark navy background with refined gradients, rounded shapes, and a modern professional palette. |
 | `retro` | Solarized-style warm palette with serif fonts. |
 | `science` | Green sequential palette with monospace fonts. |
 | `nature` | **Default.** Nature-journal style with a publication-ready Tableau palette and clean typography. |
