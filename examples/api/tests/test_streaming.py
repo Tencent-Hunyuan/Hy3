@@ -6,6 +6,7 @@ import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 
 API_DIR = Path(__file__).resolve().parents[1]
@@ -60,6 +61,99 @@ class StreamingExampleTests(unittest.TestCase):
         self.assertEqual(result.usage, {"total_tokens": 7})
         self.assertIn("Content: Hello world", output.getvalue())
         self.assertNotIn("Content: plan", output.getvalue())
+
+
+class LatencyExampleTests(unittest.TestCase):
+    def test_distinguishes_first_output_from_first_content(self) -> None:
+        example = load_example("03_streaming_vs_non_streaming.py")
+        chunks = [
+            SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        delta=SimpleNamespace(
+                            content=None,
+                            reasoning="thinking",
+                            model_extra={},
+                            tool_calls=None,
+                        ),
+                        finish_reason=None,
+                    )
+                ],
+                usage=None,
+            ),
+            SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        delta=SimpleNamespace(
+                            content="answer",
+                            reasoning=None,
+                            model_extra={},
+                            tool_calls=None,
+                        ),
+                        finish_reason=None,
+                    )
+                ],
+                usage=None,
+            ),
+            SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        delta=SimpleNamespace(
+                            content=None,
+                            reasoning=None,
+                            model_extra={},
+                            tool_calls=None,
+                        ),
+                        finish_reason="stop",
+                    )
+                ],
+                usage=None,
+            ),
+        ]
+        client = MagicMock()
+        client.chat.completions.create.return_value = iter(chunks)
+        clock = iter([10.0, 10.1, 10.4, 11.0]).__next__
+        request = {
+            "model": "hy3",
+            "messages": [{"role": "user", "content": "test"}],
+            "temperature": 0.9,
+            "top_p": 1.0,
+            "max_tokens": 256,
+            "extra_body": {
+                "chat_template_kwargs": {"reasoning_effort": "no_think"}
+            },
+        }
+
+        timing = example.measure_streaming(client, request, clock=clock)
+
+        self.assertAlmostEqual(timing.first_output_seconds, 0.1)
+        self.assertAlmostEqual(timing.first_content_seconds, 0.4)
+        self.assertAlmostEqual(timing.total_seconds, 1.0)
+        client.chat.completions.create.assert_called_once_with(
+            **request,
+            stream=True,
+            stream_options={"include_usage": True},
+        )
+
+    def test_non_streaming_reports_total_latency_without_changing_request(self) -> None:
+        example = load_example("03_streaming_vs_non_streaming.py")
+        client = MagicMock()
+        request = {
+            "model": "hy3",
+            "messages": [{"role": "user", "content": "test"}],
+            "temperature": 0.9,
+            "top_p": 1.0,
+            "max_tokens": 256,
+            "extra_body": {
+                "chat_template_kwargs": {"reasoning_effort": "no_think"}
+            },
+        }
+        clock = iter([20.0, 20.75]).__next__
+
+        timing = example.measure_non_streaming(client, request, clock=clock)
+
+        self.assertAlmostEqual(timing.total_seconds, 0.75)
+        self.assertEqual(client.chat.completions.create.call_args.kwargs, request)
 
 
 class StreamAccumulatorTests(unittest.TestCase):
