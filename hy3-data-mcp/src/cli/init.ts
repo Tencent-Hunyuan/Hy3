@@ -2,13 +2,13 @@ import { intro, outro, multiselect, text, confirm, isCancel, cancel, note } from
 import pc from "picocolors";
 import { existsSync } from "fs";
 import { readFile, writeFile, stat, mkdir } from "fs/promises";
-import { resolve, join } from "path";
+import { resolve, join, dirname } from "path";
 import { homedir } from "os";
 import { config as dotenvParse } from "dotenv";
 import { detectClients, type DetectedClient } from "./detect.js";
 import { installMcpConfig, type ServerConfig } from "./config.js";
 
-const DEFAULT_OUTPUT_DIR = "./hy3-data-mcp";
+const DEFAULT_OUTPUT_DIR = "./hy3-data-output";
 const DEFAULT_ENV_DIR = join(homedir(), "hy3-data-mcp");
 const DEFAULT_BASE_URL = "https://tokenhub.tencentmaas.com/v1";
 const DEFAULT_MODEL = "hy3-preview";
@@ -90,8 +90,14 @@ async function looksLikeProjectDir(dir: string): Promise<boolean> {
 
 async function pickDefaultProjectDir(): Promise<string> {
   const cwd = process.cwd();
-  if (existsSync(join(cwd, "package.json"))) {
-    return cwd;
+  let dir = cwd;
+  while (true) {
+    if (existsSync(join(dir, ".git")) || existsSync(join(dir, "package.json"))) {
+      return dir;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
   }
   const candidate = join(cwd, "hy3-data-mcp");
   if (await looksLikeProjectDir(candidate)) {
