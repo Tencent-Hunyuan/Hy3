@@ -36,7 +36,7 @@ describe("tool integration tests", () => {
     delete process.env.HY3_OUTPUT_DIR;
   });
 
-  it("hy3_data_dashboard generates an HTML dashboard", async () => {
+  it("hy3_design_dashboard returns a JSON design", async () => {
     const dataFile = join(tempDir, "sales.csv");
     await writeFile(dataFile, "month,sales\nJan,100\nFeb,150\nMar,120\n");
 
@@ -48,31 +48,50 @@ describe("tool integration tests", () => {
     );
     const progress = vi.fn();
     const result = await handleToolCall(
-      "hy3_data_dashboard",
-      { file_paths: [dataFile], title: "Sales Dashboard", output_format: "html", language: "en", layout: "grid" },
+      "hy3_design_dashboard",
+      { file_paths: [dataFile], title: "Sales Dashboard", language: "en", layout: "grid" },
       client,
       progress
     );
 
-    expect(result.content[0].text).toContain("Sales Dashboard");
-    expect(result.content[0].text).toContain("HTML");
+    const design = JSON.parse(result.content[0].text);
+    expect(design.title).toBe("Sales Dashboard");
+    expect(design.charts[0].chart_type).toBe("bar");
     expect(progress).toHaveBeenCalled();
   });
 
-  it("hy3_data_dashboard generates a PNG dashboard", async () => {
+  it("hy3_render_dashboard renders an HTML dashboard from a design", async () => {
     const dataFile = join(tempDir, "sales.csv");
     await writeFile(dataFile, "month,sales\nJan,100\nFeb,150\nMar,120\n");
 
-    const client = createMockClient(
-      JSON.stringify({
-        title: "PNG Dashboard",
-        charts: [{ file_index: 0, chart_type: "line", x_column: "month", y_column: "sales", title: "Sales" }],
-      })
-    );
+    const design = {
+      title: "Sales Dashboard",
+      layout: "grid",
+      charts: [{ file_index: 0, chart_type: "bar", x_column: "month", y_column: "sales", title: "Sales" }],
+    };
     const result = await handleToolCall(
-      "hy3_data_dashboard",
-      { file_paths: [dataFile], output_format: "png", language: "en", layout: "rows" },
-      client
+      "hy3_render_dashboard",
+      { file_paths: [dataFile], design, output_format: "html", language: "en" },
+      {} as Hy3Client
+    );
+
+    expect(result.content[0].text).toContain("Sales Dashboard");
+    expect(result.content[0].text).toContain("HTML");
+  });
+
+  it("hy3_render_dashboard renders a PNG dashboard from a design", async () => {
+    const dataFile = join(tempDir, "sales.csv");
+    await writeFile(dataFile, "month,sales\nJan,100\nFeb,150\nMar,120\n");
+
+    const design = {
+      title: "PNG Dashboard",
+      layout: "rows",
+      charts: [{ file_index: 0, chart_type: "line", x_column: "month", y_column: "sales", title: "Sales" }],
+    };
+    const result = await handleToolCall(
+      "hy3_render_dashboard",
+      { file_paths: [dataFile], design, output_format: "png", language: "en" },
+      {} as Hy3Client
     );
 
     expect(result.content[0].text).toContain("PNG");

@@ -47,7 +47,7 @@ export async function runExtractDocument(
     text,
     has_structured_data: isStructured,
     structured_hint: isStructured
-      ? "This file already contains structured data. Prefer hy3_data_visualize, hy3_data_insight, hy3_data_report, or hy3_data_dashboard for analysis and visualization."
+      ? "This file already contains structured data. Prefer hy3_data_visualize, hy3_data_insight, hy3_data_report, hy3_design_dashboard, or hy3_render_dashboard for analysis and visualization."
       : "This is an unstructured document. Pass the extracted text to hy3_analyze_text for summarization, extraction, or structured data conversion.",
   };
 

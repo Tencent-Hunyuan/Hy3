@@ -17,8 +17,8 @@ This PR upgrades `hy3-data-mcp` from a synchronous, monolithic "black-box" desig
 - **Migrated to `McpServer`** — the high-level MCP SDK API now handles schema generation, argument validation, capability negotiation, and task protocol routing.
 - **MCP Task/Stream async execution** — heavy tools return a `taskId` immediately and run in the background; clients poll status and fetch results.
 - **Real cancellation** — `AbortSignal` propagates from `tasks/cancel` through the task runner and into the OpenAI SDK call.
-- **Streaming LLM output** — analysis tools push live Hy3 tokens into the task `statusMessage`, so clients can preview answers before they are finalized.
-- **Agentic tool split** — removed `hy3_document_summary` and `hy3_document_visualize`; introduced `hy3_extract_document` + `hy3_analyze_text` so agents can reason over intermediate results.
+- **Streaming LLM output** — analysis tools (`hy3_analyze_text`, `hy3_design_dashboard`, `hy3_data_insight`, `hy3_data_report`) push live Hy3 tokens into the task `statusMessage`, so clients can preview answers before they are finalized.
+- **Agentic tool split** — removed `hy3_document_summary` and `hy3_document_visualize`; introduced `hy3_extract_document` + `hy3_analyze_text` and split `hy3_data_dashboard` into `hy3_design_dashboard` + `hy3_render_dashboard` so agents can reason over intermediate results.
 
 ---
 
@@ -60,7 +60,7 @@ The old design treated the LLM call as an opaque RPC: send a file, wait, hope it
    - `Hy3Client.chatStream` yields tokens. `askHy3Stream` consumes them and forwards an `onOutput` callback. The task runner writes the running preview into `taskStore.updateTaskStatus`, so a Task/Stream client sees the answer being written live.
 
 6. **Agentic tool composition**
-   - `hy3_extract_document` only parses files (no LLM). `hy3_analyze_text` only analyzes text. Rendering tools only consume structured files. This mirrors a human analyst's workflow and lets the agent reuse intermediate artifacts.
+   - `hy3_extract_document` only parses files (no LLM). `hy3_analyze_text` only analyzes text. `hy3_design_dashboard` only produces a JSON layout. `hy3_render_dashboard` and other rendering tools only consume structured files and designs. This mirrors a human analyst's workflow and lets the agent reuse intermediate artifacts.
 
 ---
 
@@ -72,7 +72,7 @@ npm run build
 npm test
 ```
 
-- **134 tests passed** across 14 test files.
+- **135 tests passed** across 14 test files.
 - Coverage for `src/` is approximately **95% statements / 85% branches / 96% functions**.
 - Real-API smoke tests available with `HY3_API_KEY` via `npm run test:real`.
 
@@ -80,7 +80,7 @@ npm test
 
 ## Version / 版本
 
-Bumped to `0.2.1` and packaged as `releases/hy3-data-mcp-0.2.1.tgz`.
+Bumped to `0.2.2` and packaged as `releases/hy3-data-mcp-0.2.2.tgz`.
 
 ---
 
@@ -93,6 +93,8 @@ Bumped to `0.2.1` and packaged as `releases/hy3-data-mcp-0.2.1.tgz`.
 - `src/tasks/store.ts` — in-memory task store
 - `src/tools/extractDocument.ts` — new static document extraction tool
 - `src/tools/analyzeText.ts` — new streaming text analysis tool
+- `src/tools/designDashboard.ts` — new dashboard layout design tool
+- `src/tools/renderDashboard.ts` — new dashboard rendering tool
 - `README.md` / `README_CN.md` — updated design highlights and agentic workflow
 
 ---

@@ -33,7 +33,8 @@ Built for the **2026 Tencent RhinoBird Open Source Talent Program** issue: [Buil
 | `hy3_data_visualize` | Bar, line, area, pie, donut, rose, scatter, bubble, scatter_trend, radar, heatmap, funnel, sankey, treemap, sunburst, gauge, histogram, boxplot, candlestick, stacked_bar, grouped_bar, 3D bar/scatter/line (bar3d/scatter3d/line3d), and composite charts (line_bar, area_bar, dual_axis, stacked_area, grouped_line). | `svg` / `html` / `png` |
 | `hy3_wordcloud` | Extracts keywords with Hy3 and renders a word cloud. | `svg` / `html` / `png` |
 | `hy3_knowledge_graph` | Extracts entities and relationships and renders a force-directed graph. | `svg` / `html` / `png` |
-| `hy3_data_dashboard` | Combines multiple files into a multi-chart dashboard designed by Hy3. | `html` / `png` |
+| `hy3_design_dashboard` | Designs a multi-chart dashboard layout from one or more files and returns a JSON plan. | `json` |
+| `hy3_render_dashboard` | Renders a dashboard design into an interactive HTML page or PNG composite. | `html` / `png` |
 | `hy3_data_report` | Generates a complete analysis report from a data file, with Hy3-written insights and embedded charts. | `html` / `markdown` |
 | `hy3_data_insight` | Analyzes data and returns textual insights, trends, and outliers. | `text` |
 | `hy3_extract_document` | Extracts raw text from PDF, DOCX, TXT, CSV, JSON, and XLSX files. No LLM. | `json` |
@@ -94,7 +95,7 @@ All screenshots are rendered with the **Professional** theme using the bundled s
 Install the local release tarball globally:
 
 ```bash
-npm install -g ./releases/hy3-data-mcp-0.2.1.tgz
+npm install -g ./releases/hy3-data-mcp-0.2.2.tgz
 ```
 
 Start the server:
@@ -205,7 +206,7 @@ Task results are kept in memory for **5 minutes** by default and then cleaned up
 - **Real cancellation** — The `AbortSignal` is threaded from the task runner through every tool and down to the OpenAI SDK call. Calling `tasks/cancel` actually stops the in-flight model request, not just the task status.
 - **1-second polling + 5-minute TTL** — The synchronous fallback polls every second for responsiveness, while a background sweeper removes completed tasks after 5 minutes to keep memory bounded.
 - **Live progress in task status** — While a tool runs, its `onProgress` updates are written to the task's `statusMessage`, so clients see messages like `"Executing 30/100"` instead of a silent timeout.
-- **Streaming LLM output** — Analysis tools (`hy3_analyze_text`, `hy3_data_insight`, `hy3_data_report`, `hy3_data_dashboard`) stream Hy3 tokens as they are generated. In Task/Stream mode, the latest accumulated output is written to the task's `statusMessage`, so clients can preview the response before it is finalized.
+- **Streaming LLM output** — Analysis tools (`hy3_analyze_text`, `hy3_design_dashboard`, `hy3_data_insight`, `hy3_data_report`) stream Hy3 tokens as they are generated. In Task/Stream mode, the latest accumulated output is written to the task's `statusMessage`, so clients can preview the response before it is finalized.
 
 ## Design evolution: from black-box to transparent, agentic tasks
 
@@ -236,7 +237,7 @@ The original implementation tried to do everything in one synchronous call:
 - **In-memory `TaskStore`** + `TaskMessageQueue` hold task metadata and results. A TTL sweeper removes completed tasks after 5 minutes.
 - **`runToolAsTask`** runs the tool in the background, catches errors, stores results, and writes progress/status messages. Streaming tools receive an `onOutput` callback that updates the task status.
 - **`Hy3Client.chatStream`** and **`askHy3Stream`** wrap the OpenAI SDK streaming completion API and accept an `AbortSignal`.
-- **Agentic tool split:** `hy3_extract_document` is a pure document parser; `hy3_analyze_text` is the only LLM analysis tool that takes text; rendering tools (`hy3_data_*`) only consume structured files. This mirrors how a human analyst would work.
+- **Agentic tool split:** `hy3_extract_document` is a pure document parser; `hy3_analyze_text` is the only LLM analysis tool that takes text; `hy3_design_dashboard` produces a JSON layout; `hy3_render_dashboard` and other rendering tools only consume structured files and designs. This mirrors how a human analyst would work.
 
 ## Agentic workflow
 
@@ -256,8 +257,11 @@ For a PDF report analysis request, the expected flow is:
 4. hy3_data_report(file_paths=["report_data.csv"], question="...")
    → detailed HTML/Markdown report
 
-5. (optional) hy3_data_visualize(file_path="report_data.csv", chart_type="bar")
-   → chart SVG/HTML/PNG
+5. (optional) hy3_design_dashboard(file_paths=["report_data.csv"])
+   → JSON dashboard layout designed by Hy3
+
+6. (optional) hy3_render_dashboard(file_paths=["report_data.csv"], design={...})
+   → dashboard HTML/PNG
 ```
 
 This split keeps each tool within a single responsibility, reduces timeouts, and lets the agent decide what to do based on the user's intent.
@@ -398,14 +402,35 @@ Open WebUI does not expose a stdio MCP host that `hdm init` can write to. To use
 }
 ```
 
-### Build a dashboard from multiple files
+### Design a dashboard from multiple files
 
 ```json
 {
-  "name": "hy3_data_dashboard",
+  "name": "hy3_design_dashboard",
   "arguments": {
     "file_paths": ["./sales.csv", "./users.csv"],
     "title": "Monthly Operations Dashboard",
+    "layout": "grid",
+    "theme": "nature",
+    "language": "en"
+  }
+}
+```
+
+### Render the dashboard design
+
+```json
+{
+  "name": "hy3_render_dashboard",
+  "arguments": {
+    "file_paths": ["./sales.csv", "./users.csv"],
+    "design": {
+      "title": "Monthly Operations Dashboard",
+      "layout": "grid",
+      "charts": [
+        { "file_index": 0, "chart_type": "bar", "x_column": "month", "y_column": "sales", "title": "Monthly Sales" }
+      ]
+    },
     "theme": "nature",
     "output_format": "html",
     "language": "en"
@@ -627,7 +652,7 @@ npm run test:coverage   # generate coverage report
 npm run test:real       # requires HY3_API_KEY
 ```
 
-The test suite contains **134 unit, integration, and smoke tests** covering documents, utilities, themes, CLI config, dashboard rendering, client setup, streaming LLM output, async task execution, all visualization tools, chart rendering, and the MCP server handshake. As of the latest run, code coverage for the `src/` directory is approximately **95% statements / 85% branches / 96% functions** (overall ~92% statements when including uncovered helper scripts).
+The test suite contains **135 unit, integration, and smoke tests** covering documents, utilities, themes, CLI config, dashboard rendering, client setup, streaming LLM output, async task execution, all visualization tools, chart rendering, and the MCP server handshake. As of the latest run, code coverage for the `src/` directory is approximately **95% statements / 85% branches / 96% functions** (overall ~92% statements when including uncovered helper scripts).
 
 Debug with the [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
 

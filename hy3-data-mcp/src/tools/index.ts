@@ -7,7 +7,8 @@ import { z } from "zod";
 import { Hy3Client } from "../client.js";
 import { runToolAsTask } from "../tasks/runner.js";
 import { analyzeTextDefinition, runAnalyzeText, analyzeTextSchema } from "./analyzeText.js";
-import { dataDashboardDefinition, runDataDashboard, dataDashboardSchema } from "./dataDashboard.js";
+import { designDashboardDefinition, runDesignDashboard, designDashboardSchema } from "./designDashboard.js";
+import { renderDashboardDefinition, runRenderDashboard, renderDashboardSchema } from "./renderDashboard.js";
 import { dataInsightDefinition, runDataInsight, dataInsightSchema } from "./dataInsight.js";
 import { dataReportDefinition, runDataReport, dataReportSchema } from "./dataReport.js";
 import { dataVisualizeDefinition, runDataVisualize, dataVisualizeSchema } from "./dataVisualize.js";
@@ -46,6 +47,12 @@ const staticTools = (): StaticToolRegistration[] => [
     schema: extractDocumentSchema,
     run: runExtractDocument,
   },
+  {
+    name: renderDashboardDefinition.name,
+    description: renderDashboardDefinition.description,
+    schema: renderDashboardSchema,
+    run: runRenderDashboard,
+  },
 ];
 
 const llmTools = (): LlmToolRegistration[] => [
@@ -74,10 +81,10 @@ const llmTools = (): LlmToolRegistration[] => [
     run: runKnowledgeGraph as ToolRunner,
   },
   {
-    name: dataDashboardDefinition.name,
-    description: dataDashboardDefinition.description,
-    schema: dataDashboardSchema,
-    run: runDataDashboard as ToolRunner,
+    name: designDashboardDefinition.name,
+    description: designDashboardDefinition.description,
+    schema: designDashboardSchema,
+    run: runDesignDashboard as ToolRunner,
   },
   {
     name: dataReportDefinition.name,

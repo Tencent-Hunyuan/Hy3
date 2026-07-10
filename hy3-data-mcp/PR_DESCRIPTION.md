@@ -14,15 +14,16 @@ This PR introduces `hy3-data-mcp`, a TypeScript ESM MCP server that uses the Ten
 
 ### What’s included
 
-- **8 MCP tools** exposed via stdio:
+- **9 MCP tools** exposed via stdio:
   - `hy3_data_visualize` — bar, line, area, pie, donut, rose, scatter, bubble, scatter_trend, radar, heatmap, funnel, sankey, treemap, sunburst, gauge, histogram, boxplot, candlestick, stacked_bar, grouped_bar, 3D charts (bar3d, scatter3d, line3d), and composite charts (line_bar, area_bar, dual_axis, stacked_area, grouped_line), each with 9 themes (Professional is the default), custom font support, and optional custom color overrides
   - `hy3_wordcloud` — keyword extraction + word cloud
   - `hy3_knowledge_graph` — entity/relation extraction + force-directed graph
-  - `hy3_data_dashboard` — multi-file HTML dashboard or composite PNG
+  - `hy3_design_dashboard` — designs a multi-file HTML dashboard layout and returns JSON
+  - `hy3_render_dashboard` — renders a dashboard design into HTML or PNG
   - `hy3_data_report` — generate HTML/Markdown analysis reports with embedded charts
   - `hy3_data_insight` — textual data analysis
-  - `hy3_document_summary` — summarize PDF / DOCX / TXT / CSV / JSON / XLSX
-  - `hy3_document_visualize` — extract data from documents and visualize it
+  - `hy3_extract_document` — extract raw text from PDF / DOCX / TXT / CSV / JSON / XLSX (no LLM)
+  - `hy3_analyze_text` — analyze extracted text with Hy3
 - **Output formats:** `svg` (static), `html` (interactive / animated), `png` (rasterized via `sharp`)
 - **Document parsing:** PDF (`pdf2json`), DOCX (`mammoth`), XLSX/CSV/JSON (`xlsx` / `papaparse`)
 - **CLI installer:** `hdm init` detects CodeBuddy, Cursor, Cline, Roo Code, Continue, Codex CLI, OpenCode and writes the client config automatically
@@ -121,9 +122,9 @@ hy3-data-mcp/
 ## Pre-submission checklist
 
 - [x] `npm run build` passes
-- [x] `npm test` passes (122/122)
+- [x] `npm test` passes (135/135)
 - [x] Real API smoke test passes for all 8 tools
-- [x] PNG output verified for `hy3_data_visualize` (including area, sankey, treemap, sunburst, gauge, boxplot, candlestick, bubble, histogram, stacked_bar), `hy3_wordcloud`, `hy3_knowledge_graph`, `hy3_data_dashboard`, and `hy3_document_visualize`
+- [x] PNG output verified for `hy3_data_visualize` (including area, sankey, treemap, sunburst, gauge, boxplot, candlestick, bubble, histogram, stacked_bar), `hy3_wordcloud`, `hy3_knowledge_graph`, `hy3_design_dashboard` + `hy3_render_dashboard`, and `hy3_analyze_text`
 - [x] Theme, custom font, and custom color overrides verified across visualization tools
 - [x] README and README_CN updated with PNG examples
 - [x] `assets/demo.gif` generated from actual outputs

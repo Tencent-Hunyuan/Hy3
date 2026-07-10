@@ -6,7 +6,7 @@ import type { ProgressReporter } from "./index.js";
 export const analyzeTextDefinition = {
   name: "hy3_analyze_text",
   description:
-    "Analyze extracted document text with Hy3. Use this after hy3_extract_document for summarization, insight extraction, key metric extraction, or structured data conversion. If the user wants charts or dashboards, ask the model to return structured JSON/CSV data, save it to a file, and then call hy3_data_visualize, hy3_data_dashboard, or hy3_data_report.",
+    "Analyze extracted document text with Hy3. Use this after hy3_extract_document for summarization, insight extraction, key metric extraction, or structured data conversion. If the user wants charts or dashboards, ask the model to return structured JSON/CSV data, save it to a file, and then call hy3_data_visualize, hy3_design_dashboard, hy3_render_dashboard, or hy3_data_report.",
   inputSchema: {
     type: "object" as const,
     properties: {
