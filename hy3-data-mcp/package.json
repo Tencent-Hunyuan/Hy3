@@ -12,8 +12,7 @@
   "files": [
     "dist",
     "README.md",
-    "README_CN.md",
-    "configs"
+    "README_CN.md"
   ],
   "scripts": {
     "build": "tsc",

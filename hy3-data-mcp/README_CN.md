@@ -185,7 +185,7 @@ HY3_OUTPUT_DIR=./hy3-data-output
 
 ### Cline / Cursor / Roo Code / Continue
 
-运行 `hdm init` 自动配置，或从 [`configs/`](./configs/) 复制对应配置片段。
+运行 `hdm init` 自动配置。
 
 ### Open WebUI
 

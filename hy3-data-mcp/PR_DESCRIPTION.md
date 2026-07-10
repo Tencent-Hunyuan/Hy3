@@ -63,7 +63,6 @@ All files live under the new `hy3-data-mcp/` directory:
 ```
 hy3-data-mcp/
 ├── assets/demo.gif
-├── configs/
 ├── sample_data/
 │   ├── complex/
 │   │   ├── ecommerce_sales.csv

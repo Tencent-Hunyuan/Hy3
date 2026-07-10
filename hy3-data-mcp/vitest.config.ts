@@ -8,7 +8,6 @@ export default defineConfig({
         "scripts/**",
         "tests/**",
         "dist/**",
-        "configs/**",
         "sample_data/**",
         "assets/**",
         "src/index.ts",

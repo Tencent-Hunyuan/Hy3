@@ -185,7 +185,7 @@ Add to `~/.codebuddy/.mcp.json`:
 
 ### Cline / Cursor / Roo Code / Continue
 
-Use `hdm init` to auto-configure, or copy the matching snippet from [`configs/`](./configs/).
+Use `hdm init` to auto-configure.
 
 ### Open WebUI
 

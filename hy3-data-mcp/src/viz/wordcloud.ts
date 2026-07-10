@@ -1,18 +1,30 @@
-import { createCanvas } from "@napi-rs/canvas";
-import createWordCloudFactory from "node-rs-wordcloud";
+import { createRequire } from "node:module";
 import { getTheme } from "./themes.js";
 import type { Theme } from "./themes.js";
+
+const require = createRequire(import.meta.url);
 
 export interface Word {
   word: string;
   weight: number;
 }
 
-// node-rs-wordcloud expects a createCanvas that tolerates missing dimensions
-// during its feature-detection probe.
-const WordCloud = createWordCloudFactory((width, height) =>
-  createCanvas(width ?? 1, height ?? 1)
-);
+type WordCloudRenderer = (element: unknown, options: unknown) => { draw(): void };
+
+let cachedRenderer: WordCloudRenderer | undefined;
+
+function getWordCloudRenderer(): WordCloudRenderer {
+  if (!cachedRenderer) {
+    const { createCanvas } = require("@napi-rs/canvas") as { createCanvas: (width?: number, height?: number) => unknown };
+    const createWordCloudFactory = require("node-rs-wordcloud") as (
+      createCanvas?: (width?: number, height?: number) => unknown
+    ) => WordCloudRenderer;
+    cachedRenderer = createWordCloudFactory((width?: number, height?: number) =>
+      createCanvas(width ?? 1, height ?? 1)
+    );
+  }
+  return cachedRenderer as WordCloudRenderer;
+}
 
 function buildColorizer(
   list: Array<[string, number]>,
@@ -50,11 +62,13 @@ export function renderWordcloudSvg(
   const list = words.map((w): [string, number] => [w.word, w.weight]);
   const colorizer = buildColorizer(list, theme);
 
+  const { createCanvas } = require("@napi-rs/canvas");
   const canvas = createCanvas(cloudWidth, cloudHeight);
-  WordCloud(canvas, {
+
+  getWordCloudRenderer()(canvas, {
     list,
     fontFamily: theme.fontFamily,
-    color: (word) => colorizer(word),
+    color: (word: string) => colorizer(word),
     backgroundColor: theme.backgroundColor,
     gridSize: 8,
     sizeRange: [16, Math.min(80, Math.floor(cloudHeight / 4))],
@@ -66,7 +80,7 @@ export function renderWordcloudSvg(
     shuffle: true,
   }).draw();
 
-  const pngBuffer = canvas.toBuffer("image/png");
+  const pngBuffer = canvas.toBuffer("image/png") as Buffer;
   const base64 = Buffer.from(pngBuffer).toString("base64");
 
   return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
