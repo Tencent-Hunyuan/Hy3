@@ -13,6 +13,22 @@ export interface Theme {
   palette: string[];
 }
 
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const normalized = hex.replace("#", "");
+  if (!/^[0-9a-fA-F]{3,6}$/.test(normalized)) return null;
+  const full = normalized.length === 3 ? normalized.split("").map((c) => c + c).join("") : normalized;
+  const num = parseInt(full, 16);
+  return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+}
+
+function isDarkColor(hex: string): boolean {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return false;
+  const { r, g, b } = rgb;
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return lum < 0.5;
+}
+
 const baseFont =
   "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Microsoft YaHei', 'PingFang SC', sans-serif";
 
@@ -248,10 +264,10 @@ export function applyTheme(option: EChartsOption, theme: Theme): EChartsOption {
     },
     tooltip: {
       ...(option.tooltip || {}),
-      backgroundColor: theme.name === "dark" ? "rgba(30,30,30,0.9)" : "rgba(255,255,255,0.95)",
+      backgroundColor: isDarkColor(theme.backgroundColor) ? "rgba(30,30,30,0.9)" : "rgba(255,255,255,0.95)",
       borderColor: theme.splitLineColor,
       textStyle: {
-        color: theme.textColor,
+        color: isDarkColor(theme.backgroundColor) ? "#eeeeee" : "#333333",
         fontFamily: theme.fontFamily,
       },
     },
