@@ -52,9 +52,11 @@
   "dependencies": {
     "@clack/prompts": "^0.10.0",
     "@modelcontextprotocol/sdk": "^1.0.4",
+    "@napi-rs/canvas": "^1.0.2",
     "dotenv": "^16.4.7",
     "echarts": "^6.1.0",
     "mammoth": "^1.12.0",
+    "node-rs-wordcloud": "^0.0.4",
     "openai": "^4.77.0",
     "papaparse": "^5.5.0",
     "pdf2json": "^4.0.3",
