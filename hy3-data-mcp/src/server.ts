@@ -1,14 +1,18 @@
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { Hy3Client, loadConfig } from "./client.js";
-import { handleToolCall, TOOL_DEFINITIONS } from "./tools/index.js";
+import { InMemoryTaskMessageQueue } from "./tasks/queue.js";
+import { InMemoryTaskStore } from "./tasks/store.js";
+import { registerTools } from "./tools/index.js";
 
 export async function startServer() {
   const config = loadConfig();
   const client = new Hy3Client(config);
 
-  const server = new Server(
+  const taskStore = new InMemoryTaskStore();
+  const taskMessageQueue = new InMemoryTaskMessageQueue();
+
+  const server = new McpServer(
     {
       name: "hy3-data-mcp",
       version: "0.1.0",
@@ -16,33 +20,22 @@ export async function startServer() {
     {
       capabilities: {
         tools: {},
+        tasks: {
+          list: {},
+          cancel: {},
+          requests: {
+            tools: {
+              call: {},
+            },
+          },
+        },
       },
+      taskStore,
+      taskMessageQueue,
     }
   );
 
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
-    return { tools: TOOL_DEFINITIONS };
-  });
-
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const { name, arguments: args } = request.params;
-    const meta = request.params._meta as { progressToken?: string | number } | undefined;
-    const progressToken = meta?.progressToken;
-
-    const reportProgress = async (progress: number, total?: number) => {
-      if (progressToken === undefined) return;
-      try {
-        await server.notification({
-          method: "notifications/progress",
-          params: { progressToken, progress, total },
-        });
-      } catch {
-        // ignore notification errors
-      }
-    };
-
-    return handleToolCall(name, args ?? {}, client, reportProgress);
-  });
+  registerTools(server, client);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

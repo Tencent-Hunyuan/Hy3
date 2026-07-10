@@ -100,7 +100,7 @@ export const dataDashboardDefinition = {
   },
 };
 
-const dataDashboardSchema = z.object({
+export const dataDashboardSchema = z.object({
   file_paths: z.array(z.string().min(1)).min(1),
   title: z.string().optional(),
   theme: z
@@ -121,7 +121,9 @@ const dataDashboardSchema = z.object({
 export async function runDataDashboard(
   args: unknown,
   client: Hy3Client,
-  onProgress?: ProgressReporter
+  onProgress?: ProgressReporter,
+  signal?: AbortSignal,
+  _onOutput?: (chunk: string) => void
 ) {
   const {
     file_paths,
@@ -181,7 +183,7 @@ export async function runDataDashboard(
   };
   try {
     await onProgress?.(55, 100);
-    const answer = await askHy3(client, system, summaryText);
+    const answer = await askHy3(client, system, summaryText, signal, _onOutput);
     design = JSON.parse(answer);
   } catch {
     design = {

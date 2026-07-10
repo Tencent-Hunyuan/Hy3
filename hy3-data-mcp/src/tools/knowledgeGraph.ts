@@ -111,7 +111,7 @@ export const knowledgeGraphDefinition = {
   },
 };
 
-const knowledgeGraphSchema = z.object({
+export const knowledgeGraphSchema = z.object({
   file_path: z.string().min(1),
   column: z.string().optional(),
   max_entities: z.number().int().min(5).max(100).default(30),
@@ -134,7 +134,9 @@ const knowledgeGraphSchema = z.object({
 export async function runKnowledgeGraph(
   args: unknown,
   client: Hy3Client,
-  onProgress?: ProgressReporter
+  onProgress?: ProgressReporter,
+  signal?: AbortSignal,
+  _onOutput?: (chunk: string) => void
 ) {
   const {
     file_path,
@@ -191,7 +193,7 @@ export async function runKnowledgeGraph(
   };
   try {
     await onProgress?.(50, 100);
-    const answer = await askHy3(client, system, sampleText(text));
+    const answer = await askHy3(client, system, sampleText(text), signal);
     graph = JSON.parse(answer);
   } catch {
     graph = { nodes: [], links: [] };

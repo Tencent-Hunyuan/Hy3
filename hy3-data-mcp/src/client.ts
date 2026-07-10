@@ -20,6 +20,13 @@ export function loadConfig(): Hy3Config {
   };
 }
 
+export type ChatOptions = Partial<
+  Omit<OpenAI.Chat.ChatCompletionCreateParams, "stream" | "model" | "messages">
+> & {
+  signal?: AbortSignal;
+  onToken?: (token: string) => void;
+};
+
 export class Hy3Client {
   private client: OpenAI;
   private model: string;
@@ -34,15 +41,46 @@ export class Hy3Client {
 
   async chat(
     messages: OpenAI.Chat.ChatCompletionMessageParam[],
-    options?: Partial<Omit<OpenAI.Chat.ChatCompletionCreateParams, "stream" | "model" | "messages">>
+    options?: ChatOptions
   ): Promise<string> {
-    const response = await this.client.chat.completions.create({
-      model: this.model,
-      messages,
-      temperature: 0.7,
-      stream: false,
-      ...options,
-    });
+    const { signal, onToken, ...createOptions } = options ?? {};
+
+    if (onToken) {
+      const stream = await this.client.chat.completions.create(
+        {
+          model: this.model,
+          messages,
+          temperature: 0.7,
+          stream: true,
+          ...createOptions,
+        },
+        { signal }
+      );
+
+      let result = "";
+      for await (const chunk of stream) {
+        if (signal?.aborted) {
+          break;
+        }
+        const token = chunk.choices[0]?.delta?.content ?? "";
+        if (token) {
+          result += token;
+          onToken(token);
+        }
+      }
+      return result.trim();
+    }
+
+    const response = await this.client.chat.completions.create(
+      {
+        model: this.model,
+        messages,
+        temperature: 0.7,
+        stream: false,
+        ...createOptions,
+      },
+      { signal }
+    );
     return response.choices[0]?.message?.content?.trim() || "";
   }
 }

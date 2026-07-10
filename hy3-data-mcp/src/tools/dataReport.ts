@@ -96,7 +96,7 @@ export const dataReportDefinition = {
   },
 };
 
-const dataReportSchema = z
+export const dataReportSchema = z
   .object({
     file_paths: z.array(z.string().min(1)).optional(),
     file_path: z.string().min(1).optional(),
@@ -239,7 +239,9 @@ function validChartType(type: string): type is ChartType {
 export async function runDataReport(
   args: unknown,
   client: Hy3Client,
-  onProgress?: ProgressReporter
+  onProgress?: ProgressReporter,
+  signal?: AbortSignal,
+  onOutput?: (chunk: string) => void
 ) {
   const {
     file_paths,
@@ -345,7 +347,7 @@ Requirements: at most ${max_charts} charts; each chart must only use columns tha
   let plan: ReportPlan;
   try {
     await onProgress?.(30, 100);
-    const answer = await askHy3(client, system, user);
+    const answer = await askHy3(client, system, user, signal, onOutput);
     plan = JSON.parse(answer) as ReportPlan;
   } catch {
     plan = {

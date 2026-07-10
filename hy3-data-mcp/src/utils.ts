@@ -130,11 +130,20 @@ export function tableSummary(table: DataTable): string {
   return `Columns: ${columns}\nRows: ${table.rows.length}\nPreview:\n${preview}`;
 }
 
-export async function askHy3(client: Hy3Client, system: string, user: string): Promise<string> {
-  return client.chat([
-    { role: "system", content: system },
-    { role: "user", content: user },
-  ]);
+export async function askHy3(
+  client: Hy3Client,
+  system: string,
+  user: string,
+  signal?: AbortSignal,
+  onToken?: (token: string) => void
+): Promise<string> {
+  return client.chat(
+    [
+      { role: "system", content: system },
+      { role: "user", content: user },
+    ],
+    { signal, onToken }
+  );
 }
 
 export function loadOutputDir(): string {

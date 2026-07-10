@@ -111,7 +111,7 @@ export const wordcloudDefinition = {
   },
 };
 
-const wordcloudSchema = z.object({
+export const wordcloudSchema = z.object({
   file_path: z.string().min(1),
   column: z.string().optional(),
   max_words: z.number().int().min(5).max(200).default(60),
@@ -134,7 +134,9 @@ const wordcloudSchema = z.object({
 export async function runWordcloud(
   args: unknown,
   client: Hy3Client,
-  onProgress?: ProgressReporter
+  onProgress?: ProgressReporter,
+  signal?: AbortSignal,
+  _onOutput?: (chunk: string) => void
 ) {
   const {
     file_path,
@@ -186,7 +188,7 @@ export async function runWordcloud(
   let words: { word: string; weight: number }[];
   try {
     await onProgress?.(50, 100);
-    const answer = await askHy3(client, system, sampleText(text));
+    const answer = await askHy3(client, system, sampleText(text), signal);
     words = JSON.parse(answer);
   } catch {
     words = fallbackWords(text, max_words, resolvedLanguage);

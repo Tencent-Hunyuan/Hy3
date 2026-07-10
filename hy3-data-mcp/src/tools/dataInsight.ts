@@ -30,7 +30,7 @@ export const dataInsightDefinition = {
   },
 };
 
-const dataInsightSchema = z.object({
+export const dataInsightSchema = z.object({
   file_path: z.string().min(1),
   question: z.string().default("Summarize the data and highlight key insights"),
   language: z.enum(["zh", "en", "auto"]).default("auto"),
@@ -39,7 +39,9 @@ const dataInsightSchema = z.object({
 export async function runDataInsight(
   args: unknown,
   client: Hy3Client,
-  onProgress?: ProgressReporter
+  onProgress?: ProgressReporter,
+  signal?: AbortSignal,
+  onOutput?: (chunk: string) => void
 ) {
   const { file_path, question, language } = dataInsightSchema.parse(args);
 
@@ -60,7 +62,7 @@ export async function runDataInsight(
       : `Analysis task: ${question}\n\nData summary:\n${tableSummary(table)}`;
 
   await onProgress?.(50, 100);
-  const answer = await askHy3(client, system, user);
+  const answer = await askHy3(client, system, user, signal, onOutput);
   await onProgress?.(100, 100);
   return { content: [{ type: "text" as const, text: answer }] };
 }

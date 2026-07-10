@@ -177,7 +177,7 @@ export const dataVisualizeDefinition = {
   },
 };
 
-const dataVisualizeSchema = z.object({
+export const dataVisualizeSchema = z.object({
   file_path: z.string().min(1),
   chart_type: z
     .enum([
@@ -242,7 +242,9 @@ const dataVisualizeSchema = z.object({
 export async function runDataVisualize(
   args: unknown,
   client: Hy3Client,
-  onProgress?: ProgressReporter
+  onProgress?: ProgressReporter,
+  signal?: AbortSignal,
+  _onOutput?: (chunk: string) => void
 ) {
   const {
     file_path,
@@ -307,7 +309,7 @@ export async function runDataVisualize(
   };
   try {
     await onProgress?.(50, 100);
-    const answer = await askHy3(client, system, user);
+    const answer = await askHy3(client, system, user, signal);
     config = JSON.parse(answer);
     await onProgress?.(80, 100);
   } catch {

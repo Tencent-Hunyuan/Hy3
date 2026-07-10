@@ -34,8 +34,8 @@ const CLIENT_CANDIDATES: Candidate[] = [
   {
     id: "codebuddy",
     name: "CodeBuddy / WorkBuddy",
-    getPaths: () => [home(".codebuddy", ".mcp.json")],
-    getDefaultPath: () => home(".codebuddy", ".mcp.json"),
+    getPaths: () => [home(".codebuddy", "mcp.json")],
+    getDefaultPath: () => home(".codebuddy", "mcp.json"),
     scope: "global",
     format: "json",
   },
@@ -272,7 +272,7 @@ export function getDefaultConfigPath(clientId: string): string {
   const root = process.cwd();
   switch (clientId) {
     case "codebuddy":
-      return home(".codebuddy", ".mcp.json");
+      return home(".codebuddy", "mcp.json");
     case "cursor":
       return home(".cursor", "mcp.json");
     case "cline":

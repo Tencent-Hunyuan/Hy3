@@ -7,7 +7,12 @@ import { Hy3Client } from "../src/client.js";
 
 function createMockClient(response = "mocked response") {
   return {
-    chat: vi.fn().mockResolvedValue(response),
+    chat: vi.fn().mockImplementation(async (_messages, options) => {
+      if (options?.onToken) {
+        options.onToken(response);
+      }
+      return response;
+    }),
   } as unknown as Hy3Client;
 }
 

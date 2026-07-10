@@ -12,14 +12,14 @@ const __dirname = dirname(__filename);
 const sampleDir = join(__dirname, "..", "sample_data");
 
 function createMockClient(response: string | string[] = "mocked response") {
-  const fn = vi.fn();
-  if (Array.isArray(response)) {
-    for (const r of response) {
-      fn.mockResolvedValueOnce(r);
+  const queue = Array.isArray(response) ? [...response] : [response];
+  const fn = vi.fn().mockImplementation(async (_messages, options) => {
+    const next = queue.shift() ?? (Array.isArray(response) ? "" : response);
+    if (options?.onToken) {
+      options.onToken(next);
     }
-  } else {
-    fn.mockResolvedValue(response);
-  }
+    return next;
+  });
   return { chat: fn } as unknown as Hy3Client;
 }
 
@@ -78,57 +78,70 @@ describe("tool integration tests", () => {
     expect(result.content[0].text).toContain("PNG");
   });
 
-  it("hy3_document_summary returns text for a DOCX", async () => {
+  it("hy3_extract_document returns text and metadata for a DOCX", async () => {
     const docx = join(sampleDir, "report.docx");
+    const result = await handleToolCall("hy3_extract_document", { file_path: docx }, {} as Hy3Client);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.document_type).toBe("docx");
+    expect(parsed.has_structured_data).toBe(false);
+    expect(parsed.text.length).toBeGreaterThan(0);
+    expect(parsed.structured_hint).toContain("hy3_analyze_text");
+  });
+
+  it("hy3_extract_document returns text and metadata for a PDF", async () => {
+    const pdf = join(sampleDir, "report.pdf");
+    const result = await handleToolCall("hy3_extract_document", { file_path: pdf }, {} as Hy3Client);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.document_type).toBe("pdf");
+    expect(parsed.has_structured_data).toBe(false);
+    expect(parsed.text.length).toBeGreaterThan(0);
+  });
+
+  it("hy3_extract_document marks CSV as structured data", async () => {
+    const csv = join(tempDir, "data.csv");
+    await writeFile(csv, "a,b\n1,2\n3,4\n");
+    const result = await handleToolCall("hy3_extract_document", { file_path: csv }, {} as Hy3Client);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.document_type).toBe("csv");
+    expect(parsed.has_structured_data).toBe(true);
+    expect(parsed.structured_hint).toContain("hy3_data_");
+  });
+
+  it("hy3_analyze_text returns text analysis", async () => {
     const client = createMockClient("Summary text");
     const result = await handleToolCall(
-      "hy3_document_summary",
-      { file_path: docx, question: "Summarize", output_format: "text", language: "en" },
+      "hy3_analyze_text",
+      { text: "This is a long report about sales trends.", question: "Summarize", output_format: "text", language: "en" },
       client
     );
     expect(result.content[0].text).toBe("Summary text");
   });
 
-  it("hy3_document_summary generates HTML for a PDF", async () => {
-    const pdf = join(sampleDir, "report.pdf");
+  it("hy3_analyze_text generates HTML report", async () => {
     const client = createMockClient("PDF summary");
     const result = await handleToolCall(
-      "hy3_document_summary",
-      { file_path: pdf, question: "Summarize", output_format: "html", language: "en" },
+      "hy3_analyze_text",
+      { text: "Annual report content.", question: "Summarize", output_format: "html", language: "en" },
       client
     );
     expect(result.content[0].text).toContain("HTML");
     expect(result.content[0].text).toContain("File path:");
   });
 
-  it("hy3_document_visualize extracts data from a DOCX and renders SVG", async () => {
-    const docx = join(sampleDir, "report.docx");
-    const client = createMockClient([
-      JSON.stringify({
-        columns: ["Quarter", "Revenue"],
-        rows: [{ Quarter: "Q1", Revenue: 120000 }],
-      }),
-      JSON.stringify({ x_column: "Quarter", y_column: "Revenue", title: "Quarterly Revenue" }),
-    ]);
+  it("hy3_analyze_text extracts structured JSON", async () => {
+    const client = createMockClient(JSON.stringify({ key_metrics: ["revenue", "profit"], trends: ["up"] }));
     const result = await handleToolCall(
-      "hy3_document_visualize",
-      { file_path: docx, chart_type: "bar", output_format: "svg", language: "en" },
+      "hy3_analyze_text",
+      {
+        text: "Q1 revenue grew 20% and profit margin improved.",
+        question: "Extract key metrics and trends as JSON",
+        output_format: "json",
+        language: "en",
+      },
       client
     );
-    expect(result.content[0].text).toContain("SVG");
-    expect(result.content[0].text).toContain("File path:");
-  });
-
-  it("hy3_document_visualize renders a dashboard from structured CSV", async () => {
-    const csv = join(tempDir, "data.csv");
-    await writeFile(csv, "a,b\n1,2\n3,4\n");
-    const client = createMockClient(JSON.stringify({ x_column: "a", y_column: "b", title: "Chart" }));
-    const result = await handleToolCall(
-      "hy3_document_visualize",
-      { file_path: csv, chart_type: "dashboard", output_format: "html", language: "en" },
-      client
-    );
-    expect(result.content[0].text).toContain("dashboard");
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.key_metrics).toEqual(["revenue", "profit"]);
   });
 
   it("hy3_knowledge_graph renders SVG with extracted entities", async () => {

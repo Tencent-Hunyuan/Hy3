@@ -1,13 +1,25 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { loadConfig, Hy3Client } from "../src/client.js";
 
+function createMockStream(text: string) {
+  async function* stream() {
+    yield { choices: [{ delta: { content: `  ${text}  ` } }] };
+  }
+  return stream();
+}
+
 vi.mock("openai", () => {
   return {
     default: class MockOpenAI {
       chat = {
         completions: {
-          create: vi.fn().mockResolvedValue({
-            choices: [{ message: { content: "  mocked hy3 response  " } }],
+          create: vi.fn().mockImplementation((_params, _options) => {
+            if (_params.stream) {
+              return createMockStream("mocked hy3 response");
+            }
+            return Promise.resolve({
+              choices: [{ message: { content: "  mocked hy3 response  " } }],
+            });
           }),
         },
       };
@@ -56,5 +68,20 @@ describe("Hy3Client", () => {
       { role: "user", content: "hello" },
     ]);
     expect(response).toBe("mocked hy3 response");
+  });
+
+  it("streams tokens when onToken is provided", async () => {
+    const client = new Hy3Client({
+      apiKey: "test-key",
+      baseURL: "https://tokenhub.tencentmaas.com/v1",
+      model: "hy3-preview",
+    });
+    const tokens: string[] = [];
+    const response = await client.chat(
+      [{ role: "user", content: "hello" }],
+      { onToken: (token) => tokens.push(token) }
+    );
+    expect(response).toBe("mocked hy3 response");
+    expect(tokens.length).toBeGreaterThan(0);
   });
 });
