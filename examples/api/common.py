@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import math
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal, Mapping
+from typing import Literal, Mapping
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -15,17 +15,24 @@ ReasoningEffort = Literal["no_think", "low", "high"]
 API_DIR = Path(__file__).resolve().parent
 
 
+def _string_setting(values: Mapping[str, str], name: str, default: str) -> str:
+    value = values.get(name, default)
+    if not isinstance(value, str):
+        raise ValueError(f"{name} must be a string")
+    return value.strip()
+
+
 @dataclass(frozen=True)
 class Hy3Config:
     backend: Backend
     base_url: str
-    api_key: str
+    api_key: str = field(repr=False)
     model: str
     timeout: float
 
     @classmethod
-    def from_mapping(cls, values: Mapping[str, Any]) -> Hy3Config:
-        backend = str(values.get("HY3_BACKEND", "self_hosted")).strip()
+    def from_mapping(cls, values: Mapping[str, str]) -> Hy3Config:
+        backend = _string_setting(values, "HY3_BACKEND", "self_hosted")
         if backend not in ("self_hosted", "openrouter"):
             raise ValueError("HY3_BACKEND must be self_hosted or openrouter")
 
@@ -38,9 +45,9 @@ class Hy3Config:
             default_api_key = ""
             default_model = "tencent/hy3:free"
 
-        base_url = str(values.get("HY3_BASE_URL", default_base_url)).strip().rstrip("/")
-        api_key = str(values.get("HY3_API_KEY", default_api_key)).strip()
-        model = str(values.get("HY3_MODEL", default_model)).strip()
+        base_url = _string_setting(values, "HY3_BASE_URL", default_base_url).rstrip("/")
+        api_key = _string_setting(values, "HY3_API_KEY", default_api_key)
+        model = _string_setting(values, "HY3_MODEL", default_model)
 
         if not base_url:
             raise ValueError("HY3_BASE_URL must not be empty")
