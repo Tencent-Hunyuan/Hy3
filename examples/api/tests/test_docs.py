@@ -29,7 +29,7 @@ REQUIRED_DOCS = (
     API_DIR / "06_error_handling_retry_CN.md",
 )
 
-MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+MARKDOWN_LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 SECRET_PATTERNS = (
     re.compile(r"sk-or-v1-[A-Za-z0-9_-]{20,}"),
     re.compile(
@@ -88,7 +88,7 @@ class DocumentationContractTests(unittest.TestCase):
             text = path.read_text(encoding="utf-8")
 
             for target in MARKDOWN_LINK.findall(text):
-                target = target.strip()
+                target = target.strip().strip("<>")
                 if target.startswith(("http://", "https://", "mailto:", "#")):
                     continue
                 target = target.split("#", 1)[0]
@@ -104,7 +104,7 @@ class DocumentationContractTests(unittest.TestCase):
             API_DIR / ".env.example",
             API_DIR / "requirements.txt",
             *REQUIRED_DOCS,
-            *sorted(API_DIR.glob("*.py")),
+            *sorted(API_DIR.rglob("*.py")),
         )
         for path in paths:
             if not path.is_file():
@@ -122,7 +122,7 @@ class DocumentationContractTests(unittest.TestCase):
     def test_docs_and_examples_do_not_contain_secrets(self) -> None:
         paths = (
             *REQUIRED_DOCS,
-            *sorted(API_DIR.glob("*.py")),
+            *sorted(API_DIR.rglob("*.py")),
             API_DIR / ".env.example",
         )
         for path in paths:

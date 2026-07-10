@@ -1,6 +1,6 @@
 # Hy3 API examples
 
-[简体中文](README_CN.md) · [API quickstart](../../quickstart.md) · [Project README](../../README.md)
+[简体中文](README_CN.md) · [API quickstart](../../quickstart.md) · [API 快速开始](../../quickstart_CN.md) · [Project README](../../README.md)
 
 ## Setup
 

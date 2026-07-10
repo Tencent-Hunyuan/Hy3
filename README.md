@@ -131,8 +131,8 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-For complete self-hosted and OpenRouter setup, see the [API quickstart](quickstart.md).
-Follow the six runnable examples in the [API examples learning path](examples/api/README.md).
+For complete API onboarding, see the [Hy3 API Quickstart](./quickstart.md)
+and [API Examples](./examples/api/README.md).
 
 > **Recommended parameters**: `temperature=0.9`, `top_p=1.0`.
 >

@@ -128,8 +128,8 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-完整的自部署与 OpenRouter 配置请参阅 [API 快速开始](quickstart_CN.md)。
-六个可运行示例请按 [API 示例学习路径](examples/api/README_CN.md)依次学习。
+完整 API 入门请参阅 [Hy3 API 快速开始](./quickstart_CN.md)
+和 [API 示例](./examples/api/README_CN.md)。
 
 > **推荐参数**：`temperature=0.9`，`top_p=1.0`。
 >

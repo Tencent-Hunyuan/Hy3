@@ -1,6 +1,6 @@
 # Hy3 API 示例
 
-[English](README.md) · [API 快速开始](../../quickstart_CN.md) · [项目 README](../../README_CN.md)
+[English](README.md) · [API 快速开始](../../quickstart_CN.md) · [API quickstart](../../quickstart.md) · [项目 README](../../README_CN.md)
 
 ## 安装
 

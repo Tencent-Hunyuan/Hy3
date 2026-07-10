@@ -156,7 +156,7 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-## 原始 JSON 与 SDK `extra_body` 参数差异
+## 原始 JSON 与 SDK 参数差异
 
 `extra_body` 是 OpenAI SDK 参数，不是 HTTP 字段。SDK 会把其中内容合并到最终 JSON 对象的顶层。
 
