@@ -91,7 +91,7 @@ curl http://127.0.0.1:8000/v1/chat/completions \
   }'
 ```
 
-In Windows PowerShell, use a single-quoted here-string to preserve the same raw JSON:
+Windows PowerShell equivalent:
 
 ```powershell
 $body = @'
@@ -105,9 +105,11 @@ $body = @'
 }
 '@
 
-curl.exe http://127.0.0.1:8000/v1/chat/completions `
-  -H "Content-Type: application/json" `
-  --data-raw $body
+Invoke-RestMethod `
+  -Uri "http://127.0.0.1:8000/v1/chat/completions" `
+  -Method Post `
+  -ContentType "application/json" `
+  -Body $body
 ```
 
 OpenRouter raw HTTP JSON uses `reasoning` at the top level and reads the key from `${HY3_API_KEY}`. In Bash:
@@ -126,7 +128,7 @@ curl https://openrouter.ai/api/v1/chat/completions \
   }'
 ```
 
-In Windows PowerShell, use the environment variable without copying the key into the command:
+Windows PowerShell equivalent:
 
 ```powershell
 $body = @'
@@ -140,10 +142,12 @@ $body = @'
 }
 '@
 
-curl.exe https://openrouter.ai/api/v1/chat/completions `
-  -H "Authorization: Bearer $env:HY3_API_KEY" `
-  -H "Content-Type: application/json" `
-  --data-raw $body
+Invoke-RestMethod `
+  -Uri "https://openrouter.ai/api/v1/chat/completions" `
+  -Method Post `
+  -Headers @{ Authorization = "Bearer $env:HY3_API_KEY" } `
+  -ContentType "application/json" `
+  -Body $body
 ```
 
 These are wire-format bodies. Neither curl body contains an SDK-only wrapper field.

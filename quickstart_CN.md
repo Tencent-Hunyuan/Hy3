@@ -91,7 +91,7 @@ curl http://127.0.0.1:8000/v1/chat/completions \
   }'
 ```
 
-在 Windows PowerShell 中，使用单引号 here-string 保留完全相同的原始 JSON：
+Windows PowerShell 等价示例：
 
 ```powershell
 $body = @'
@@ -105,9 +105,11 @@ $body = @'
 }
 '@
 
-curl.exe http://127.0.0.1:8000/v1/chat/completions `
-  -H "Content-Type: application/json" `
-  --data-raw $body
+Invoke-RestMethod `
+  -Uri "http://127.0.0.1:8000/v1/chat/completions" `
+  -Method Post `
+  -ContentType "application/json" `
+  -Body $body
 ```
 
 OpenRouter 的原始 HTTP JSON 在顶层使用 `reasoning`，key 仅从 `${HY3_API_KEY}` 读取。Bash 示例：
@@ -126,7 +128,7 @@ curl https://openrouter.ai/api/v1/chat/completions \
   }'
 ```
 
-在 Windows PowerShell 中，直接使用环境变量，无需把 key 复制到命令中：
+Windows PowerShell 等价示例：
 
 ```powershell
 $body = @'
@@ -140,10 +142,12 @@ $body = @'
 }
 '@
 
-curl.exe https://openrouter.ai/api/v1/chat/completions `
-  -H "Authorization: Bearer $env:HY3_API_KEY" `
-  -H "Content-Type: application/json" `
-  --data-raw $body
+Invoke-RestMethod `
+  -Uri "https://openrouter.ai/api/v1/chat/completions" `
+  -Method Post `
+  -Headers @{ Authorization = "Bearer $env:HY3_API_KEY" } `
+  -ContentType "application/json" `
+  -Body $body
 ```
 
 以上是线上传输格式。两个 curl 请求体都不包含 SDK 专用包装字段。
