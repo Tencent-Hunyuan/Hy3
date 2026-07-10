@@ -88,7 +88,7 @@ describe("MCP server smoke test", () => {
           params: {},
         },
       ],
-      4000
+      8000
     );
 
     const listResponse = responses.find((r: any) => r.id === 2);

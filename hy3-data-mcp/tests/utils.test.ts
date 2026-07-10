@@ -1,0 +1,176 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { mkdtemp, writeFile, rm } from "fs/promises";
+import { tmpdir } from "os";
+import { join } from "path";
+import {
+  parseData,
+  loadDataTable,
+  detectLanguage,
+  resolveLanguage,
+  buildThemeOverrides,
+  tableSummary,
+  loadOutputDir,
+  writeOutputFile,
+} from "../src/utils.js";
+
+describe("parseData", () => {
+  it("parses CSV data with header and rows", () => {
+    const table = parseData("name,value\nA,10\nB,20", "csv");
+    expect(table.columns).toEqual(["name", "value"]);
+    expect(table.rows).toEqual([
+      { name: "A", value: 10 },
+      { name: "B", value: 20 },
+    ]);
+  });
+
+  it("parses JSON array data", () => {
+    const table = parseData('[{"x":1,"y":2},{"x":3,"y":4}]', "json");
+    expect(table.columns).toEqual(["x", "y"]);
+    expect(table.rows).toHaveLength(2);
+  });
+
+  it("parses JSON object data as a single row", () => {
+    const table = parseData('{"product":"A","sales":100}', "json");
+    expect(table.columns).toEqual(["product", "sales"]);
+    expect(table.rows).toEqual([{ product: "A", sales: 100 }]);
+  });
+
+  it("returns empty table for empty input", () => {
+    const table = parseData("");
+    expect(table.columns).toEqual([]);
+    expect(table.rows).toEqual([]);
+  });
+});
+
+describe("loadDataTable", () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), "hy3-utils-"));
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+  });
+
+  it("loads a CSV file", async () => {
+    const file = join(tempDir, "data.csv");
+    await writeFile(file, "a,b\n1,2\n3,4");
+    const table = await loadDataTable(file);
+    expect(table.columns).toEqual(["a", "b"]);
+    expect(table.rows).toHaveLength(2);
+  });
+
+  it("loads an XLSX file", async () => {
+    const file = join(tempDir, "data.xlsx");
+    const xlsx = await import("xlsx");
+    const workbook = xlsx.utils.book_new();
+    const sheet = xlsx.utils.aoa_to_sheet([
+      ["Month", "Sales"],
+      ["Jan", 100],
+    ]);
+    xlsx.utils.book_append_sheet(workbook, sheet, "Sheet1");
+    await writeFile(file, Buffer.from(xlsx.write(workbook, { type: "array", bookType: "xlsx" })));
+    const table = await loadDataTable(file);
+    expect(table.columns).toEqual(["Month", "Sales"]);
+    expect(table.rows).toHaveLength(1);
+  });
+});
+
+describe("language helpers", () => {
+  it("detects Chinese text", () => {
+    expect(detectLanguage("这是中文")).toBe("zh");
+  });
+
+  it("detects English text", () => {
+    expect(detectLanguage("This is English")).toBe("en");
+  });
+
+  it("defaults to English for empty text", () => {
+    expect(detectLanguage("")).toBe("en");
+  });
+
+  it("resolveLanguage returns explicit language", () => {
+    expect(resolveLanguage("zh", "hello")).toBe("zh");
+  });
+
+  it("resolveLanguage auto-detects from samples", () => {
+    expect(resolveLanguage("auto", "这是中文")).toBe("zh");
+    expect(resolveLanguage("auto", "English text")).toBe("en");
+  });
+});
+
+describe("buildThemeOverrides", () => {
+  it("applies palette override", () => {
+    const overrides = buildThemeOverrides({ palette: ["#ff0000", "#00ff00"] }, "nature");
+    expect(overrides.palette).toEqual(["#ff0000", "#00ff00"]);
+  });
+
+  it("applies primary color to the start of the base palette", () => {
+    const overrides = buildThemeOverrides({ primary_color: "#123456" }, "nature");
+    expect(overrides.palette?.[0]).toBe("#123456");
+    expect(overrides.palette?.length).toBeGreaterThan(1);
+  });
+
+  it("applies background and text colors", () => {
+    const overrides = buildThemeOverrides(
+      { background_color: "#000000", text_color: "#ffffff" },
+      "nature"
+    );
+    expect(overrides.backgroundColor).toBe("#000000");
+    expect(overrides.textColor).toBe("#ffffff");
+  });
+});
+
+describe("tableSummary", () => {
+  it("returns columns, row count, and preview", () => {
+    const summary = tableSummary({
+      columns: ["a", "b"],
+      rows: [{ a: 1, b: 2 }, { a: 3, b: 4 }],
+      raw: "",
+    });
+    expect(summary).toContain("Columns: a, b");
+    expect(summary).toContain("Rows: 2");
+    expect(summary).toContain('{"a":1,"b":2}');
+  });
+});
+
+describe("loadOutputDir", () => {
+  const originalEnv = process.env.HY3_OUTPUT_DIR;
+
+  afterEach(() => {
+    process.env.HY3_OUTPUT_DIR = originalEnv;
+  });
+
+  it("uses the environment variable when set", () => {
+    const envDir = join(process.cwd(), "custom-output-env");
+    process.env.HY3_OUTPUT_DIR = envDir;
+    expect(loadOutputDir()).toBe(envDir);
+  });
+
+  it("falls back to ./hy3-data-output", () => {
+    delete process.env.HY3_OUTPUT_DIR;
+    expect(loadOutputDir()).toBe(join(process.cwd(), "hy3-data-output"));
+  });
+});
+
+describe("writeOutputFile", () => {
+  let tempDir: string;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), "hy3-output-"));
+    process.env.HY3_OUTPUT_DIR = tempDir;
+  });
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true });
+    delete process.env.HY3_OUTPUT_DIR;
+  });
+
+  it("writes content to the output directory and returns the absolute path", async () => {
+    const filePath = await writeOutputFile("charts/test.svg", "<svg></svg>");
+    expect(filePath).toBe(join(tempDir, "charts", "test.svg"));
+    const content = await (await import("fs/promises")).readFile(filePath, "utf-8");
+    expect(content).toBe("<svg></svg>");
+  });
+});

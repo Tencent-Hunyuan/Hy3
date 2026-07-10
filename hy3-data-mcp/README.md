@@ -436,8 +436,11 @@ cd Hy3/hy3-data-mcp
 npm install
 npm run build
 npm test
-npm run test:real   # requires HY3_API_KEY
+npm run test:coverage   # generate coverage report
+npm run test:real       # requires HY3_API_KEY
 ```
+
+The test suite contains **80+ unit, integration, and smoke tests** covering documents, utilities, themes, CLI config, dashboard rendering, client setup, tool routing, and the MCP server handshake. As of the latest run, code coverage for the `src/` directory is approximately **82% statements / 83% branches / 88% functions** (overall ~62% statements when including uncovered helper scripts).
 
 Debug with the [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
 

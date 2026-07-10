@@ -20,6 +20,7 @@
     "dev": "tsc --watch",
     "start": "node dist/index.js",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:real": "node scripts/test-real.mjs",
     "demo:gif": "node scripts/generate-demo-gif.mjs",
     "demo:screenshots": "node scripts/generate-demo-screenshots.mjs",
@@ -65,6 +66,7 @@
   "devDependencies": {
     "@types/node": "^20.17.0",
     "@types/papaparse": "^5.3.15",
+    "@vitest/coverage-v8": "^2.1.9",
     "prettier": "^3.4.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"

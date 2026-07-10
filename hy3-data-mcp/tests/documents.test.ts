@@ -1,0 +1,81 @@
+import { describe, it, expect } from "vitest";
+import { join } from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import * as XLSX from "xlsx";
+import {
+  detectDocumentType,
+  extractTextFromDocument,
+  parseXlsx,
+} from "../src/documents.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const sampleDir = join(__dirname, "..", "sample_data");
+
+describe("detectDocumentType", () => {
+  it.each([
+    ["file.pdf", "pdf"],
+    ["file.docx", "docx"],
+    ["file.xlsx", "xlsx"],
+    ["file.xls", "xlsx"],
+    ["file.csv", "csv"],
+    ["file.json", "json"],
+    ["file.jsonl", "json"],
+    ["file.txt", "txt"],
+    ["file.unknown", "txt"],
+    ["FILE.PDF", "pdf"],
+  ])("detects %s as %s", (file, expected) => {
+    expect(detectDocumentType(file)).toBe(expected);
+  });
+});
+
+describe("extractTextFromDocument", () => {
+  it("extracts text from a DOCX file", async () => {
+    const text = await extractTextFromDocument(join(sampleDir, "report.docx"));
+    expect(text).toContain("Q1-Q4 Sales Report");
+    expect(text).toContain("Quarterly Performance");
+    expect(text).toContain("Q4");
+  });
+
+  it("extracts text from a PDF file", async () => {
+    const text = await extractTextFromDocument(join(sampleDir, "report.pdf"));
+    expect(text).toContain("Q1-Q4 Sales Report");
+    expect(text).toContain("Total annual revenue reached");
+  });
+
+  it("reads plain text files as-is", async () => {
+    const text = await extractTextFromDocument(join(sampleDir, "article.txt"));
+    expect(text.length).toBeGreaterThan(0);
+  });
+});
+
+describe("parseXlsx", () => {
+  it("parses an XLSX buffer into a DataTable", () => {
+    const workbook = XLSX.utils.book_new();
+    const sheet = XLSX.utils.aoa_to_sheet([
+      ["Month", "Sales"],
+      ["Jan", 100],
+      ["Feb", 150],
+    ]);
+    XLSX.utils.book_append_sheet(workbook, sheet, "Sheet1");
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+
+    const table = parseXlsx(buffer as Buffer);
+    expect(table.columns).toEqual(["Month", "Sales"]);
+    expect(table.rows).toHaveLength(2);
+    expect(table.rows[0]).toEqual({ Month: "Jan", Sales: 100 });
+    expect(table.rows[1]).toEqual({ Month: "Feb", Sales: 150 });
+  });
+
+  it("returns empty table for an empty workbook", () => {
+    const workbook = XLSX.utils.book_new();
+    const sheet = XLSX.utils.aoa_to_sheet([]);
+    XLSX.utils.book_append_sheet(workbook, sheet, "Sheet1");
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+
+    const table = parseXlsx(buffer as Buffer);
+    expect(table.columns).toEqual([]);
+    expect(table.rows).toEqual([]);
+  });
+});
