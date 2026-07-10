@@ -1,6 +1,7 @@
 {
   "mcpServers": {
     "hy3-data-mcp": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "hy3-data-mcp"],
       "env": {

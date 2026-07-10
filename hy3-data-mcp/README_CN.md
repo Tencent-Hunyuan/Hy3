@@ -163,12 +163,13 @@ HY3_OUTPUT_DIR=./hy3-data-output
 
 ### CodeBuddy / WorkBuddy
 
-在项目目录的 `.codebuddy/mcp.json` 中写入：
+在用户目录的 `~/.codebuddy/.mcp.json` 中写入：
 
 ```json
 {
   "mcpServers": {
     "hy3-data-mcp": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "hy3-data-mcp"],
       "env": {

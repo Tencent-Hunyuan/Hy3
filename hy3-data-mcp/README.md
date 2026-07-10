@@ -163,12 +163,13 @@ HY3_OUTPUT_DIR=./hy3-data-output
 
 ### CodeBuddy / WorkBuddy
 
-Add to `.codebuddy/mcp.json`:
+Add to `~/.codebuddy/.mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "hy3-data-mcp": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "hy3-data-mcp"],
       "env": {
