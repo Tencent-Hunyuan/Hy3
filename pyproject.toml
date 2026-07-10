@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hy3-kb-mcp"
+version = "0.1.0"
+description = "MCP Server that powers a knowledge-base Q&A assistant via the Hy3 (Tencent) API"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Rhino Bird MCP Contest" }]
+keywords = ["mcp", "hy3", "tencent", "knowledge-base", "rag", "llm"]
+dependencies = [
+    "mcp>=1.2.0",
+    "openai>=1.12.0",
+]
+
+[project.optional-dependencies]
+# 仅 txt/md/csv 为默认支持（零额外依赖）。
+# 如需要 pdf/docx，可安装 extras，但本竞赛实现的默认范围仅含纯文本类。
+pdf = ["pypdf>=4.0.0"]
+docx = ["python-docx>=1.1.0"]
+dev = ["pytest>=8.0.0"]
+
+[project.scripts]
+hy3-kb-mcp = "hy3_mcp.server:main"
+
+[project.urls]
+Homepage = "https://github.com/your-org/hy3-kb-mcp"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hy3_mcp"]
