@@ -1,6 +1,6 @@
 {
   "name": "hy3-data-mcp",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "A data-analysis MCP server powered by Tencent Hunyuan Hy3. Generates charts, word clouds, knowledge graphs and dashboards from CSV/JSON data.",
   "type": "module",
   "main": "dist/index.js",
@@ -41,11 +41,11 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Tencent-Hunyuan/Hy3.git",
+    "url": "git+https://github.com/xy200303/Hy3.git",
     "directory": "hy3-data-mcp"
   },
   "bugs": {
-    "url": "https://github.com/Tencent-Hunyuan/Hy3/issues"
+    "url": "https://github.com/xy200303/Hy3/issues"
   },
   "homepage": "https://github.com/xy200303/Hy3",
   "dependencies": {
