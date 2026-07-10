@@ -140,10 +140,11 @@ def object_to_dict(value: Any) -> Any:
     return str(value)
 
 
-def extract_reasoning(message: Any) -> tuple[Any, list[Any]]:
+def extract_reasoning(message: Any) -> tuple[str, list[Any]]:
     reasoning = _field(message, "reasoning")
     if reasoning is None:
         reasoning = _field(message, "reasoning_content")
+    reasoning = "" if reasoning is None else str(reasoning)
 
     raw_details = _field(message, "reasoning_details")
     normalized_details = object_to_dict(raw_details)
@@ -155,11 +156,11 @@ def extract_reasoning(message: Any) -> tuple[Any, list[Any]]:
         details = [normalized_details]
 
     if not reasoning:
-        reasoning = " ".join(
+        reasoning = "".join(
             str(detail["text"])
             for detail in details
-            if isinstance(detail, Mapping) and detail.get("text")
-        ) or None
+            if isinstance(detail, Mapping) and detail.get("text") is not None
+        )
 
     return reasoning, details
 
@@ -167,7 +168,7 @@ def extract_reasoning(message: Any) -> tuple[Any, list[Any]]:
 def assistant_message_to_dict(message: Any) -> dict[str, Any]:
     normalized = object_to_dict(message)
     if not isinstance(normalized, dict):
-        raise TypeError("assistant message must serialize to a dictionary")
+        raise TypeError("assistant message must serialize to an object")
 
     normalized.pop("model_extra", None)
     if normalized.get("role") is None:

@@ -172,7 +172,7 @@ class CompletionNormalizationTests(unittest.TestCase):
         message = SimpleNamespace(
             model_extra={
                 "reasoning_details": [
-                    {"type": "reasoning.text", "text": "first"},
+                    {"type": "reasoning.text", "text": "first "},
                     {"type": "reasoning.text", "text": "second"},
                 ]
             }
@@ -184,15 +184,37 @@ class CompletionNormalizationTests(unittest.TestCase):
         self.assertEqual(
             details,
             [
-                {"type": "reasoning.text", "text": "first"},
+                {"type": "reasoning.text", "text": "first "},
                 {"type": "reasoning.text", "text": "second"},
             ],
         )
 
+    def test_returns_empty_reasoning_when_absent(self) -> None:
+        self.assertEqual(extract_reasoning(SimpleNamespace()), ("", []))
+
+    def test_coerces_reasoning_fields_to_strings(self) -> None:
+        messages = (
+            SimpleNamespace(reasoning=123),
+            SimpleNamespace(reasoning=None, reasoning_content=456),
+        )
+
+        for message, expected in zip(messages, ("123", "456")):
+            with self.subTest(message=message):
+                reasoning, details = extract_reasoning(message)
+
+                self.assertEqual(reasoning, expected)
+                self.assertEqual(details, [])
+
+    def test_rejects_non_object_assistant_message(self) -> None:
+        with self.assertRaisesRegex(
+            TypeError, "^assistant message must serialize to an object$"
+        ):
+            assistant_message_to_dict("not an object")
+
     def test_preserves_reasoning_details_in_assistant_history(self) -> None:
         tool_calls = [
             SimpleNamespace(
-                id="call-1",
+                id="call_1",
                 type="function",
                 function=SimpleNamespace(name="lookup", arguments='{"q":"hy3"}'),
             )
@@ -216,6 +238,7 @@ class CompletionNormalizationTests(unittest.TestCase):
             normalized["reasoning_details"],
             [{"type": "reasoning.text", "text": "plan"}],
         )
+        self.assertNotIn("content", normalized)
         self.assertNotIn("model_extra", normalized)
 
     def test_summarizes_first_choice_and_optional_usage(self) -> None:
