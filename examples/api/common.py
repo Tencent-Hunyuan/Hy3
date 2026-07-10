@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import json
 import math
 import os
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field, is_dataclass
 from pathlib import Path
-from typing import Literal, Mapping
+from typing import Any, Literal, Mapping
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -97,3 +98,109 @@ def reasoning_extra_body(
         return {"reasoning": {"effort": mapped_effort}}
 
     return {"chat_template_kwargs": {"reasoning_effort": effort}}
+
+
+def _field(value: Any, name: str, default: Any = None) -> Any:
+    if isinstance(value, Mapping):
+        return value.get(name, default)
+
+    direct_value = getattr(value, name, None)
+    if direct_value is not None:
+        return direct_value
+
+    model_extra = getattr(value, "model_extra", None)
+    if isinstance(model_extra, Mapping):
+        return model_extra.get(name, default)
+
+    return default
+
+
+def object_to_dict(value: Any) -> Any:
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, Mapping):
+        return {str(key): object_to_dict(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [object_to_dict(item) for item in value]
+    if is_dataclass(value):
+        return object_to_dict(asdict(value))
+
+    model_dump = getattr(value, "model_dump", None)
+    if callable(model_dump):
+        return object_to_dict(model_dump(exclude_none=True))
+
+    attributes = getattr(value, "__dict__", None)
+    if isinstance(attributes, Mapping):
+        return {
+            str(name): object_to_dict(item)
+            for name, item in attributes.items()
+            if not str(name).startswith("_") and item is not None
+        }
+
+    return str(value)
+
+
+def extract_reasoning(message: Any) -> tuple[Any, list[Any]]:
+    reasoning = _field(message, "reasoning")
+    if reasoning is None:
+        reasoning = _field(message, "reasoning_content")
+
+    raw_details = _field(message, "reasoning_details")
+    normalized_details = object_to_dict(raw_details)
+    if normalized_details is None:
+        details: list[Any] = []
+    elif isinstance(normalized_details, list):
+        details = normalized_details
+    else:
+        details = [normalized_details]
+
+    if not reasoning:
+        reasoning = " ".join(
+            str(detail["text"])
+            for detail in details
+            if isinstance(detail, Mapping) and detail.get("text")
+        ) or None
+
+    return reasoning, details
+
+
+def assistant_message_to_dict(message: Any) -> dict[str, Any]:
+    normalized = object_to_dict(message)
+    if not isinstance(normalized, dict):
+        raise TypeError("assistant message must serialize to a dictionary")
+
+    normalized.pop("model_extra", None)
+    if normalized.get("role") is None:
+        normalized["role"] = "assistant"
+
+    model_extra = getattr(message, "model_extra", None)
+    if isinstance(model_extra, Mapping):
+        for name in ("reasoning", "reasoning_content", "reasoning_details"):
+            value = model_extra.get(name)
+            if value is not None and normalized.get(name) is None:
+                normalized[name] = object_to_dict(value)
+
+    return {name: value for name, value in normalized.items() if value is not None}
+
+
+def summarize_completion(completion: Any) -> dict[str, Any]:
+    choices = _field(completion, "choices", [])
+    if not choices:
+        raise RuntimeError("completion did not contain any choices")
+
+    choice = choices[0]
+    message = _field(choice, "message")
+    reasoning, reasoning_details = extract_reasoning(message)
+    return {
+        "model": _field(completion, "model"),
+        "content": _field(message, "content"),
+        "reasoning": reasoning,
+        "reasoning_details": reasoning_details,
+        "finish_reason": _field(choice, "finish_reason"),
+        "usage": object_to_dict(_field(completion, "usage")),
+    }
+
+
+def print_json(label: str, value: Any) -> None:
+    print(f"{label}:")
+    print(json.dumps(object_to_dict(value), ensure_ascii=False, indent=2))

@@ -4,6 +4,7 @@ import os
 import sys
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 
@@ -11,7 +12,15 @@ API_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(API_DIR))
 
 import common
-from common import Hy3Config, create_client, reasoning_extra_body
+from common import (
+    Hy3Config,
+    assistant_message_to_dict,
+    create_client,
+    extract_reasoning,
+    object_to_dict,
+    reasoning_extra_body,
+    summarize_completion,
+)
 
 
 class Hy3ConfigTests(unittest.TestCase):
@@ -131,6 +140,114 @@ class Hy3ConfigTests(unittest.TestCase):
             api_key=config.api_key,
             timeout=config.timeout,
             max_retries=7,
+        )
+
+
+class CompletionNormalizationTests(unittest.TestCase):
+    def test_extracts_reasoning_and_structured_details(self) -> None:
+        message = SimpleNamespace(
+            reasoning="plan",
+            reasoning_details=[{"type": "reasoning.text", "text": "plan"}],
+        )
+
+        reasoning, details = extract_reasoning(message)
+
+        self.assertEqual(reasoning, "plan")
+        self.assertEqual(
+            details,
+            [{"type": "reasoning.text", "text": "plan"}],
+        )
+
+    def test_falls_back_to_model_extra_reasoning_content(self) -> None:
+        message = SimpleNamespace(
+            model_extra={"reasoning_content": "legacy plan"}
+        )
+
+        reasoning, details = extract_reasoning(message)
+
+        self.assertEqual(reasoning, "legacy plan")
+        self.assertEqual(details, [])
+
+    def test_derives_text_from_structured_details(self) -> None:
+        message = SimpleNamespace(
+            model_extra={
+                "reasoning_details": [
+                    {"type": "reasoning.text", "text": "first"},
+                    {"type": "reasoning.text", "text": "second"},
+                ]
+            }
+        )
+
+        reasoning, details = extract_reasoning(message)
+
+        self.assertEqual(reasoning, "first second")
+        self.assertEqual(
+            details,
+            [
+                {"type": "reasoning.text", "text": "first"},
+                {"type": "reasoning.text", "text": "second"},
+            ],
+        )
+
+    def test_preserves_reasoning_details_in_assistant_history(self) -> None:
+        tool_calls = [
+            SimpleNamespace(
+                id="call-1",
+                type="function",
+                function=SimpleNamespace(name="lookup", arguments='{"q":"hy3"}'),
+            )
+        ]
+        message = SimpleNamespace(
+            role="assistant",
+            content=None,
+            tool_calls=tool_calls,
+            model_extra={
+                "reasoning_details": [
+                    {"type": "reasoning.text", "text": "plan"}
+                ]
+            },
+        )
+
+        normalized = assistant_message_to_dict(message)
+
+        self.assertEqual(normalized["role"], "assistant")
+        self.assertEqual(normalized["tool_calls"], object_to_dict(tool_calls))
+        self.assertEqual(
+            normalized["reasoning_details"],
+            [{"type": "reasoning.text", "text": "plan"}],
+        )
+        self.assertNotIn("model_extra", normalized)
+
+    def test_summarizes_first_choice_and_optional_usage(self) -> None:
+        message = SimpleNamespace(
+            content="answer",
+            reasoning="plan",
+            reasoning_details=[{"type": "reasoning.text", "text": "plan"}],
+        )
+        completion = SimpleNamespace(
+            model="hy3",
+            choices=[
+                SimpleNamespace(message=message, finish_reason="stop"),
+                SimpleNamespace(
+                    message=SimpleNamespace(content="ignored"),
+                    finish_reason="length",
+                ),
+            ],
+            usage=SimpleNamespace(total_tokens=7),
+        )
+
+        self.assertEqual(
+            summarize_completion(completion),
+            {
+                "model": "hy3",
+                "content": "answer",
+                "reasoning": "plan",
+                "reasoning_details": [
+                    {"type": "reasoning.text", "text": "plan"}
+                ],
+                "finish_reason": "stop",
+                "usage": {"total_tokens": 7},
+            },
         )
 
 
