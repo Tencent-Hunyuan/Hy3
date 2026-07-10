@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import math
 import random
 import time
 from typing import Callable, Iterator, TypeVar
@@ -46,7 +47,9 @@ def retry_after_seconds(error: Exception) -> float | None:
         retry_after = float(headers.get("retry-after"))
     except (TypeError, ValueError):
         return None
-    return retry_after if retry_after >= 0 else None
+    if math.isfinite(retry_after) and retry_after >= 0:
+        return retry_after
+    return None
 
 
 def call_with_retry(

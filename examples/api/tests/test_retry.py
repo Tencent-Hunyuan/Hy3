@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import math
 import sys
 import unittest
 from pathlib import Path
@@ -54,6 +55,27 @@ class RetryExampleTests(unittest.TestCase):
 
         self.assertEqual(result, "ok")
         self.assertEqual(sleeps, [2.0])
+
+    def test_non_finite_retry_after_falls_back_to_full_jitter(self) -> None:
+        module = load_example("06_error_handling_retry.py")
+
+        for retry_after in ("inf", "1e309", "nan"):
+            with self.subTest(retry_after=retry_after):
+                sleeps: list[float] = []
+                operation = sequence_operation(
+                    [FakeStatusError(429, retry_after), "ok"]
+                )
+
+                result = module.call_with_retry(
+                    operation,
+                    base_delay=0.5,
+                    sleep=sleeps.append,
+                    random_value=lambda: 0.5,
+                )
+
+                self.assertEqual(result, "ok")
+                self.assertEqual(sleeps, [0.25])
+                self.assertTrue(all(math.isfinite(delay) for delay in sleeps))
 
     def test_real_sdk_rate_limit_response_is_retried(self) -> None:
         module = load_example("06_error_handling_retry.py")
