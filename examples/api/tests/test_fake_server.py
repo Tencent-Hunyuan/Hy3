@@ -93,6 +93,19 @@ class FakeOpenAIServerTests(unittest.TestCase):
 
         self.assertEqual(content, "Hello world")
 
+    def test_sse_headers_can_be_extended_and_overridden(self) -> None:
+        server = FakeOpenAIServer()
+
+        server.enqueue_sse(
+            [],
+            headers={"X-Test": "yes", "Cache-Control": "custom"},
+        )
+
+        response = server.responses[0]
+        self.assertEqual(response.headers["Content-Type"], "text/event-stream")
+        self.assertEqual(response.headers["X-Test"], "yes")
+        self.assertEqual(response.headers["Cache-Control"], "custom")
+
 
 if __name__ == "__main__":
     unittest.main()

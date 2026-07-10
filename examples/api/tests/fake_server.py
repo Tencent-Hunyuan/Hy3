@@ -97,7 +97,12 @@ class FakeOpenAIServer:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.responses.append(QueuedResponse(status, response_headers, body))
 
-    def enqueue_sse(self, events: Iterable[Mapping[str, Any]]) -> None:
+    def enqueue_sse(
+        self,
+        events: Iterable[Mapping[str, Any]],
+        *,
+        headers: Mapping[str, str] | None = None,
+    ) -> None:
         body = "".join(
             f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
             for event in events
@@ -109,6 +114,7 @@ class FakeOpenAIServer:
                 headers={
                     "Content-Type": "text/event-stream",
                     "Cache-Control": "no-cache",
+                    **dict(headers or {}),
                 },
                 body=body.encode("utf-8"),
             )
