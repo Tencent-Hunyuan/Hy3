@@ -1,5 +1,5 @@
 <p align="left">
-   <a href="README.md">English</a>&nbsp;｜&nbsp;中文
+   <a href="README.md">English</a> ｜ 中文
 </p>
 <br>
 
@@ -9,22 +9,9 @@
 
 <div align="center" style="line-height: 1;">
 
-
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](#许可证)
-&nbsp;&nbsp;
-[![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Tencent%20Hy-ffc107?color=ffc107&logoColor=white)](https://huggingface.co/tencent/Hy3)
-&nbsp;&nbsp;
-[![ModelScope](https://img.shields.io/badge/ModelScope-Tencent%20Hy-624aff)](https://modelscope.cn/models/Tencent-Hunyuan/Hy3)
-&nbsp;&nbsp;
-[![cnb.cool](https://img.shields.io/badge/cnb.cool-Tencent%20Hy-blue?logoColor=white)](https://cnb.cool/ai-models/tencent/Hy3)
-&nbsp;&nbsp;
-[![GitCode](https://img.shields.io/badge/GitCode-Tencent%20Hy-red?logoColor=white)](https://ai.gitcode.com/tencent_hunyuan/Hy3)
-
-</div>
-
 <p align="center">
-    🖥️&nbsp;<a href="https://aistudio.tencent.com/"><b>官方网站</b></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    💬&nbsp;<a href="https://github.com/Tencent-Hunyuan/Hy3"><b>GitHub</b></a></p>
+    🖥️ <a href="https://aistudio.tencent.com/"><b>官方网站</b></a>  |  
+    💬 <a href="https://github.com/Tencent-Hunyuan/Hy3"><b>GitHub</b></a></p>
 
 ---
 
@@ -51,22 +38,21 @@
 
 **Hy3** 是由腾讯混元团队研发的快慢思考融合的混合专家模型，总参数量 295B，激活参数 21B，MTP 层参数 3.8B。4 月底发布 Hy3 Preview 后，我们在 50 多个业务中获得了广泛的反馈，修复了各种体验问题，进一步提升了后训练的质量和规模。今天，我们正式发布 Hy3。它展现出显著强于同尺寸模型的智能水平，并比肩更大尺寸旗舰模型的效果，大幅提升了在各类产品和生产力任务中的实用价值。
 
-
-| 属性 | 值 |
-|:---|:---|
-| 架构 | 混合专家（MoE） |
-| 总参数量 | 295B |
-| 激活参数量 | 21B |
-| MTP层参数量 | 3.8B |
-| 层数（不含MTP层） | 80 |
-| MTP层数 | 1 |
-| 注意力头 | 64（GQA，8 个 KV 头，head dim 128） |
-| 隐藏层维度 | 4096 |
-| FFN 中间层维度 | 13312 |
-| 上下文长度 | 256K |
-| 词表大小 | 120832 |
-| 专家数量 | 192 个专家，top-8 激活 |
-| 支持精度 | BF16 |
+| 属性              | 值                                  |
+| :---------------- | :---------------------------------- |
+| 架构              | 混合专家（MoE）                     |
+| 总参数量          | 295B                                |
+| 激活参数量        | 21B                                 |
+| MTP层参数量       | 3.8B                                |
+| 层数（不含MTP层） | 80                                  |
+| MTP层数           | 1                                   |
+| 注意力头          | 64（GQA，8 个 KV 头，head dim 128） |
+| 隐藏层维度        | 4096                                |
+| FFN 中间层维度    | 13312                               |
+| 上下文长度        | 256K                                |
+| 词表大小          | 120832                              |
+| 专家数量          | 192 个专家，top-8 激活              |
+| 支持精度          | BF16                                |
 
 ## 更强大的智能体能力
 
@@ -100,11 +86,10 @@ Hy3 在软件开发、办公生产、金融建模、前端设计、游戏制作�
 
 ## 模型链接
 
-
-| 模型名 | 简介 | Hugging Face | ModelScope | GitCode | CNB |
-|:---|:---|:---:|:---:|:---:|:---:|
-| Hy3 | Instruct 模型 | 🤗 [Model](https://huggingface.co/tencent/Hy3) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3) | [Model](https://cnb.cool/ai-models/tencent/Hy3) |
-| Hy3-FP8 | FP8 量化 Instruct 模型 | 🤗 [Model](https://huggingface.co/tencent/Hy3-FP8) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3-FP8) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3-FP8) | [Model](https://cnb.cool/ai-models/tencent/Hy3-FP8) |
+| 模型名  | 简介                   |                   Hugging Face                   |                          ModelScope                          |                        GitCode                        |                        CNB                        |
+| :------ | :--------------------- | :----------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------: | :------------------------------------------------: |
+| Hy3     | Instruct 模型          |   🤗[Model](https://huggingface.co/tencent/Hy3)   |   [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3)   |   [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3)   |   [Model](https://cnb.cool/ai-models/tencent/Hy3)   |
+| Hy3-FP8 | FP8 量化 Instruct 模型 | 🤗[Model](https://huggingface.co/tencent/Hy3-FP8) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3-FP8) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3-FP8) | [Model](https://cnb.cool/ai-models/tencent/Hy3-FP8) |
 
 ## 快速开始
 
@@ -141,7 +126,6 @@ Hy3 总参数量为 295B，当使用 8 张 GPU 时，建议使用 H20-3e 或其�
 对于生产环境部署，我们建议使用 vLLM 或 SGLang，这两个框架都为 Hy3 提供了专门的配置方案：
 
 - [vLLM](https://github.com/vllm-project/vllm) - 请查阅 [vLLM recipes](https://recipes.vllm.ai/tencent/Hy3)
-
 - [SGLang](https://docs.sglang.io/) - 请查阅 [SGLang cookbook](https://lmsysorg.mintlify.app/cookbook/autoregressive/Tencent/Hy3)
 
 ### vLLM
@@ -210,7 +194,6 @@ Hy3 提供了完整的模型微调流程，详细的微调文档请参考：[模
 我们提供了 [AngelSlim](https://github.com/tencent/AngelSlim)——一套易用、全面、高效的大模型压缩工具包，涵盖常用量化算法、低比特量化和投机采样等能力。
 
 ## 许可证
-
 
 Hy3 基于 **Apache 2.0 许可证** 发布。详情请参阅 [LICENSE](./LICENSE)。
 
