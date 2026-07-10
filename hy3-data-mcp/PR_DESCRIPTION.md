@@ -14,18 +14,19 @@ This PR introduces `hy3-data-mcp`, a TypeScript ESM MCP server that uses the Ten
 
 ### What’s included
 
-- **7 MCP tools** exposed via stdio:
-  - `hy3_data_visualize` — bar, line, area, pie, donut, rose, scatter, bubble, scatter_trend, radar, heatmap, funnel, sankey, treemap, sunburst, gauge, histogram, boxplot, candlestick, stacked_bar and grouped_bar charts, each with 8 themes (Nature is the new default), custom font support, and optional custom color overrides
+- **8 MCP tools** exposed via stdio:
+  - `hy3_data_visualize` — bar, line, area, pie, donut, rose, scatter, bubble, scatter_trend, radar, heatmap, funnel, sankey, treemap, sunburst, gauge, histogram, boxplot, candlestick, stacked_bar, grouped_bar, 3D charts (bar3d, scatter3d, line3d), and composite charts (line_bar, area_bar, dual_axis, stacked_area, grouped_line), each with 9 themes (Professional is the default), custom font support, and optional custom color overrides
   - `hy3_wordcloud` — keyword extraction + word cloud
   - `hy3_knowledge_graph` — entity/relation extraction + force-directed graph
   - `hy3_data_dashboard` — multi-file HTML dashboard or composite PNG
+  - `hy3_data_report` — generate HTML/Markdown analysis reports with embedded charts
   - `hy3_data_insight` — textual data analysis
   - `hy3_document_summary` — summarize PDF / DOCX / TXT / CSV / JSON / XLSX
   - `hy3_document_visualize` — extract data from documents and visualize it
 - **Output formats:** `svg` (static), `html` (interactive / animated), `png` (rasterized via `sharp`)
 - **Document parsing:** PDF (`pdf2json`), DOCX (`mammoth`), XLSX/CSV/JSON (`xlsx` / `papaparse`)
 - **CLI installer:** `hdm init` detects CodeBuddy, Cursor, Cline, Roo Code, Continue, Codex CLI, OpenCode and writes the client config automatically
-- **Published on npm:** `hy3-data-mcp@0.1.5` — install with `npm install -g hy3-data-mcp` or run with `npx -y hy3-data-mcp`
+- **Published on npm:** `hy3-data-mcp@0.1.6` — install with `npm install -g hy3-data-mcp` or run with `npx -y hy3-data-mcp`
 - **Configuration:** all secrets via `.env` (`HY3_API_KEY`, `HY3_BASE_URL`, `HY3_MODEL`, `HY3_OUTPUT_DIR`); no hard-coded keys
 - **Demo:** `assets/demo.gif` generated from real API outputs
 
@@ -34,6 +35,22 @@ This PR introduces `hy3-data-mcp`, a TypeScript ESM MCP server that uses the Ten
 ## Demo
 
 ![Hy3 Data MCP demo](./assets/demo.gif)
+
+## Screenshot gallery
+
+All screenshots are rendered with the **Professional** theme from the bundled sample datasets.
+
+| | |
+|---|---|
+| ![Stacked bar](./assets/screenshots/01-stacked-bar.png) | ![Bubble](./assets/screenshots/02-bubble.png) |
+| ![Boxplot](./assets/screenshots/03-boxplot.png) | ![Candlestick](./assets/screenshots/04-candlestick.png) |
+| ![Funnel](./assets/screenshots/05-funnel.png) | ![Sunburst](./assets/screenshots/06-sunburst.png) |
+| ![Radar](./assets/screenshots/07-radar.png) | ![Wordcloud](./assets/screenshots/08-wordcloud.png) |
+| ![Knowledge graph](./assets/screenshots/09-knowledge-graph.png) | ![Dashboard](./assets/screenshots/10-dashboard.png) |
+| ![3D bar](./assets/screenshots/11-bar3d.png) | ![3D scatter](./assets/screenshots/12-scatter3d.png) |
+| ![3D line](./assets/screenshots/13-line3d.png) | ![Line + bar](./assets/screenshots/14-line_bar.png) |
+| ![Dual axis](./assets/screenshots/15-dual_axis.png) | ![Stacked area](./assets/screenshots/16-stacked_area.png) |
+| ![Grouped line](./assets/screenshots/17-grouped_line.png) | ![Area + bar](./assets/screenshots/18-area_bar.png) |
 
 ---
 
@@ -50,7 +67,7 @@ npm run test:real   # requires a valid HY3_API_KEY
 ```
 
 - `npm run build` compiles cleanly.
-- `npm test` runs 115+ unit/integration/smoke tests.
+- `npm test` runs 120+ unit/integration/smoke tests.
 - `npm run test:coverage` generates a coverage report: `src/` coverage is ~95% statements / ~85% branches / ~96% functions (entry-point files excluded).
 - `npm run test:real` invokes every tool against the live Hy3 endpoint and writes files to `hy3-data-output/`.
 
@@ -104,8 +121,8 @@ hy3-data-mcp/
 ## Pre-submission checklist
 
 - [x] `npm run build` passes
-- [x] `npm test` passes (115/115)
-- [x] Real API smoke test passes for all 7 tools
+- [x] `npm test` passes (122/122)
+- [x] Real API smoke test passes for all 8 tools
 - [x] PNG output verified for `hy3_data_visualize` (including area, sankey, treemap, sunburst, gauge, boxplot, candlestick, bubble, histogram, stacked_bar), `hy3_wordcloud`, `hy3_knowledge_graph`, `hy3_data_dashboard`, and `hy3_document_visualize`
 - [x] Theme, custom font, and custom color overrides verified across visualization tools
 - [x] README and README_CN updated with PNG examples
