@@ -34,7 +34,7 @@ async function saveChartPng(name, chartType, table, config, width = 900, height 
     ...config,
     width,
     height,
-    theme: "nature",
+    theme: "dark",
   });
   const png = await svgToPng(svg, width, height);
   const path = join(outDir, `${name}.png`);
@@ -155,7 +155,7 @@ async function main() {
     "关键词词云",
     900,
     550,
-    "nature"
+    "dark"
   );
   const wordcloudPng = await svgToPng(wordcloudSvg, 900, 550);
   writeFileSync(join(outDir, "08-wordcloud.png"), wordcloudPng);
@@ -187,7 +187,7 @@ async function main() {
     "知识图谱示例",
     900,
     550,
-    "nature"
+    "dark"
   );
   const kgPng = await svgToPng(kgSvg, 900, 550);
   writeFileSync(join(outDir, "09-knowledge-graph.png"), kgPng);
@@ -225,7 +225,7 @@ async function main() {
       },
     ],
     "电商与营销活动综合数据大屏",
-    "nature"
+    "dark"
   );
   writeFileSync(join(outDir, "10-dashboard.png"), dashPng);
   console.log("generated", join(outDir, "10-dashboard.png"));
