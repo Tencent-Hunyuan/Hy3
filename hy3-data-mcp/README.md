@@ -421,8 +421,10 @@ The `sample_data/` directory contains both simple and complex datasets for testi
 - `sample_data/complex/hierarchical_geo_sales.csv` — Region → city → category hierarchical data for treemaps and sunbursts.
 - `sample_data/complex/reviews.csv` — 20 realistic Chinese product reviews for word clouds and sentiment analysis.
 - `sample_data/stock.csv` — OHLC stock data for candlestick charts.
+- `sample_data/report.docx` — A sample Word document with a quarterly sales report and table, for testing `hy3_document_summary` / `hy3_document_visualize`.
+- `sample_data/report.pdf` — The same report as a PDF file, for testing PDF parsing and summarization.
 
-Run `node scripts/generate-sample-data.mjs` to regenerate these files deterministically.
+Run `node scripts/generate-sample-data.mjs` to regenerate the CSV datasets deterministically. Run `python scripts/generate-sample-documents.py` (in a Python environment with `python-docx` and `fpdf2`) to regenerate the DOCX/PDF samples.
 
 ---
 

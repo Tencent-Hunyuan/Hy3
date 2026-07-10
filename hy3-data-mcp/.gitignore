@@ -7,3 +7,8 @@ coverage/
 *.tsbuildinfo
 hy3-mcp-output/
 hy3-data-output/
+
+# Temporary Python environment for sample document generation
+.gen-venv/
+__pycache__/
+*.pyc

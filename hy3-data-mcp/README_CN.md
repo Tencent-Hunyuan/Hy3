@@ -421,8 +421,10 @@ Nature 默认主题 + 自定义字体示例：
 - `sample_data/complex/hierarchical_geo_sales.csv` —— 区域 → 城市 → 品类 层级数据，适合矩形树图/旭日图。
 - `sample_data/complex/reviews.csv` —— 20 条真实风格的中文产品评论，适合词云与情感分析。
 - `sample_data/stock.csv` —— OHLC 股票数据，适合 K 线图。
+- `sample_data/report.docx` —— 一份包含季度销售报表和表格的 Word 示例文档，用于测试 `hy3_document_summary` / `hy3_document_visualize`。
+- `sample_data/report.pdf` —— 同一份报表的 PDF 版本，用于测试 PDF 解析与总结。
 
-运行 `node scripts/generate-sample-data.mjs` 可确定性重新生成这些数据集。
+运行 `node scripts/generate-sample-data.mjs` 可确定性重新生成 CSV 数据集。运行 `python scripts/generate-sample-documents.py`（需 Python 环境安装 `python-docx` 和 `fpdf2`）可重新生成 DOCX/PDF 示例。
 
 ---
 

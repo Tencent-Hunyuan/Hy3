@@ -53,7 +53,17 @@ async function extractPdfText(filePath: string): Promise<string> {
       const text = pages
         .map((page) =>
           (page.Texts || [])
-            .map((textItem) => (textItem.R || []).map((run) => decodeURIComponent(run.T)).join(""))
+            .map((textItem) =>
+              (textItem.R || [])
+                .map((run) => {
+                  try {
+                    return decodeURIComponent(run.T);
+                  } catch {
+                    return run.T;
+                  }
+                })
+                .join("")
+            )
             .join(" ")
         )
         .join("\n");
