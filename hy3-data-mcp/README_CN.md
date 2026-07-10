@@ -67,6 +67,22 @@
     <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/10-dashboard.png" width="420" alt="数据大屏"><br/>综合数据大屏</td>
   </tr>
   <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/11-bar3d.png" width="420" alt="3D 柱状图"><br/>3D 各品类营收</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/12-scatter3d.png" width="420" alt="3D 散点图"><br/>3D 销量-营收-利润散点</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/13-line3d.png" width="420" alt="3D 折线图"><br/>3D 销量-营收-利润折线</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/14-line_bar.png" width="420" alt="折线+柱状组合图"><br/>月度营收与利润组合图</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/15-dual_axis.png" width="420" alt="双轴组合图"><br/>品类营收利润双轴图</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/16-stacked_area.png" width="420" alt="堆叠面积图"><br/>各区域月度营收堆叠面积图</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/17-grouped_line.png" width="420" alt="分组折线图"><br/>各区域月度营收分组折线</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/18-area_bar.png" width="420" alt="面积+柱状组合图"><br/>月度利润与营收面积柱状图</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/dashboard_2024_Sales___Profit_Dashboard_1783662671334.png" width="860" alt="2024 销售与利润大屏"><br/>2024 销售与利润数据大屏（PNG 合成图）</td>
   </tr>
 </table>

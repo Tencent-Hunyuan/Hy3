@@ -229,6 +229,128 @@ async function main() {
   );
   writeFileSync(join(outDir, "10-dashboard.png"), dashPng);
   console.log("generated", join(outDir, "10-dashboard.png"));
+
+  // 11. 3D bar: category revenue
+  const categoryRevenueSimple = groupBy(
+    ecommerce.rows,
+    (r) => r.category,
+    (r) => Number(r.revenue) || 0
+  ).map((d) => ({ category: d.name, revenue: d.value }));
+  await saveChartPng("11-bar3d", "bar3d", {
+    columns: ["category", "revenue"],
+    rows: categoryRevenueSimple,
+  }, {
+    x_column: "category",
+    y_column: "revenue",
+    title: "3D 各品类营收",
+  });
+
+  // 12. 3D scatter: units vs revenue vs profit
+  const scatter3dRows = ecommerce.rows.slice(0, 80).map((r) => ({
+    units_sold: Number(r.units_sold),
+    revenue: Number(r.revenue),
+    profit: Number(r.profit),
+  }));
+  await saveChartPng("12-scatter3d", "scatter3d", {
+    columns: ["units_sold", "revenue", "profit"],
+    rows: scatter3dRows,
+  }, {
+    x_column: "units_sold",
+    y_column: "revenue",
+    z_column: "profit",
+    title: "3D 销量-营收-利润散点",
+  });
+
+  // 13. 3D line: units vs revenue vs profit
+  const line3dRows = [...scatter3dRows].sort((a, b) => a.units_sold - b.units_sold);
+  await saveChartPng("13-line3d", "line3d", {
+    columns: ["units_sold", "revenue", "profit"],
+    rows: line3dRows,
+  }, {
+    x_column: "units_sold",
+    y_column: "revenue",
+    z_column: "profit",
+    title: "3D 销量-营收-利润折线",
+  });
+
+  // 14. line_bar: monthly revenue (bar) and profit (line)
+  const monthlyRevenueProfit = groupBy(
+    ecommerce.rows,
+    (r) => r.date.slice(0, 7),
+    (r) => ({ revenue: Number(r.revenue) || 0, profit: Number(r.profit) || 0 }),
+    (acc, v) => ({ revenue: acc.revenue + v.revenue, profit: acc.profit + v.profit }),
+    { revenue: 0, profit: 0 }
+  )
+    .map((d) => ({ month: d.name, revenue: d.value.revenue, profit: d.value.profit }))
+    .sort((a, b) => String(a.month).localeCompare(String(b.month)));
+  await saveChartPng("14-line_bar", "line_bar", {
+    columns: ["month", "revenue", "profit"],
+    rows: monthlyRevenueProfit,
+  }, {
+    x_column: "month",
+    y_column: "revenue",
+    value_column: "profit",
+    title: "月度营收与利润组合图",
+  });
+
+  // 15. dual_axis: category revenue and profit
+  const categoryRevenueProfit = groupBy(
+    ecommerce.rows,
+    (r) => r.category,
+    (r) => ({ revenue: Number(r.revenue) || 0, profit: Number(r.profit) || 0 }),
+    (acc, v) => ({ revenue: acc.revenue + v.revenue, profit: acc.profit + v.profit }),
+    { revenue: 0, profit: 0 }
+  ).map((d) => ({ category: d.name, revenue: d.value.revenue, profit: d.value.profit }));
+  await saveChartPng("15-dual_axis", "dual_axis", {
+    columns: ["category", "revenue", "profit"],
+    rows: categoryRevenueProfit,
+  }, {
+    x_column: "category",
+    y_column: "revenue",
+    value_column: "profit",
+    title: "品类营收利润双轴图",
+  });
+
+  // 16. stacked_area: monthly revenue by region
+  const monthlyRegionRows = groupBy(
+    ecommerce.rows,
+    (r) => `${r.date.slice(0, 7)}|${r.region}`,
+    (r) => Number(r.revenue) || 0
+  ).map((d) => {
+    const [month, region] = d.name.split("|");
+    return { month, region, revenue: d.value };
+  });
+  await saveChartPng("16-stacked_area", "stacked_area", {
+    columns: ["month", "region", "revenue"],
+    rows: monthlyRegionRows,
+  }, {
+    x_column: "month",
+    y_column: "revenue",
+    group_column: "region",
+    title: "各区域月度营收堆叠面积图",
+  });
+
+  // 17. grouped_line: monthly revenue by region
+  await saveChartPng("17-grouped_line", "grouped_line", {
+    columns: ["month", "region", "revenue"],
+    rows: monthlyRegionRows,
+  }, {
+    x_column: "month",
+    y_column: "revenue",
+    group_column: "region",
+    title: "各区域月度营收分组折线",
+  });
+
+  // 18. area_bar: monthly profit (bar) and revenue (area line)
+  await saveChartPng("18-area_bar", "area_bar", {
+    columns: ["month", "revenue", "profit"],
+    rows: monthlyRevenueProfit,
+  }, {
+    x_column: "month",
+    y_column: "profit",
+    value_column: "revenue",
+    title: "月度利润与营收面积柱状图",
+  });
 }
 
 main().catch((err) => {

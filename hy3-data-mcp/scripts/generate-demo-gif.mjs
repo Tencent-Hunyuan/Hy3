@@ -139,6 +139,33 @@ async function main() {
   writeFileSync(dashPath, dashPng);
   console.log("generated", dashPath);
 
+  // 5. 3D bar: category revenue
+  const categoryRevenueSimple = groupBy(
+    ecommerce.rows,
+    (r) => r.category,
+    (r) => Number(r.revenue) || 0
+  ).map((d) => ({ category: d.name, revenue: d.value }));
+  await saveChartPng("bar3d", { columns: ["category", "revenue"], rows: categoryRevenueSimple }, {
+    x_column: "category",
+    y_column: "revenue",
+    title: "3D 各品类营收",
+  });
+
+  // 6. dual_axis: category revenue and profit
+  const categoryRevenueProfit = groupBy(
+    ecommerce.rows,
+    (r) => r.category,
+    (r) => ({ revenue: Number(r.revenue) || 0, profit: Number(r.profit) || 0 }),
+    (acc, v) => ({ revenue: acc.revenue + v.revenue, profit: acc.profit + v.profit }),
+    { revenue: 0, profit: 0 }
+  ).map((d) => ({ category: d.name, revenue: d.value.revenue, profit: d.value.profit }));
+  await saveChartPng("dual_axis", { columns: ["category", "revenue", "profit"], rows: categoryRevenueProfit }, {
+    x_column: "category",
+    y_column: "revenue",
+    value_column: "profit",
+    title: "品类营收利润双轴图",
+  });
+
   // Normalize all frames to a fixed 800x600 canvas with white padding
   const normalizeResult = spawnSync(
     "ffmpeg",
