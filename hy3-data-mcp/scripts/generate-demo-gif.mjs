@@ -9,7 +9,7 @@ import { svgToPng } from "../dist/viz/png.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const root = join(__dirname, "..");
-const outDir = join(root, "hy3-mcp-output", "demo-frames");
+const outDir = join(root, "hy3-data-output", "demo-frames");
 mkdirSync(outDir, { recursive: true });
 
 function loadCsv(filePath) {

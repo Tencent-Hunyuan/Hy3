@@ -26,7 +26,7 @@ async function main() {
       HY3_API_KEY: apiKey,
       HY3_BASE_URL: process.env.HY3_BASE_URL || "https://tokenhub.tencentmaas.com/v1",
       HY3_MODEL: process.env.HY3_MODEL || "hy3-preview",
-      HY3_OUTPUT_DIR: process.env.HY3_OUTPUT_DIR || join(process.cwd(), "hy3-mcp-output"),
+      HY3_OUTPUT_DIR: process.env.HY3_OUTPUT_DIR || join(process.cwd(), "hy3-data-output"),
     },
     stdio: ["pipe", "pipe", "pipe"],
   });

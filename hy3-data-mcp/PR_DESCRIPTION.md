@@ -25,7 +25,7 @@ This PR introduces `hy3-data-mcp`, a TypeScript ESM MCP server that uses the Ten
 - **Output formats:** `svg` (static), `html` (interactive / animated), `png` (rasterized via `sharp`)
 - **Document parsing:** PDF (`pdf2json`), DOCX (`mammoth`), XLSX/CSV/JSON (`xlsx` / `papaparse`)
 - **CLI installer:** `hdm init` detects CodeBuddy, Cursor, Cline, Roo Code, Continue, Codex CLI, OpenCode and writes the client config automatically
-- **Published on npm:** `hy3-data-mcp@0.1.1` — install with `npm install -g hy3-data-mcp` or run with `npx -y hy3-data-mcp`
+- **Published on npm:** `hy3-data-mcp@0.1.5` — install with `npm install -g hy3-data-mcp` or run with `npx -y hy3-data-mcp`
 - **Configuration:** all secrets via `.env` (`HY3_API_KEY`, `HY3_BASE_URL`, `HY3_MODEL`, `HY3_OUTPUT_DIR`); no hard-coded keys
 - **Demo:** `assets/demo.gif` generated from real API outputs
 
@@ -51,7 +51,7 @@ npm run test:real   # requires a valid HY3_API_KEY
 
 - `npm run build` compiles cleanly.
 - `npm test` runs 13 unit/integration tests.
-- `npm run test:real` invokes every tool against the live Hy3 endpoint and writes files to `hy3-mcp-output/`.
+- `npm run test:real` invokes every tool against the live Hy3 endpoint and writes files to `hy3-data-output/`.
 
 ---
 
@@ -117,5 +117,5 @@ hy3-data-mcp/
 ## Notes
 
 - The server uses the OpenAI-compatible Hy3 endpoint (`https://tokenhub.tencentmaas.com/v1`) with model `hy3-preview`.
-- Generated files are written to `hy3-mcp-output/` by default; this directory is ignored by Git.
+- Generated files are written to `hy3-data-output/` by default; this directory is ignored by Git.
 - Some npm audit warnings exist in transitive dependencies; they can be addressed in a follow-up.

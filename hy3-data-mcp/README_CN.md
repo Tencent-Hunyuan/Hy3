@@ -144,7 +144,7 @@ hdm init
 HY3_API_KEY=your-tokenhub-api-key
 HY3_BASE_URL=https://tokenhub.tencentmaas.com/v1
 HY3_MODEL=hy3-preview
-HY3_OUTPUT_DIR=./hy3-mcp-output
+HY3_OUTPUT_DIR=./hy3-data-output
 ```
 
 | 变量 | 必填 | 默认值 | 说明 |
@@ -152,7 +152,7 @@ HY3_OUTPUT_DIR=./hy3-mcp-output
 | `HY3_API_KEY` | 是 | — | TokenHub / Hy3 API Key。 |
 | `HY3_BASE_URL` | 否 | `https://tokenhub.tencentmaas.com/v1` | OpenAI 兼容接口地址。 |
 | `HY3_MODEL` | 否 | `hy3-preview` | 模型名。 |
-| `HY3_OUTPUT_DIR` | 否 | `./hy3-mcp-output` | 生成文件的输出目录。 |
+| `HY3_OUTPUT_DIR` | 否 | `./hy3-data-output` | 生成文件的输出目录。 |
 
 ---
 
@@ -172,7 +172,7 @@ HY3_OUTPUT_DIR=./hy3-mcp-output
         "HY3_API_KEY": "your-tokenhub-api-key",
         "HY3_BASE_URL": "https://tokenhub.tencentmaas.com/v1",
         "HY3_MODEL": "hy3-preview",
-        "HY3_OUTPUT_DIR": "./hy3-mcp-output"
+        "HY3_OUTPUT_DIR": "./hy3-data-output"
       }
     }
   }
@@ -182,6 +182,10 @@ HY3_OUTPUT_DIR=./hy3-mcp-output
 ### Cline / Cursor / Roo Code / Continue
 
 运行 `hdm init` 自动配置，或从 [`configs/`](./configs/) 复制对应配置片段。
+
+### Open WebUI
+
+Open WebUI 没有暴露可供 `hdm init` 直接写入的 stdio MCP 宿主。要在 Open WebUI 中使用 Hy3 数据分析 MCP，可以创建一个 Open WebUI [Function / Tool](https://docs.openwebui.com/features/plugin/functions/)，通过 `npx -y hy3-data-mcp` 启动子进程并代理 JSON-RPC 消息；或者单独运行服务端并通过管道转发 stdio。目前暂未提供 Open WebUI 的一键安装功能。
 
 ---
 
@@ -448,10 +452,9 @@ npx @modelcontextprotocol/inspector node dist/index.js
 - [x] 命令行一键安装工具 `hdm init`
 - [x] 支持 PDF、DOCX、XLSX、CSV、JSON、TXT 文档
 - [x] 多种图表主题与自定义字体
-- [ ] 更多数据大屏布局
-- [ ] 长分析任务的流式进度反馈
-- [ ] 长分析任务的流式进度反馈
-- [ ] UI 标签多语言自动检测
+- [x] 更多数据大屏布局
+- [x] 长分析任务的流式进度反馈
+- [x] UI 标签多语言自动检测
 
 ---
 

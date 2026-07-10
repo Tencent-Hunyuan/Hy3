@@ -7,7 +7,7 @@
         "HY3_API_KEY": "your-tokenhub-api-key",
         "HY3_BASE_URL": "https://tokenhub.tencentmaas.com/v1",
         "HY3_MODEL": "hy3-preview",
-        "HY3_OUTPUT_DIR": "./hy3-mcp-output"
+        "HY3_OUTPUT_DIR": "./hy3-data-output"
       }
     }
   }

@@ -30,7 +30,7 @@ describe("CLI installer", () => {
       apiKey: "test-key",
       baseURL: "https://tokenhub.tencentmaas.com/v1",
       model: "hy3-preview",
-      outputDir: "./hy3-mcp-output",
+      outputDir: "./hy3-data-output",
     });
 
     const content = await readFile(configPath, "utf-8");

@@ -144,7 +144,7 @@ Create a `.env` file in the project root:
 HY3_API_KEY=your-tokenhub-api-key
 HY3_BASE_URL=https://tokenhub.tencentmaas.com/v1
 HY3_MODEL=hy3-preview
-HY3_OUTPUT_DIR=./hy3-mcp-output
+HY3_OUTPUT_DIR=./hy3-data-output
 ```
 
 | Variable | Required | Default | Description |
@@ -152,7 +152,7 @@ HY3_OUTPUT_DIR=./hy3-mcp-output
 | `HY3_API_KEY` | Yes | — | Your TokenHub / Hy3 API key. |
 | `HY3_BASE_URL` | No | `https://tokenhub.tencentmaas.com/v1` | OpenAI-compatible endpoint. |
 | `HY3_MODEL` | No | `hy3-preview` | Model name. |
-| `HY3_OUTPUT_DIR` | No | `./hy3-mcp-output` | Where generated files are saved. |
+| `HY3_OUTPUT_DIR` | No | `./hy3-data-output` | Where generated files are saved. |
 
 ---
 
@@ -172,7 +172,7 @@ Add to `.codebuddy/mcp.json`:
         "HY3_API_KEY": "your-tokenhub-api-key",
         "HY3_BASE_URL": "https://tokenhub.tencentmaas.com/v1",
         "HY3_MODEL": "hy3-preview",
-        "HY3_OUTPUT_DIR": "./hy3-mcp-output"
+        "HY3_OUTPUT_DIR": "./hy3-data-output"
       }
     }
   }
@@ -182,6 +182,10 @@ Add to `.codebuddy/mcp.json`:
 ### Cline / Cursor / Roo Code / Continue
 
 Use `hdm init` to auto-configure, or copy the matching snippet from [`configs/`](./configs/).
+
+### Open WebUI
+
+Open WebUI does not expose a stdio MCP host that `hdm init` can write to. To use Hy3 Data MCP there, create an Open WebUI [Function / Tool](https://docs.openwebui.com/features/plugin/functions/) that shells out to `npx -y hy3-data-mcp` and proxies JSON-RPC messages, or run the server separately and forward stdio over a pipe. A one-click installer for Open WebUI is not available yet.
 
 ---
 
@@ -448,10 +452,9 @@ npx @modelcontextprotocol/inspector node dist/index.js
 - [x] CLI installer (`hdm init`)
 - [x] PDF, DOCX, XLSX, CSV, JSON, TXT document support
 - [x] Multiple chart themes and custom font support
-- [ ] More dashboard layouts
-- [ ] Streaming progress for long-running analysis
-- [ ] Streaming progress for long-running analysis
-- [ ] Multi-language UI labels auto-detection
+- [x] More dashboard layouts
+- [x] Streaming progress for long-running analysis
+- [x] Multi-language UI labels auto-detection
 
 ---
 

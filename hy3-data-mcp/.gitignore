@@ -6,3 +6,4 @@ dist/
 coverage/
 *.tsbuildinfo
 hy3-mcp-output/
+hy3-data-output/
