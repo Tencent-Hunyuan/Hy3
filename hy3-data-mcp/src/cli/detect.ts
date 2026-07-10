@@ -219,7 +219,6 @@ async function isConfigured(path: string): Promise<boolean> {
 
 export async function detectClients(baseDir?: string): Promise<DetectedClient[]> {
   const found: DetectedClient[] = [];
-  const seen = new Set<string>();
   const root = baseDir ? resolve(baseDir) : process.cwd();
 
   for (const candidate of CLIENT_CANDIDATES) {
@@ -231,9 +230,6 @@ export async function detectClients(baseDir?: string): Promise<DetectedClient[]>
     );
     const existingPath = pathStatuses.find((s) => s.exists)?.path;
     const targetPath = existingPath ?? defaultPath;
-
-    if (seen.has(targetPath)) continue;
-    seen.add(targetPath);
 
     const hasCommand = await commandExists(candidate.command);
     const hasConfigFile = pathStatuses.some((s) => s.exists);
