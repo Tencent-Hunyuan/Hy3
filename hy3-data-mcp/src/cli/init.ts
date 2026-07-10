@@ -9,7 +9,7 @@ import { detectClients, type DetectedClient } from "./detect.js";
 import { installMcpConfig, type ServerConfig } from "./config.js";
 
 const DEFAULT_OUTPUT_DIR = "./hy3-data-output";
-const DEFAULT_ENV_DIR = join(homedir(), "hy3-data-mcp");
+const DEFAULT_ENV_DIR = join(homedir(), ".hy3-data-mcp");
 const DEFAULT_BASE_URL = "https://tokenhub.tencentmaas.com/v1";
 const DEFAULT_MODEL = "hy3-preview";
 
