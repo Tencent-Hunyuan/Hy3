@@ -28,19 +28,33 @@ Built for the **2026 Tencent RhinoBird Open Source Talent Program** issue: [Buil
 
 ## Features
 
-| Tool | What it does | Output formats |
+`hy3-data-mcp` exposes **11 tools** split into three phases: **Extract & Analyze**, **Plan** (LLM decisions), and **Render** (deterministic output).
+
+### 📄 Extract & Analyze (3 tools)
+
+| Tool | What it does | Output |
 | --- | --- | --- |
-| `hy3_extract_document` | Extracts raw text and metadata from PDF, DOCX, TXT, CSV, JSON, and XLSX files. No LLM. | `json` |
-| `hy3_analyze` | Analyzes text or structured data with Hy3. Summarizes, extracts insights, or answers analytical questions. | `text` / `html` / `json` |
-| `hy3_analyze_report` | Generates a complete analysis report with Hy3-written insights and embedded charts. | `html` / `markdown` |
-| `hy3_plan_chart` | Uses Hy3 to choose the best chart type, columns, and title from data. Returns JSON for `hy3_render_chart`. | `json` |
-| `hy3_plan_dashboard` | Designs a multi-chart dashboard layout from structured data. Returns JSON for `hy3_render_dashboard`. | `json` |
-| `hy3_plan_wordcloud` | Uses Hy3 to extract keywords and weights from text. Returns JSON for `hy3_render_wordcloud`. | `json` |
-| `hy3_plan_knowledge_graph` | Uses Hy3 to extract entities and relationships from text. Returns JSON for `hy3_render_knowledge_graph`. | `json` |
-| `hy3_render_chart` | Renders a chart directly from explicit data + config. No LLM. Bar, line, area, pie, donut, rose, scatter, bubble, scatter_trend, radar, heatmap, funnel, sankey, treemap, sunburst, gauge, histogram, boxplot, candlestick, stacked_bar, grouped_bar, 3D charts, and composite charts. | `svg` / `html` / `png` |
-| `hy3_render_wordcloud` | Renders a word cloud directly from explicit words or raw text. No LLM. | `svg` / `html` / `png` |
-| `hy3_render_knowledge_graph` | Renders a knowledge graph directly from explicit nodes and links. No LLM. | `svg` / `html` / `png` |
-| `hy3_render_dashboard` | Renders a dashboard design into an interactive HTML page or PNG composite. No LLM. | `html` / `png` |
+| `hy3_extract_document` | Extract raw text/tables from PDF, DOCX, TXT, CSV, JSON, and XLSX files. No LLM. Adds `extract_tables` and `return_data`. | `json` |
+| `hy3_analyze` | General analysis that replaces the old `hy3_analyze_text` + `hy3_data_insight`. Supports `text` / `data` / `file_path`. | `text` / `html` / `json` |
+| `hy3_analyze_report` | One-stop analysis report with Hy3-written insights and embedded charts. Rich params for charts, size, and theme. | `html` / `markdown` |
+
+### 🧠 Plan (LLM decision, 4 tools) → JSON
+
+| Tool | What it does |
+| --- | --- |
+| `hy3_plan_chart` | Recommend the best chart type, columns, and title from data. |
+| `hy3_plan_dashboard` | Design a multi-chart dashboard layout from structured data. |
+| `hy3_plan_wordcloud` | Extract keywords and weights from text. |
+| `hy3_plan_knowledge_graph` | Extract entities and relationships from text. |
+
+### 🎨 Render (pure rendering, 4 tools) → HTML / SVG / PNG
+
+| Tool | What it does |
+| --- | --- |
+| `hy3_render_chart` | Render a single chart from explicit data + config. Adds `mark_point`, `mark_line`, `data_zoom`, `x_name`, and more. |
+| `hy3_render_dashboard` | Render a dashboard design into an interactive HTML page or PNG composite. |
+| `hy3_render_wordcloud` | Render a word cloud from explicit words or raw text. |
+| `hy3_render_knowledge_graph` | Render a knowledge graph from explicit nodes and links. |
 
 ---
 

@@ -28,19 +28,33 @@
 
 ## 功能特性
 
-| 工具 | 功能 | 输出格式 |
+`hy3-data-mcp` 共提供 **11 个工具**，按三个阶段组织：**提取 & 分析**、**Plan（LLM 决策）**、**Render（纯渲染）**。
+
+### 📄 提取 & 分析（3 个）
+
+| 工具 | 功能 | 输出 |
 | --- | --- | --- |
-| `hy3_extract_document` | 从 PDF、DOCX、TXT、CSV、JSON、XLSX 文件中提取原始文本和元数据，不调用 LLM。 | `json` |
-| `hy3_analyze` | 用 Hy3 分析文本或结构化数据，支持总结、提取洞察、回答分析问题。 | `text` / `html` / `json` |
-| `hy3_analyze_report` | 生成完整数据分析报告，包含 Hy3 撰写的洞察与嵌入式图表。 | `html` / `markdown` |
-| `hy3_plan_chart` | 由 Hy3 从数据中选择最佳图表类型、字段与标题，返回 JSON 供 `hy3_render_chart` 使用。 | `json` |
-| `hy3_plan_dashboard` | 根据一个或多个结构化数据文件设计多图大屏布局，返回 JSON 供 `hy3_render_dashboard` 使用。 | `json` |
-| `hy3_plan_wordcloud` | 由 Hy3 从文本中提取关键词及权重，返回 JSON 供 `hy3_render_wordcloud` 使用。 | `json` |
-| `hy3_plan_knowledge_graph` | 由 Hy3 从文本中抽取实体与关系，返回 JSON 供 `hy3_render_knowledge_graph` 使用。 | `json` |
-| `hy3_render_chart` | 根据显式数据与配置直接渲染图表，不调用 LLM。支持柱状图、折线图、面积图、饼图、环形图、玫瑰图、散点图、气泡图、带趋势线的散点图、雷达图、热力图、漏斗图、桑基图、矩形树图、旭日图、仪表盘、直方图、箱线图、K 线图、堆叠柱状图、分组柱状图、3D 图表与组合图。 | `svg` / `html` / `png` |
-| `hy3_render_wordcloud` | 根据显式词列表或原始文本直接渲染词云，不调用 LLM。 | `svg` / `html` / `png` |
-| `hy3_render_knowledge_graph` | 根据显式节点与边直接渲染知识图谱，不调用 LLM。 | `svg` / `html` / `png` |
-| `hy3_render_dashboard` | 将大屏设计渲染成交互式 HTML 页面或 PNG 合成图，不调用 LLM。 | `html` / `png` |
+| `hy3_extract_document` | 从 PDF、DOCX、TXT、CSV、JSON、XLSX 中提取原始文本/表格，不调用 LLM。新增 `extract_tables`、`return_data`。 | `json` |
+| `hy3_analyze` | 通用分析，合并了旧 `hy3_analyze_text` + `hy3_data_insight`。支持 `text` / `data` / `file_path`。 | `text` / `html` / `json` |
+| `hy3_analyze_report` | 一站式分析报告，含 Hy3 撰写的洞察与嵌入式图表。支持图表数、尺寸、主题等丰富参数。 | `html` / `markdown` |
+
+### 🧠 Plan（LLM 决策，4 个）→ 输出 JSON
+
+| 工具 | 功能 |
+| --- | --- |
+| `hy3_plan_chart` | 推荐最佳图表类型、列、标题。 |
+| `hy3_plan_dashboard` | 设计仪表盘大屏布局。 |
+| `hy3_plan_wordcloud` | 提取关键词 + 权重。 |
+| `hy3_plan_knowledge_graph` | 提取实体 + 关系。 |
+
+### 🎨 Render（纯渲染，4 个）→ 输出 HTML / SVG / PNG
+
+| 工具 | 功能 |
+| --- | --- |
+| `hy3_render_chart` | 渲染单图表。新增 `mark_point`、`mark_line`、`data_zoom`、`x_name` 等丰富配置。 |
+| `hy3_render_dashboard` | 渲染仪表盘大屏。 |
+| `hy3_render_wordcloud` | 渲染词云。 |
+| `hy3_render_knowledge_graph` | 渲染知识图谱。 |
 
 ---
 
