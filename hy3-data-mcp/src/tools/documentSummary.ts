@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { Hy3Client } from "../client.js";
 import { extractTextFromDocument } from "../documents.js";
-import { askHy3, sampleText, writeOutputFile } from "../utils.js";
+import { askHy3, resolveLanguage, sampleText, writeOutputFile } from "../utils.js";
+import type { ProgressReporter } from "./index.js";
 
 export const documentSummaryDefinition = {
   name: "hy3_document_summary",
@@ -27,9 +28,9 @@ export const documentSummaryDefinition = {
       },
       language: {
         type: "string",
-        enum: ["zh", "en"],
-        description: "Language of the output.",
-        default: "zh",
+        enum: ["zh", "en", "auto"],
+        description: "Language of the output. 'auto' detects from the question or document.",
+        default: "auto",
       },
     },
     required: ["file_path"],
@@ -40,32 +41,43 @@ const documentSummarySchema = z.object({
   file_path: z.string().min(1),
   question: z.string().default("Summarize the document"),
   output_format: z.enum(["text", "html"]).default("text"),
-  language: z.enum(["zh", "en"]).default("zh"),
+  language: z.enum(["zh", "en", "auto"]).default("auto"),
 });
 
-export async function runDocumentSummary(args: unknown, client: Hy3Client) {
+export async function runDocumentSummary(
+  args: unknown,
+  client: Hy3Client,
+  onProgress?: ProgressReporter
+) {
   const { file_path, question, output_format, language } = documentSummarySchema.parse(args);
 
+  await onProgress?.(10, 100);
   const text = await extractTextFromDocument(file_path);
+  await onProgress?.(30, 100);
+
   if (!text.trim()) {
     throw new Error("No text could be extracted from the document.");
   }
 
+  const resolvedLanguage = resolveLanguage(language, question, text);
+
   const system =
-    language === "zh"
+    resolvedLanguage === "zh"
       ? "你是一位文档分析专家。请基于提供的文档内容完成用户指定的任务，给出结构清晰、重点突出的回答。如果文档内容不足以回答，请明确说明。"
       : "You are a document-analysis expert. Complete the user's task based on the provided document content. Give a well-structured, focused answer. State clearly if the document is insufficient.";
 
   const user =
-    language === "zh"
+    resolvedLanguage === "zh"
       ? `任务：${question}\n\n文档内容（前 20000 字符）：\n${sampleText(text, 20000)}`
       : `Task: ${question}\n\nDocument content (first 20000 chars):\n${sampleText(text, 20000)}`;
 
+  await onProgress?.(50, 100);
   const answer = await askHy3(client, system, user);
+  await onProgress?.(90, 100);
 
   if (output_format === "html") {
     const html = `<!DOCTYPE html>
-<html lang="${language === "zh" ? "zh-CN" : "en"}">
+<html lang="${resolvedLanguage === "zh" ? "zh-CN" : "en"}">
 <head>
   <meta charset="UTF-8">
   <title>${escapeHtml(question)}</title>
@@ -88,12 +100,13 @@ export async function runDocumentSummary(args: unknown, client: Hy3Client) {
 </body>
 </html>`;
     const outputPath = await writeOutputFile(`document_summary_${Date.now()}.html`, html);
+    await onProgress?.(100, 100);
     return {
       content: [
         {
           type: "text" as const,
           text:
-            language === "zh"
+            resolvedLanguage === "zh"
               ? `已生成 HTML 文档分析报告\n文件路径：${outputPath}`
               : `Generated HTML document analysis report\nFile path: ${outputPath}`,
         },
@@ -101,6 +114,7 @@ export async function runDocumentSummary(args: unknown, client: Hy3Client) {
     };
   }
 
+  await onProgress?.(100, 100);
   return { content: [{ type: "text" as const, text: answer }] };
 }
 

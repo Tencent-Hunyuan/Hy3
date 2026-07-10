@@ -7,10 +7,12 @@ import {
   askHy3,
   buildThemeOverrides,
   loadDataTable,
+  resolveLanguage,
   sampleText,
   tableSummary,
   writeOutputFile,
 } from "../utils.js";
+import type { ProgressReporter } from "./index.js";
 
 export const documentVisualizeDefinition = {
   name: "hy3_document_visualize",
@@ -151,9 +153,9 @@ export const documentVisualizeDefinition = {
       },
       language: {
         type: "string",
-        enum: ["zh", "en"],
-        description: "Language of the output.",
-        default: "zh",
+        enum: ["zh", "en", "auto"],
+        description: "Language of the output. 'auto' detects from the document or question.",
+        default: "auto",
       },
     },
     required: ["file_path"],
@@ -208,10 +210,14 @@ const documentVisualizeSchema = z.object({
   split_line_color: z.string().optional(),
   palette: z.array(z.string()).optional(),
   primary_color: z.string().optional(),
-  language: z.enum(["zh", "en"]).default("zh"),
+  language: z.enum(["zh", "en", "auto"]).default("auto"),
 });
 
-export async function runDocumentVisualize(args: unknown, client: Hy3Client) {
+export async function runDocumentVisualize(
+  args: unknown,
+  client: Hy3Client,
+  onProgress?: ProgressReporter
+) {
   const {
     file_path,
     chart_type,
@@ -236,6 +242,8 @@ export async function runDocumentVisualize(args: unknown, client: Hy3Client) {
     language,
   } = documentVisualizeSchema.parse(args);
 
+  await onProgress?.(10, 100);
+
   const themeOverrides = buildThemeOverrides(
     { background_color, text_color, axis_color, split_line_color, palette, primary_color },
     theme
@@ -252,12 +260,15 @@ export async function runDocumentVisualize(args: unknown, client: Hy3Client) {
       throw new Error("No text could be extracted from the document.");
     }
 
+    const resolvedLanguage = resolveLanguage(language, text);
+
     const system =
-      language === "zh"
+      resolvedLanguage === "zh"
         ? '你是一位数据提取专家。请从以下文档内容中提取结构化数据，并以纯 JSON 返回：{"columns": ["列1", "列2"], "rows": [{"列1": "值", "列2": 123}, ...]}。数字字段请尽量使用数字类型。不要输出任何额外文字。'
         : 'You are a data-extraction expert. Extract structured data from the document content below and return pure JSON: {"columns": ["col1", "col2"], "rows": [{"col1": "value", "col2": 123}, ...]}. Use numbers for numeric fields. No extra text.';
 
     try {
+      await onProgress?.(40, 100);
       const answer = await askHy3(client, system, sampleText(text, 20000));
       const parsed = JSON.parse(answer);
       table = {
@@ -267,19 +278,23 @@ export async function runDocumentVisualize(args: unknown, client: Hy3Client) {
       };
     } catch {
       throw new Error(
-        language === "zh"
+        resolvedLanguage === "zh"
           ? "无法从文档中提取结构化数据，请尝试使用 hy3_document_summary 进行总结。"
           : "Could not extract structured data from the document. Try hy3_document_summary instead."
       );
     }
   }
 
+  const resolvedLanguage = resolveLanguage(language, table.raw);
+
   if (table.columns.length === 0) {
     throw new Error("No columns found in the extracted data.");
   }
 
+  await onProgress?.(50, 100);
+
   const system =
-    language === "zh"
+    resolvedLanguage === "zh"
       ? '你是一位数据可视化专家。请根据图表类型推荐合适的列，并以纯 JSON 返回：{"x_column": string, "y_column": string, "value_column": string?, "open_column": string?, "close_column": string?, "high_column": string?, "low_column": string?, "group_column": string?, "size_column": string?, "title": string}。说明：普通图表使用 x_column/y_column；桑基图使用 x_column 作为 source、y_column 作为 target、value_column 作为流量；矩形树图/旭日图使用 x_column 作为名称、y_column 作为数值；K 线图使用 open_column/close_column/low_column/high_column；堆叠/分组柱状图使用 group_column；气泡图使用 size_column 控制点大小；直方图自动对数值列分箱。不要输出任何额外文字。'
       : 'You are a data visualization expert. Recommend suitable columns for the requested chart type and return only pure JSON: {"x_column": string, "y_column": string, "value_column": string?, "open_column": string?, "close_column": string?, "high_column": string?, "low_column": string?, "group_column": string?, "size_column": string?, "title": string}. Notes: regular charts use x_column/y_column; sankey uses x_column as source, y_column as target, value_column as weight; treemap/sunburst use x_column as name and y_column as value; candlestick uses open_column/close_column/low_column/high_column; stacked/grouped bar uses group_column; bubble uses size_column for point size; histogram auto-bins a numeric column. No extra text.';
 
@@ -302,7 +317,7 @@ export async function runDocumentVisualize(args: unknown, client: Hy3Client) {
     config = {
       x_column: table.columns[0],
       y_column: table.columns[1] || table.columns[0],
-      title: language === "zh" ? "文档可视化" : "Document Visualization",
+      title: resolvedLanguage === "zh" ? "文档可视化" : "Document Visualization",
     };
   }
 
@@ -328,6 +343,8 @@ export async function runDocumentVisualize(args: unknown, client: Hy3Client) {
     height,
   };
 
+  await onProgress?.(70, 100);
+
   if (chart_type === "dashboard") {
     // For dashboard, reuse data dashboard logic: one chart from the extracted data
     const { renderDashboardHtml } = await import("../viz/echarts.js");
@@ -342,15 +359,17 @@ export async function runDocumentVisualize(args: unknown, client: Hy3Client) {
       config.title,
       theme,
       font_family,
-      themeOverrides
+      themeOverrides,
+      "grid"
     );
     const outputPath = await writeOutputFile(`document_dashboard_${Date.now()}.html`, html);
+    await onProgress?.(100, 100);
     return {
       content: [
         {
           type: "text" as const,
           text:
-            language === "zh"
+            resolvedLanguage === "zh"
               ? `已生成文档数据大屏\n文件路径：${outputPath}`
               : `Generated document dashboard\nFile path: ${outputPath}`,
         },
@@ -375,9 +394,10 @@ export async function runDocumentVisualize(args: unknown, client: Hy3Client) {
   const safeTitle = config.title.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "_");
   const outputPath = await writeOutputFile(`document_${safeTitle}_${Date.now()}.${ext}`, content);
 
+  await onProgress?.(100, 100);
   const formatLabel = output_format === "html" ? "HTML" : output_format === "png" ? "PNG" : "SVG";
   const summary =
-    language === "zh"
+    resolvedLanguage === "zh"
       ? `已生成 ${chart_type} ${formatLabel} 文档可视化：${config.title}\n文件路径：${outputPath}`
       : `Generated ${chart_type} ${formatLabel} document visualization: ${config.title}\nFile path: ${outputPath}`;
 

@@ -268,16 +268,27 @@ export function renderKnowledgeGraphHtml(
 </html>`;
 }
 
+export type DashboardLayout = "grid" | "rows" | "columns" | "hero" | "compact";
+
 export function renderDashboardHtml(
   charts: Array<{ chartType: ChartType; table: DataTable; config: ChartConfig }>,
   title: string,
   themeName?: string,
   fontFamily?: string,
-  overrides?: Partial<Omit<Theme, "name">>
+  overrides?: Partial<Omit<Theme, "name">>,
+  layout: DashboardLayout = "grid"
 ): string {
   const theme = getTheme(themeName, fontFamily, overrides);
   const cardBg = theme.name === "dark" ? "#1f1f1f" : "#ffffff";
   const chartOverrides: Partial<ChartConfig> = themeOverridesToChartConfig(overrides);
+
+  const isHero = layout === "hero";
+  const isCompact = layout === "compact";
+  const isRows = layout === "rows";
+  const isColumns = layout === "columns";
+
+  const chartWidth = isCompact ? 360 : isColumns ? 520 : 500;
+  const chartHeight = isCompact ? 260 : isColumns ? 360 : 350;
 
   const chartOptions = charts.map((c) => ({
     title: c.config.title,
@@ -286,15 +297,17 @@ export function renderDashboardHtml(
       ...chartOverrides,
       theme: theme.name,
       font_family: theme.fontFamily,
-      width: 500,
-      height: 350,
+      width: chartWidth,
+      height: chartHeight,
     }),
   }));
 
   const chartDivs = chartOptions
     .map(
       (c, i) =>
-        `<div class="chart-box"><h3>${escapeHtml(c.title)}</h3><div id="chart-${i}" class="chart"></div></div>`
+        `<div class="chart-box ${isHero && i === 0 ? "chart-hero" : ""}"><h3>${escapeHtml(
+          c.title
+        )}</h3><div id="chart-${i}" class="chart"></div></div>`
     )
     .join("\n");
 
@@ -309,6 +322,17 @@ export function renderDashboardHtml(
     )
     .join("\n");
 
+  let gridStyle = "";
+  if (isRows) {
+    gridStyle = `grid-template-columns: 1fr;`;
+  } else if (isColumns) {
+    gridStyle = `grid-template-columns: repeat(${charts.length}, minmax(520px, 1fr)); overflow-x: auto;`;
+  } else if (isCompact) {
+    gridStyle = `grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));`;
+  } else {
+    gridStyle = `grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));`;
+  }
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -317,12 +341,13 @@ export function renderDashboardHtml(
   <title>${escapeHtml(title)}</title>
   <style>
     body { font-family: ${theme.fontFamily}; margin: 0; padding: 24px; background: ${theme.backgroundColor}; color: ${theme.textColor}; }
-    .container { max-width: 1200px; margin: 0 auto; }
+    .container { max-width: ${isColumns ? "none" : "1200px"}; margin: 0 auto; }
     h1 { font-size: 24px; margin-bottom: 16px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(520px, 1fr)); gap: 24px; }
-    .chart-box { background: ${cardBg}; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .chart-box h3 { margin: 0 0 12px 0; font-size: 16px; }
-    .chart { width: 100%; height: 400px; }
+    .grid { display: grid; ${gridStyle} gap: ${isCompact ? "16px" : "24px"}; }
+    .chart-box { background: ${cardBg}; border-radius: 8px; padding: ${isCompact ? "12px" : "16px"}; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .chart-box h3 { margin: 0 0 12px 0; font-size: ${isCompact ? "14px" : "16px"}; }
+    .chart { width: 100%; height: ${isCompact ? "280px" : isColumns ? "420px" : "400px"}; }
+    .chart-hero { grid-column: 1 / -1; }
   </style>
 </head>
 <body>
@@ -341,31 +366,72 @@ export async function renderDashboardPng(
   title: string,
   themeName?: string,
   fontFamily?: string,
-  overrides?: Partial<Omit<Theme, "name">>
+  overrides?: Partial<Omit<Theme, "name">>,
+  layout: DashboardLayout = "grid"
 ): Promise<Buffer> {
   const theme = getTheme(themeName, fontFamily, overrides);
-  const chartWidth = 520;
-  const chartHeight = 380;
+
+  const isCompact = layout === "compact";
+  const isRows = layout === "rows";
+  const isColumns = layout === "columns";
+  const isHero = layout === "hero";
+
+  const defaultChartWidth = isCompact ? 380 : 520;
+  const defaultChartHeight = isCompact ? 280 : 380;
   const titleHeight = 60;
-  const cols = Math.min(charts.length, 2);
+  const gap = isCompact ? 16 : 0;
+
+  let cols: number;
+  if (isRows) {
+    cols = 1;
+  } else if (isColumns) {
+    cols = charts.length;
+  } else if (isHero) {
+    cols = 2;
+  } else {
+    cols = Math.min(charts.length, 2);
+  }
+
   const rows = Math.ceil(charts.length / cols);
-  const totalWidth = cols * chartWidth;
-  const totalHeight = titleHeight + rows * chartHeight;
+  const totalWidth = isHero
+    ? Math.max(defaultChartWidth * 2, defaultChartWidth)
+    : cols * defaultChartWidth + (cols - 1) * gap;
+  const totalHeight = titleHeight + rows * defaultChartHeight + (rows - 1) * gap;
   const chartOverrides: Partial<ChartConfig> = themeOverridesToChartConfig(overrides);
 
   const images = charts.map((c, i) => {
+    let chartWidth = defaultChartWidth;
+    let chartHeight = defaultChartHeight;
+    let col = i % cols;
+    let row = Math.floor(i / cols);
+
+    if (isHero) {
+      if (i === 0) {
+        chartWidth = totalWidth;
+        chartHeight = defaultChartHeight;
+        col = 0;
+        row = 0;
+      } else {
+        chartWidth = totalWidth / 2;
+        chartHeight = defaultChartHeight;
+        col = (i - 1) % 2;
+        row = 1 + Math.floor((i - 1) / 2);
+      }
+    }
+
+    const x = col * (chartWidth + gap);
+    const y = titleHeight + row * (chartHeight + gap);
+
     const svg = renderChartSvg(c.chartType, c.table, {
       ...c.config,
       ...chartOverrides,
       theme: theme.name,
       font_family: theme.fontFamily,
-      width: chartWidth,
-      height: chartHeight,
+      width: Math.round(chartWidth),
+      height: Math.round(chartHeight),
     });
     const base64 = Buffer.from(svg, "utf-8").toString("base64");
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    return `<image x="${col * chartWidth}" y="${titleHeight + row * chartHeight}" width="${chartWidth}" height="${chartHeight}" href="data:image/svg+xml;base64,${base64}" preserveAspectRatio="xMidYMid meet" />`;
+    return `<image x="${x}" y="${y}" width="${chartWidth}" height="${chartHeight}" href="data:image/svg+xml;base64,${base64}" preserveAspectRatio="xMidYMid meet" />`;
   });
 
   const dashboardSvg = `<?xml version="1.0" encoding="UTF-8"?>

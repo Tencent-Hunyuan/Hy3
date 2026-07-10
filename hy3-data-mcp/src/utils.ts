@@ -140,7 +140,23 @@ export async function askHy3(client: Hy3Client, system: string, user: string): P
 export function loadOutputDir(): string {
   return process.env.HY3_OUTPUT_DIR
     ? resolve(process.env.HY3_OUTPUT_DIR)
-    : resolve(process.cwd(), "hy3-mcp-output");
+    : resolve(process.cwd(), "hy3-data-output");
+}
+
+export function detectLanguage(text: string): "zh" | "en" {
+  if (!text) return "en";
+  const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+  const totalChars = text.replace(/\s/g, "").length || 1;
+  return chineseChars / totalChars > 0.1 ? "zh" : "en";
+}
+
+export function resolveLanguage(
+  language: "zh" | "en" | "auto" | undefined,
+  ...samples: (string | undefined)[]
+): "zh" | "en" {
+  if (language && language !== "auto") return language;
+  const combined = samples.filter(Boolean).join(" ");
+  return detectLanguage(combined);
 }
 
 export async function writeOutputFile(

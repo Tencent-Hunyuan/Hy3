@@ -8,9 +8,11 @@ import {
   askHy3,
   buildThemeOverrides,
   loadDataTable,
+  resolveLanguage,
   sampleText,
   writeOutputFile,
 } from "../utils.js";
+import type { ProgressReporter } from "./index.js";
 
 export const wordcloudDefinition = {
   name: "hy3_wordcloud",
@@ -100,9 +102,9 @@ export const wordcloudDefinition = {
       },
       language: {
         type: "string",
-        enum: ["zh", "en"],
-        description: "Language of the text.",
-        default: "zh",
+        enum: ["zh", "en", "auto"],
+        description: "Language of the text. 'auto' detects from file content.",
+        default: "auto",
       },
     },
     required: ["file_path"],
@@ -126,10 +128,14 @@ const wordcloudSchema = z.object({
   split_line_color: z.string().optional(),
   palette: z.array(z.string()).optional(),
   primary_color: z.string().optional(),
-  language: z.enum(["zh", "en"]).default("zh"),
+  language: z.enum(["zh", "en", "auto"]).default("auto"),
 });
 
-export async function runWordcloud(args: unknown, client: Hy3Client) {
+export async function runWordcloud(
+  args: unknown,
+  client: Hy3Client,
+  onProgress?: ProgressReporter
+) {
   const {
     file_path,
     column,
@@ -147,6 +153,8 @@ export async function runWordcloud(args: unknown, client: Hy3Client) {
     primary_color,
     language,
   } = wordcloudSchema.parse(args);
+
+  await onProgress?.(10, 100);
 
   const themeOverrides = buildThemeOverrides(
     { background_color, text_color, axis_color, split_line_color, palette, primary_color },
@@ -167,20 +175,25 @@ export async function runWordcloud(args: unknown, client: Hy3Client) {
     text = raw.raw;
   }
 
+  const resolvedLanguage = resolveLanguage(language, text);
+  await onProgress?.(30, 100);
+
   const system =
-    language === "zh"
+    resolvedLanguage === "zh"
       ? `你是一位文本分析专家。请从以下文本中提取最有代表性的关键词及权重（0-100）。以纯 JSON 数组返回，格式：[{"word": "关键词", "weight": 80}, ...]。最多 ${max_words} 个词。不要输出任何额外文字。`
       : `You are a text-analysis expert. Extract the most representative keywords and their weights (0-100) from the text below. Return a pure JSON array: [{"word": "keyword", "weight": 80}, ...]. At most ${max_words} words. No extra text.`;
 
   let words: { word: string; weight: number }[];
   try {
+    await onProgress?.(50, 100);
     const answer = await askHy3(client, system, sampleText(text));
     words = JSON.parse(answer);
   } catch {
-    words = fallbackWords(text, max_words, language);
+    words = fallbackWords(text, max_words, resolvedLanguage);
   }
 
-  const title = language === "zh" ? "词云图" : "Word Cloud";
+  await onProgress?.(80, 100);
+  const title = resolvedLanguage === "zh" ? "词云图" : "Word Cloud";
   const svg = renderWordcloudSvg(words, title, width, height, theme, font_family, themeOverrides);
 
   let content: string | Buffer;
@@ -209,9 +222,10 @@ export async function runWordcloud(args: unknown, client: Hy3Client) {
 
   const outputPath = await writeOutputFile(`wordcloud_${Date.now()}.${fileExt}`, content);
 
+  await onProgress?.(100, 100);
   const formatLabel = output_format === "html" ? "HTML" : output_format === "png" ? "PNG" : "SVG";
   const summary =
-    language === "zh"
+    resolvedLanguage === "zh"
       ? `已生成 ${formatLabel} 词云图，共 ${words.length} 个关键词\n文件路径：${outputPath}`
       : `Generated ${formatLabel} word cloud with ${words.length} keywords\nFile path: ${outputPath}`;
 

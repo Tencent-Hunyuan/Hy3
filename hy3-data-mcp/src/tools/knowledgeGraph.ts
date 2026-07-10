@@ -7,9 +7,11 @@ import {
   askHy3,
   buildThemeOverrides,
   loadDataTable,
+  resolveLanguage,
   sampleText,
   writeOutputFile,
 } from "../utils.js";
+import type { ProgressReporter } from "./index.js";
 
 export const knowledgeGraphDefinition = {
   name: "hy3_knowledge_graph",
@@ -100,9 +102,9 @@ export const knowledgeGraphDefinition = {
       },
       language: {
         type: "string",
-        enum: ["zh", "en"],
-        description: "Language of the text.",
-        default: "zh",
+        enum: ["zh", "en", "auto"],
+        description: "Language of the text. 'auto' detects from file content.",
+        default: "auto",
       },
     },
     required: ["file_path"],
@@ -126,10 +128,14 @@ const knowledgeGraphSchema = z.object({
   split_line_color: z.string().optional(),
   palette: z.array(z.string()).optional(),
   primary_color: z.string().optional(),
-  language: z.enum(["zh", "en"]).default("zh"),
+  language: z.enum(["zh", "en", "auto"]).default("auto"),
 });
 
-export async function runKnowledgeGraph(args: unknown, client: Hy3Client) {
+export async function runKnowledgeGraph(
+  args: unknown,
+  client: Hy3Client,
+  onProgress?: ProgressReporter
+) {
   const {
     file_path,
     column,
@@ -147,6 +153,8 @@ export async function runKnowledgeGraph(args: unknown, client: Hy3Client) {
     primary_color,
     language,
   } = knowledgeGraphSchema.parse(args);
+
+  await onProgress?.(10, 100);
 
   const themeOverrides = buildThemeOverrides(
     { background_color, text_color, axis_color, split_line_color, palette, primary_color },
@@ -169,8 +177,11 @@ export async function runKnowledgeGraph(args: unknown, client: Hy3Client) {
     text = raw.raw;
   }
 
+  const resolvedLanguage = resolveLanguage(language, text);
+  await onProgress?.(30, 100);
+
   const system =
-    language === "zh"
+    resolvedLanguage === "zh"
       ? `你是一位知识图谱专家。请从以下文本中提取实体和关系。以纯 JSON 返回：{"nodes": [{"id": "实体名", "group": 1}, ...], "links": [{"source": "实体A", "target": "实体B", "relation": "关系"}, ...]}。实体最多 ${max_entities} 个。不要输出任何额外文字。`
       : `You are a knowledge-graph expert. Extract entities and relationships from the text below. Return pure JSON: {"nodes": [{"id": "entity name", "group": 1}, ...], "links": [{"source": "entity A", "target": "entity B", "relation": "relationship"}, ...]}. At most ${max_entities} entities. No extra text.`;
 
@@ -179,6 +190,7 @@ export async function runKnowledgeGraph(args: unknown, client: Hy3Client) {
     links: { source: string; target: string; relation: string }[];
   };
   try {
+    await onProgress?.(50, 100);
     const answer = await askHy3(client, system, sampleText(text));
     graph = JSON.parse(answer);
   } catch {
@@ -191,7 +203,7 @@ export async function runKnowledgeGraph(args: unknown, client: Hy3Client) {
         {
           type: "text" as const,
           text:
-            language === "zh"
+            resolvedLanguage === "zh"
               ? "未能从文本中抽取到知识图谱。"
               : "No knowledge graph could be extracted from the text.",
         },
@@ -202,7 +214,8 @@ export async function runKnowledgeGraph(args: unknown, client: Hy3Client) {
   const nodeIds = new Set(graph.nodes.map((n) => n.id));
   const links = graph.links.filter((l) => nodeIds.has(l.source) && nodeIds.has(l.target));
 
-  const title = language === "zh" ? "知识图谱" : "Knowledge Graph";
+  await onProgress?.(70, 100);
+  const title = resolvedLanguage === "zh" ? "知识图谱" : "Knowledge Graph";
   let content: string | Buffer;
   let fileExt: string;
 
@@ -247,9 +260,10 @@ export async function runKnowledgeGraph(args: unknown, client: Hy3Client) {
 
   const outputPath = await writeOutputFile(`knowledge_graph_${Date.now()}.${fileExt}`, content);
 
+  await onProgress?.(100, 100);
   const formatLabel = output_format === "html" ? "HTML" : output_format === "png" ? "PNG" : "SVG";
   const summary =
-    language === "zh"
+    resolvedLanguage === "zh"
       ? `已生成 ${formatLabel} 知识图谱：${graph.nodes.length} 个实体，${links.length} 条关系\n文件路径：${outputPath}`
       : `Generated ${formatLabel} knowledge graph: ${graph.nodes.length} entities, ${links.length} relationships\nFile path: ${outputPath}`;
 

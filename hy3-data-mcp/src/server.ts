@@ -26,7 +26,22 @@ export async function startServer() {
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
-    return handleToolCall(name, args ?? {}, client);
+    const meta = request.params._meta as { progressToken?: string | number } | undefined;
+    const progressToken = meta?.progressToken;
+
+    const reportProgress = async (progress: number, total?: number) => {
+      if (progressToken === undefined) return;
+      try {
+        await server.notification({
+          method: "notifications/progress",
+          params: { progressToken, progress, total },
+        });
+      } catch {
+        // ignore notification errors
+      }
+    };
+
+    return handleToolCall(name, args ?? {}, client, reportProgress);
   });
 
   const transport = new StdioServerTransport();

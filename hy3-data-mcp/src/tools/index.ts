@@ -7,6 +7,8 @@ import { documentVisualizeDefinition, runDocumentVisualize } from "./documentVis
 import { knowledgeGraphDefinition, runKnowledgeGraph } from "./knowledgeGraph.js";
 import { wordcloudDefinition, runWordcloud } from "./wordcloud.js";
 
+export type ProgressReporter = (progress: number, total?: number) => Promise<void> | void;
+
 export const TOOL_DEFINITIONS = [
   dataVisualizeDefinition,
   wordcloudDefinition,
@@ -20,23 +22,24 @@ export const TOOL_DEFINITIONS = [
 export async function handleToolCall(
   name: string,
   args: unknown,
-  client: Hy3Client
+  client: Hy3Client,
+  onProgress?: ProgressReporter
 ): Promise<{ content: Array<{ type: "text"; text: string }> }> {
   switch (name) {
     case "hy3_data_visualize":
-      return runDataVisualize(args, client);
+      return runDataVisualize(args, client, onProgress);
     case "hy3_wordcloud":
-      return runWordcloud(args, client);
+      return runWordcloud(args, client, onProgress);
     case "hy3_knowledge_graph":
-      return runKnowledgeGraph(args, client);
+      return runKnowledgeGraph(args, client, onProgress);
     case "hy3_data_dashboard":
-      return runDataDashboard(args, client);
+      return runDataDashboard(args, client, onProgress);
     case "hy3_data_insight":
-      return runDataInsight(args, client);
+      return runDataInsight(args, client, onProgress);
     case "hy3_document_summary":
-      return runDocumentSummary(args, client);
+      return runDocumentSummary(args, client, onProgress);
     case "hy3_document_visualize":
-      return runDocumentVisualize(args, client);
+      return runDocumentVisualize(args, client, onProgress);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

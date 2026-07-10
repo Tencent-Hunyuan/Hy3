@@ -6,9 +6,11 @@ import {
   buildThemeOverrides,
   DataTable,
   loadDataTable,
+  resolveLanguage,
   tableSummary,
   writeOutputFile,
 } from "../utils.js";
+import type { ProgressReporter } from "./index.js";
 
 export const dataDashboardDefinition = {
   name: "hy3_data_dashboard",
@@ -83,9 +85,15 @@ export const dataDashboardDefinition = {
       },
       language: {
         type: "string",
-        enum: ["zh", "en"],
-        description: "Language of titles and labels.",
-        default: "zh",
+        enum: ["zh", "en", "auto"],
+        description: "Language of titles and labels. 'auto' detects from title/question or data.",
+        default: "auto",
+      },
+      layout: {
+        type: "string",
+        enum: ["grid", "rows", "columns", "hero", "compact"],
+        description: "Dashboard layout style.",
+        default: "grid",
       },
     },
     required: ["file_paths"],
@@ -106,10 +114,15 @@ const dataDashboardSchema = z.object({
   palette: z.array(z.string()).optional(),
   primary_color: z.string().optional(),
   output_format: z.enum(["html", "png"]).default("html"),
-  language: z.enum(["zh", "en"]).default("zh"),
+  language: z.enum(["zh", "en", "auto"]).default("auto"),
+  layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).default("grid"),
 });
 
-export async function runDataDashboard(args: unknown, client: Hy3Client) {
+export async function runDataDashboard(
+  args: unknown,
+  client: Hy3Client,
+  onProgress?: ProgressReporter
+) {
   const {
     file_paths,
     title,
@@ -123,7 +136,10 @@ export async function runDataDashboard(args: unknown, client: Hy3Client) {
     primary_color,
     output_format,
     language,
+    layout,
   } = dataDashboardSchema.parse(args);
+
+  await onProgress?.(10, 100);
 
   const themeOverrides = buildThemeOverrides(
     { background_color, text_color, axis_color, split_line_color, palette, primary_color },
@@ -134,13 +150,18 @@ export async function runDataDashboard(args: unknown, client: Hy3Client) {
   for (const path of file_paths) {
     tables.push({ path, table: await loadDataTable(path) });
   }
+  await onProgress?.(25, 100);
+
+  const resolvedLanguage = resolveLanguage(language, title);
 
   const summaryText = tables
     .map(({ path, table }) => `File: ${path}\n${tableSummary(table)}`)
     .join("\n\n");
 
+  await onProgress?.(40, 100);
+
   const system =
-    language === "zh"
+    resolvedLanguage === "zh"
       ? '你是一位数据大屏设计专家。请基于提供的数据文件，设计一个可视化大屏布局。支持的图表类型：bar、line、area、pie、donut、rose、scatter、bubble、scatter_trend、radar、heatmap、funnel、sankey、treemap、sunburst、gauge、histogram、boxplot、stacked_bar、grouped_bar。以纯 JSON 返回：{"title": string, "charts": [{"file_index": number, "chart_type": string, "x_column": string, "y_column": string, "value_column": string?, "group_column": string?, "size_column": string?, "title": string}] }。不要输出任何额外文字。'
       : 'You are a dashboard design expert. Based on the provided data files, design a visualization dashboard layout. Supported chart types: bar, line, area, pie, donut, rose, scatter, bubble, scatter_trend, radar, heatmap, funnel, sankey, treemap, sunburst, gauge, histogram, boxplot, stacked_bar, grouped_bar. Return pure JSON: {"title": string, "charts": [{"file_index": number, "chart_type": string, "x_column": string, "y_column": string, "value_column": string?, "group_column": string?, "size_column": string?, "title": string}] }. No extra text.';
 
@@ -158,6 +179,7 @@ export async function runDataDashboard(args: unknown, client: Hy3Client) {
     }>;
   };
   try {
+    await onProgress?.(55, 100);
     const answer = await askHy3(client, system, summaryText);
     design = JSON.parse(answer);
   } catch {
@@ -174,6 +196,7 @@ export async function runDataDashboard(args: unknown, client: Hy3Client) {
   }
 
   if (title) design.title = title;
+  await onProgress?.(70, 100);
 
   const chartInputs = design.charts
     .map((chart) => {
@@ -208,6 +231,8 @@ export async function runDataDashboard(args: unknown, client: Hy3Client) {
   const safeTitle = design.title.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "_");
   const formatLabel = output_format === "png" ? "PNG" : "HTML";
 
+  await onProgress?.(80, 100);
+
   let outputPath: string;
   if (output_format === "png") {
     const buffer = await renderDashboardPng(
@@ -215,18 +240,20 @@ export async function runDataDashboard(args: unknown, client: Hy3Client) {
       design.title,
       theme,
       font_family,
-      themeOverrides
+      themeOverrides,
+      layout
     );
     outputPath = await writeOutputFile(`dashboard_${safeTitle}_${Date.now()}.png`, buffer);
   } else {
-    const html = renderDashboardHtml(chartInputs, design.title, theme, font_family, themeOverrides);
+    const html = renderDashboardHtml(chartInputs, design.title, theme, font_family, themeOverrides, layout);
     outputPath = await writeOutputFile(`dashboard_${safeTitle}_${Date.now()}.html`, html);
   }
 
+  await onProgress?.(100, 100);
   const summary =
-    language === "zh"
-      ? `已生成 ${formatLabel} 数据大屏：${design.title}\n包含 ${design.charts.length} 个图表\n文件路径：${outputPath}`
-      : `Generated ${formatLabel} dashboard: ${design.title}\nContains ${design.charts.length} charts\nFile path: ${outputPath}`;
+    resolvedLanguage === "zh"
+      ? `已生成 ${formatLabel} 数据大屏：${design.title}\n包含 ${design.charts.length} 个图表\n布局：${layout}\n文件路径：${outputPath}`
+      : `Generated ${formatLabel} dashboard: ${design.title}\nContains ${design.charts.length} charts\nLayout: ${layout}\nFile path: ${outputPath}`;
 
   return { content: [{ type: "text" as const, text: summary }] };
 }
