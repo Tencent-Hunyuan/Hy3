@@ -94,6 +94,6 @@ describe("MCP server smoke test", () => {
     const listResponse = responses.find((r: any) => r.id === 2);
     expect(listResponse?.result?.tools).toBeDefined();
     expect(Array.isArray(listResponse?.result?.tools)).toBe(true);
-    expect(listResponse?.result?.tools?.length).toBe(7);
+    expect(listResponse?.result?.tools?.length).toBe(8);
   });
 });

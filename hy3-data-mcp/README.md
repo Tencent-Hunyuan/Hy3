@@ -34,6 +34,7 @@ Built for the **2026 Tencent RhinoBird Open Source Talent Program** issue: [Buil
 | `hy3_wordcloud` | Extracts keywords with Hy3 and renders a word cloud. | `svg` / `html` / `png` |
 | `hy3_knowledge_graph` | Extracts entities and relationships and renders a force-directed graph. | `svg` / `html` / `png` |
 | `hy3_data_dashboard` | Combines multiple files into a multi-chart dashboard designed by Hy3. | `html` / `png` |
+| `hy3_data_report` | Generates a complete analysis report from a data file, with Hy3-written insights and embedded charts. | `html` / `markdown` |
 | `hy3_data_insight` | Analyzes data and returns textual insights, trends, and outliers. | `text` |
 | `hy3_document_summary` | Summarizes or answers questions about PDF, DOCX, TXT, CSV, JSON, and XLSX files. | `text` / `html` |
 | `hy3_document_visualize` | Extracts structured data from documents and turns it into charts or dashboards. | `svg` / `html` / `png` |
@@ -332,6 +333,22 @@ Open WebUI does not expose a stdio MCP host that `hdm init` can write to. To use
     "file_path": "./report.pdf",
     "question": "Summarize the key findings and risks",
     "output_format": "html",
+    "language": "en"
+  }
+}
+```
+
+### Generate a complete data analysis report
+
+```json
+{
+  "name": "hy3_data_report",
+  "arguments": {
+    "file_paths": ["./sales.csv"],
+    "question": "Analyze sales performance and highlight key drivers",
+    "output_format": "html",
+    "max_charts": 4,
+    "theme": "professional",
     "language": "en"
   }
 }

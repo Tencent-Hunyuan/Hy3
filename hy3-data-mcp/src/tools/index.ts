@@ -1,6 +1,7 @@
 import { Hy3Client } from "../client.js";
 import { dataDashboardDefinition, runDataDashboard } from "./dataDashboard.js";
 import { dataInsightDefinition, runDataInsight } from "./dataInsight.js";
+import { dataReportDefinition, runDataReport } from "./dataReport.js";
 import { dataVisualizeDefinition, runDataVisualize } from "./dataVisualize.js";
 import { documentSummaryDefinition, runDocumentSummary } from "./documentSummary.js";
 import { documentVisualizeDefinition, runDocumentVisualize } from "./documentVisualize.js";
@@ -14,6 +15,7 @@ export const TOOL_DEFINITIONS = [
   wordcloudDefinition,
   knowledgeGraphDefinition,
   dataDashboardDefinition,
+  dataReportDefinition,
   dataInsightDefinition,
   documentSummaryDefinition,
   documentVisualizeDefinition,
@@ -34,6 +36,8 @@ export async function handleToolCall(
       return runKnowledgeGraph(args, client, onProgress);
     case "hy3_data_dashboard":
       return runDataDashboard(args, client, onProgress);
+    case "hy3_data_report":
+      return runDataReport(args, client, onProgress);
     case "hy3_data_insight":
       return runDataInsight(args, client, onProgress);
     case "hy3_document_summary":

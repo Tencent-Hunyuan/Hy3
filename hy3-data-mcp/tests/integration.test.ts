@@ -252,4 +252,144 @@ describe("integration tests", () => {
     const svg = await readFile(svgPath, "utf-8");
     expect(svg).toContain("<svg");
   });
+
+  it("hy3_data_report generates an HTML report with embedded chart", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
+    const dataFile = join(dir, "data.csv");
+    await writeFile(dataFile, "month,sales\nJan,100\nFeb,150\nMar,120\n");
+
+    process.env.HY3_OUTPUT_DIR = join(dir, "output");
+
+    const client = createMockClient(
+      JSON.stringify({
+        title: "Monthly Sales Report",
+        overview: "Overview text",
+        sections: [
+          {
+            heading: "Sales Trend",
+            text: "Sales increased in February.",
+            chart: {
+              chart_type: "bar",
+              x_column: "month",
+              y_column: "sales",
+              title: "Monthly Sales",
+            },
+          },
+        ],
+        conclusions: "Conclusion text",
+      })
+    );
+
+    const result = await handleToolCall(
+      "hy3_data_report",
+      { file_paths: [dataFile], output_format: "html", language: "en" },
+      client
+    );
+
+    const match = result.content[0].text.match(/File path: (.+)/);
+    expect(match).toBeTruthy();
+    const htmlPath = match![1].trim();
+    const html = await readFile(htmlPath, "utf-8");
+    expect(html).toContain("<!DOCTYPE html>");
+    expect(html).toContain("Monthly Sales Report");
+    expect(html).toContain("data:image/png;base64,");
+  });
+
+  it("hy3_data_report generates a Markdown report", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
+    const dataFile = join(dir, "data.csv");
+    await writeFile(dataFile, "month,sales\nJan,100\nFeb,150\nMar,120\n");
+
+    process.env.HY3_OUTPUT_DIR = join(dir, "output");
+
+    const client = createMockClient(
+      JSON.stringify({
+        title: "Monthly Sales Report",
+        overview: "Overview text",
+        sections: [
+          {
+            heading: "Sales Trend",
+            text: "Sales increased in February.",
+            chart: {
+              chart_type: "bar",
+              x_column: "month",
+              y_column: "sales",
+              title: "Monthly Sales",
+            },
+          },
+        ],
+        conclusions: "Conclusion text",
+      })
+    );
+
+    const result = await handleToolCall(
+      "hy3_data_report",
+      { file_paths: [dataFile], output_format: "markdown", language: "en" },
+      client
+    );
+
+    const match = result.content[0].text.match(/File path: (.+)/);
+    expect(match).toBeTruthy();
+    const mdPath = match![1].trim();
+    expect(mdPath.endsWith(".md")).toBe(true);
+    const md = await readFile(mdPath, "utf-8");
+    expect(md).toContain("# Monthly Sales Report");
+    expect(md).toContain("data:image/png;base64,");
+  });
+
+  it("hy3_data_report handles multiple files", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
+    const salesFile = join(dir, "sales.csv");
+    const usersFile = join(dir, "users.csv");
+    await writeFile(salesFile, "month,sales\nJan,100\nFeb,150\nMar,120\n");
+    await writeFile(usersFile, "country,users\nUS,500\nUK,300\nDE,200\n");
+
+    process.env.HY3_OUTPUT_DIR = join(dir, "output");
+
+    const client = createMockClient(
+      JSON.stringify({
+        title: "Multi-File Report",
+        overview: "Overview text",
+        sections: [
+          {
+            heading: "Sales",
+            text: "Sales trend.",
+            chart: {
+              file_path: salesFile,
+              chart_type: "bar",
+              x_column: "month",
+              y_column: "sales",
+              title: "Sales",
+            },
+          },
+          {
+            heading: "Users",
+            text: "Users by country.",
+            chart: {
+              file_path: usersFile,
+              chart_type: "bar",
+              x_column: "country",
+              y_column: "users",
+              title: "Users",
+            },
+          },
+        ],
+        conclusions: "Conclusion text",
+      })
+    );
+
+    const result = await handleToolCall(
+      "hy3_data_report",
+      { file_paths: [salesFile, usersFile], output_format: "html", language: "en" },
+      client
+    );
+
+    expect(result.content[0].text).toContain("2 chart(s)");
+    const match = result.content[0].text.match(/File path: (.+)/);
+    expect(match).toBeTruthy();
+    const htmlPath = match![1].trim();
+    const html = await readFile(htmlPath, "utf-8");
+    expect(html).toContain("Multi-File Report");
+    expect((html.match(/data:image\/png;base64,/g) || []).length).toBe(2);
+  });
 });
