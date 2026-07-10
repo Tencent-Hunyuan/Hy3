@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import io
 import sys
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -10,6 +12,54 @@ API_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(API_DIR))
 
 from common import StreamAccumulator
+from tests.helpers import load_example
+
+
+class StreamingExampleTests(unittest.TestCase):
+    def test_prints_only_content_live_and_keeps_reasoning_separate(self) -> None:
+        chunks = [
+            SimpleNamespace(choices=[], usage=None),
+            SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        delta=SimpleNamespace(reasoning_content="plan "),
+                        finish_reason=None,
+                    )
+                ],
+                usage=None,
+            ),
+            SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        delta=SimpleNamespace(content="Hello"),
+                        finish_reason=None,
+                    )
+                ],
+                usage=None,
+            ),
+            SimpleNamespace(
+                choices=[
+                    SimpleNamespace(
+                        delta=SimpleNamespace(content=" world"),
+                        finish_reason="stop",
+                    )
+                ],
+                usage=None,
+            ),
+            SimpleNamespace(choices=[], usage={"total_tokens": 7}),
+        ]
+        example = load_example("02_streaming.py")
+        output = io.StringIO()
+
+        with redirect_stdout(output):
+            result = example.consume_stream(chunks)
+
+        self.assertEqual(result.content, "Hello world")
+        self.assertEqual(result.reasoning, "plan ")
+        self.assertEqual(result.finish_reason, "stop")
+        self.assertEqual(result.usage, {"total_tokens": 7})
+        self.assertIn("Content: Hello world", output.getvalue())
+        self.assertNotIn("Content: plan", output.getvalue())
 
 
 class StreamAccumulatorTests(unittest.TestCase):
