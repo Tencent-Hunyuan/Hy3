@@ -5,7 +5,9 @@ import { Hy3Client } from "../client.js";
 import {
   askHy3,
   buildThemeOverrides,
+  DataTable,
   loadDataTable,
+  parseInlineData,
   resolveLanguage,
   tableSummary,
   writeOutputFile,
@@ -16,10 +18,10 @@ import { getTheme } from "../viz/themes.js";
 import type { ChartType } from "../viz/echarts.js";
 import type { ProgressReporter } from "./index.js";
 
-export const dataReportDefinition = {
-  name: "hy3_data_report",
+export const analyzeReportDefinition = {
+  name: "hy3_analyze_report",
   description:
-    "Generate a complete data analysis report from a CSV/JSON/XLSX file. Hy3 analyzes the data, plans charts, and writes an HTML or Markdown report with embedded visualizations.",
+    "Generate a complete data analysis report from structured data. Hy3 analyzes the data, plans charts, and writes an HTML or Markdown report with embedded visualizations.",
   inputSchema: {
     type: "object" as const,
     properties: {
@@ -30,7 +32,15 @@ export const dataReportDefinition = {
       },
       file_path: {
         type: "string",
-        description: "[Deprecated] Path to a single CSV, JSON or XLSX file. Use file_paths instead.",
+        description: "Path to a single CSV, JSON or XLSX file.",
+      },
+      data_file_path: {
+        type: "string",
+        description: "Path to a single CSV, JSON or XLSX file.",
+      },
+      data: {
+        type: "string",
+        description: "Inline structured data as a JSON array string.",
       },
       question: {
         type: "string",
@@ -96,9 +106,11 @@ export const dataReportDefinition = {
   },
 };
 
-export const dataReportSchema = z.object({
+export const analyzeReportSchema = z.object({
   file_paths: z.array(z.string().min(1)).optional(),
   file_path: z.string().min(1).optional(),
+  data_file_path: z.string().min(1).optional(),
+  data: z.string().optional(),
   question: z.string().default("Generate a comprehensive data analysis report"),
   output_format: z.enum(["html", "markdown"]).default("html"),
   max_charts: z.number().int().min(1).max(8).default(4),
@@ -227,7 +239,7 @@ function validChartType(type: string): type is ChartType {
   return (SUPPORTED_CHART_TYPES as string[]).includes(type);
 }
 
-export async function runDataReport(
+export async function runAnalyzeReport(
   args: unknown,
   client: Hy3Client,
   onProgress?: ProgressReporter,
@@ -237,6 +249,8 @@ export async function runDataReport(
   const {
     file_paths,
     file_path,
+    data_file_path,
+    data,
     question,
     output_format,
     max_charts,
@@ -251,16 +265,33 @@ export async function runDataReport(
     palette,
     primary_color,
     language,
-  } = dataReportSchema.parse(args);
+  } = analyzeReportSchema.parse(args);
 
-  if ((!file_paths || file_paths.length === 0) && !file_path) {
-    throw new Error("Either file_paths or file_path must be provided");
+  const hasFilePaths = file_paths && file_paths.length > 0;
+  const hasSinglePath = file_path || data_file_path;
+  const hasData = data && data.trim().length > 0;
+
+  if (!hasFilePaths && !hasSinglePath && !hasData) {
+    throw new Error("One of file_paths, file_path, data_file_path, or data must be provided");
   }
 
   await onProgress?.(5, 100);
 
-  const inputPaths = file_paths && file_paths.length > 0 ? file_paths : [file_path!];
-  const tables = await Promise.all(inputPaths.map((p) => loadDataTable(p)));
+  const tables: DataTable[] = [];
+  const inputPaths: string[] = [];
+  if (data) {
+    tables.push(parseInlineData(data));
+    inputPaths.push("<inline-data>");
+  }
+  if (hasSinglePath) {
+    const singlePath = file_path || data_file_path;
+    tables.push(await loadDataTable(singlePath!));
+    inputPaths.push(singlePath!);
+  }
+  for (const path of file_paths ?? []) {
+    tables.push(await loadDataTable(path));
+    inputPaths.push(path);
+  }
   if (tables.every((t) => t.columns.length === 0)) {
     throw new Error("No columns found in the provided data files.");
   }

@@ -107,8 +107,8 @@ describe("MCP Task/Stream async execution", () => {
     const csvPath = join(tmpDir, "data.csv");
     const stream = client.experimental.tasks.callToolStream(
       {
-        name: "hy3_data_insight",
-        arguments: { file_path: csvPath, question: "Summarize" },
+        name: "hy3_analyze",
+        arguments: { data_file_path: csvPath, question: "Summarize" },
       },
       CallToolResultSchema,
       { task: { ttl: 60_000, pollInterval: 500 } }
@@ -141,8 +141,8 @@ describe("MCP Task/Stream async execution", () => {
     const csvPath = join(tmpDir, "data.csv");
     const result = await client.callTool(
       {
-        name: "hy3_data_insight",
-        arguments: { file_path: csvPath, question: "Summarize" },
+        name: "hy3_analyze",
+        arguments: { data_file_path: csvPath, question: "Summarize" },
       },
       CallToolResultSchema
     );

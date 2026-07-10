@@ -224,7 +224,7 @@ async function finalize(paths: string[], envPath: string): Promise<void> {
   outro(pc.green("✅ hy3-data-mcp installed successfully!"));
   console.log(pc.gray("Next steps:"));
   console.log(pc.gray("  1. Restart your MCP client(s)."));
-  console.log(pc.gray("  2. Try: 'Analyze ./sample_data/sales.csv with hy3_data_insight'"));
+  console.log(pc.gray("  2. Try: 'Analyze ./sample_data/sales.csv with hy3_analyze'"));
   for (const targetPath of paths) {
     console.log(pc.gray(`  • Config: ${targetPath}`));
   }

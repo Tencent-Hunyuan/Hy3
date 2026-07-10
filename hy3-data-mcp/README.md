@@ -19,7 +19,7 @@ Built for the **2026 Tencent RhinoBird Open Source Talent Program** issue: [Buil
 ## Why Hy3 Data MCP?
 
 - **No-code visualization for AI chats** — Your MCP client can now generate charts and dashboards from a single prompt.
-- **Hy3 does the thinking** — Column selection, titles, keywords, entities, and layout decisions are delegated to the Hy3 model.
+- **Hy3 does the thinking** — Column selection, titles, keywords, entities, and layout decisions are delegated to the Hy3 model in the `hy3_plan_*` tools.
 - **Production-grade outputs** — Static SVGs for documents, animated HTML pages for browsers, and PNG images for slides or social sharing.
 - **Privacy-first** — Your API key lives only in a local `.env` file. Nothing is hard-coded or sent anywhere except the Hy3 endpoint.
 - **Works everywhere** — Compatible with CodeBuddy, WorkBuddy, Cline, Cursor, Roo Code, Continue, Codex CLI, OpenCode, and any stdio MCP client.
@@ -30,15 +30,17 @@ Built for the **2026 Tencent RhinoBird Open Source Talent Program** issue: [Buil
 
 | Tool | What it does | Output formats |
 | --- | --- | --- |
-| `hy3_data_visualize` | Bar, line, area, pie, donut, rose, scatter, bubble, scatter_trend, radar, heatmap, funnel, sankey, treemap, sunburst, gauge, histogram, boxplot, candlestick, stacked_bar, grouped_bar, 3D bar/scatter/line (bar3d/scatter3d/line3d), and composite charts (line_bar, area_bar, dual_axis, stacked_area, grouped_line). | `svg` / `html` / `png` |
-| `hy3_wordcloud` | Extracts keywords with Hy3 and renders a word cloud. | `svg` / `html` / `png` |
-| `hy3_knowledge_graph` | Extracts entities and relationships and renders a force-directed graph. | `svg` / `html` / `png` |
-| `hy3_design_dashboard` | Designs a multi-chart dashboard layout from one or more files and returns a JSON plan. | `json` |
-| `hy3_render_dashboard` | Renders a dashboard design into an interactive HTML page or PNG composite. | `html` / `png` |
-| `hy3_data_report` | Generates a complete analysis report from a data file, with Hy3-written insights and embedded charts. | `html` / `markdown` |
-| `hy3_data_insight` | Analyzes data and returns textual insights, trends, and outliers. | `text` |
-| `hy3_extract_document` | Extracts raw text from PDF, DOCX, TXT, CSV, JSON, and XLSX files. No LLM. | `json` |
-| `hy3_analyze_text` | Analyzes extracted text with Hy3 for summarization, extraction, or structured output. | `text` / `html` / `json` |
+| `hy3_extract_document` | Extracts raw text and metadata from PDF, DOCX, TXT, CSV, JSON, and XLSX files. No LLM. | `json` |
+| `hy3_analyze` | Analyzes text or structured data with Hy3. Summarizes, extracts insights, or answers analytical questions. | `text` / `html` / `json` |
+| `hy3_analyze_report` | Generates a complete analysis report with Hy3-written insights and embedded charts. | `html` / `markdown` |
+| `hy3_plan_chart` | Uses Hy3 to choose the best chart type, columns, and title from data. Returns JSON for `hy3_render_chart`. | `json` |
+| `hy3_plan_dashboard` | Designs a multi-chart dashboard layout from structured data. Returns JSON for `hy3_render_dashboard`. | `json` |
+| `hy3_plan_wordcloud` | Uses Hy3 to extract keywords and weights from text. Returns JSON for `hy3_render_wordcloud`. | `json` |
+| `hy3_plan_knowledge_graph` | Uses Hy3 to extract entities and relationships from text. Returns JSON for `hy3_render_knowledge_graph`. | `json` |
+| `hy3_render_chart` | Renders a chart directly from explicit data + config. No LLM. Bar, line, area, pie, donut, rose, scatter, bubble, scatter_trend, radar, heatmap, funnel, sankey, treemap, sunburst, gauge, histogram, boxplot, candlestick, stacked_bar, grouped_bar, 3D charts, and composite charts. | `svg` / `html` / `png` |
+| `hy3_render_wordcloud` | Renders a word cloud directly from explicit words or raw text. No LLM. | `svg` / `html` / `png` |
+| `hy3_render_knowledge_graph` | Renders a knowledge graph directly from explicit nodes and links. No LLM. | `svg` / `html` / `png` |
+| `hy3_render_dashboard` | Renders a dashboard design into an interactive HTML page or PNG composite. No LLM. | `html` / `png` |
 
 ---
 
@@ -95,7 +97,7 @@ All screenshots are rendered with the **Professional** theme using the bundled s
 Install the local release tarball globally:
 
 ```bash
-npm install -g ./releases/hy3-data-mcp-0.2.3.tgz
+npm install -g ./releases/hy3-data-mcp-0.3.0.tgz
 ```
 
 Start the server:
@@ -175,7 +177,7 @@ Example with the experimental MCP client API:
 ```ts
 const stream = client.experimental.tasks.callToolStream(
   {
-    name: "hy3_analyze_text",
+    name: "hy3_analyze",
     arguments: {
       text: "...",
       question: "Summarize the risks",
@@ -206,7 +208,7 @@ Task results are kept in memory for **5 minutes** by default and then cleaned up
 - **Real cancellation** — The `AbortSignal` is threaded from the task runner through every tool and down to the OpenAI SDK call. Calling `tasks/cancel` actually stops the in-flight model request, not just the task status.
 - **1-second polling + 5-minute TTL** — The synchronous fallback polls every second for responsiveness, while a background sweeper removes completed tasks after 5 minutes to keep memory bounded.
 - **Live progress in task status** — While a tool runs, its `onProgress` updates are written to the task's `statusMessage`, so clients see messages like `"Executing 30/100"` instead of a silent timeout.
-- **Streaming LLM output** — Analysis tools (`hy3_analyze_text`, `hy3_design_dashboard`, `hy3_data_insight`, `hy3_data_report`) stream Hy3 tokens as they are generated. In Task/Stream mode, the latest accumulated output is written to the task's `statusMessage`, so clients can preview the response before it is finalized.
+- **Streaming LLM output** — Analysis and planning tools (`hy3_analyze`, `hy3_analyze_report`, `hy3_plan_chart`, `hy3_plan_dashboard`, `hy3_plan_wordcloud`, `hy3_plan_knowledge_graph`) stream Hy3 tokens as they are generated. In Task/Stream mode, the latest accumulated output is written to the task's `statusMessage`, so clients can preview the response before it is finalized.
 
 ## Design evolution: from black-box to transparent, agentic tasks
 
@@ -218,7 +220,7 @@ The original implementation tried to do everything in one synchronous call:
 | Timeout behavior | Silent 60-second timeout, then failure | No single-call timeout; tasks live up to 5 minutes |
 | Cancellation | Client can only abandon the call | `AbortSignal` propagates to the OpenAI SDK; `tasks/cancel` stops the model request |
 | Progress visibility | None — the user stares at a spinner | `statusMessage` is updated with progress and live LLM output preview |
-| Document analysis | `hy3_document_summary` did extraction + analysis + rendering internally | `hy3_extract_document` → `hy3_analyze_text` → agent-saved data → visualization/report tools |
+| Document analysis | `hy3_document_summary` did extraction + analysis + rendering internally | `hy3_extract_document` → `hy3_analyze` → agent-saved data → `hy3_render_*` / `hy3_analyze_report` tools |
 | Tool responsibility | Mega-tools mixed reading, reasoning, and rendering | Each tool has a single responsibility and is composable by the agent |
 | Backwards compatibility | N/A — old clients use sync path | `taskSupport: "optional"` means task-aware and legacy clients both work |
 
@@ -227,7 +229,7 @@ The original implementation tried to do everything in one synchronous call:
 1. **Timeouts become irrelevant.** By returning a `taskId` immediately, the MCP client never holds an HTTP request open while Hy3 generates a long report. The 60-second `DEFAULT_REQUEST_TIMEOUT_MSEC` no longer kills complex jobs.
 2. **Users see progress.** The task runner writes incremental updates (`"Executing 30/100"`, partial JSON, partial report text) into `task.statusMessage`. This turns a black-box wait into a transparent, stream-like experience.
 3. **Cancellation actually works.** Because the `AbortSignal` is threaded from `tasks/cancel` through the task runner, through each tool, and into `openai.chat.completions.create`, calling cancel aborts the in-flight model request instead of just marking the task failed.
-4. **Agents can reason about intermediate results.** Splitting `hy3_document_summary` into `hy3_extract_document` + `hy3_analyze_text` lets the agent inspect raw text first, decide what structured data to extract, save it, and then choose the right visualization tool. The agent is no longer forced to trust a monolithic tool.
+4. **Agents can reason about intermediate results.** Splitting `hy3_document_summary` into `hy3_extract_document` + `hy3_analyze` lets the agent inspect raw text first, decide what structured data to extract, save it, and then choose the right visualization tool. The agent is no longer forced to trust a monolithic tool.
 5. **Streaming analysis output.** For analysis tools, Hy3 tokens are consumed as they arrive and the running preview is pushed into the task status. A client using `callToolStream` sees the answer being written in real time, similar to ChatGPT.
 
 ### How the design is implemented
@@ -237,7 +239,7 @@ The original implementation tried to do everything in one synchronous call:
 - **In-memory `TaskStore`** + `TaskMessageQueue` hold task metadata and results. A TTL sweeper removes completed tasks after 5 minutes.
 - **`runToolAsTask`** runs the tool in the background, catches errors, stores results, and writes progress/status messages. Streaming tools receive an `onOutput` callback that updates the task status.
 - **`Hy3Client.chatStream`** and **`askHy3Stream`** wrap the OpenAI SDK streaming completion API and accept an `AbortSignal`.
-- **Agentic tool split:** `hy3_extract_document` is a pure document parser; `hy3_analyze_text` is the only LLM analysis tool that takes text; `hy3_design_dashboard` produces a JSON layout; `hy3_render_dashboard` and other rendering tools only consume structured files and designs. This mirrors how a human analyst would work.
+- **Agentic tool split:** `hy3_extract_document` is a pure document parser; `hy3_analyze` handles LLM-powered text/data analysis; `hy3_plan_*` tools produce JSON designs; `hy3_render_*` tools consume explicit data and configs without calling the LLM. This mirrors how a human analyst would work.
 
 ## Agentic workflow
 
@@ -249,15 +251,15 @@ For a PDF report analysis request, the expected flow is:
 1. hy3_extract_document(file_path="report.pdf")
    → { document_type: "pdf", text: "..." }
 
-2. hy3_analyze_text(text="...", question="Extract key metrics and trends")
+2. hy3_analyze(text="...", question="Extract key metrics and trends")
    → JSON with metrics and trends
 
 3. Agent saves the JSON as report_data.csv
 
-4. hy3_data_report(file_paths=["report_data.csv"], question="...")
+4. hy3_analyze_report(file_paths=["report_data.csv"], question="...")
    → detailed HTML/Markdown report
 
-5. (optional) hy3_design_dashboard(file_paths=["report_data.csv"])
+5. (optional) hy3_plan_dashboard(file_paths=["report_data.csv"])
    → JSON dashboard layout designed by Hy3
 
 6. (optional) hy3_render_dashboard(file_paths=["report_data.csv"], design={...})
@@ -304,109 +306,190 @@ Open WebUI does not expose a stdio MCP host that `hdm init` can write to. To use
 
 ## Usage Examples
 
-### Analyze and visualize a CSV
+### Extract document text
 
 ```json
 {
-  "name": "hy3_data_visualize",
+  "name": "hy3_extract_document",
   "arguments": {
-    "file_path": "./sales.csv",
+    "file_path": "./report.pdf",
+    "max_text_length": 100000
+  }
+}
+```
+
+### Analyze extracted text
+
+```json
+{
+  "name": "hy3_analyze",
+  "arguments": {
+    "text": "...",
+    "question": "Summarize the key findings and risks",
+    "output_format": "html",
+    "language": "en"
+  }
+}
+```
+
+### Analyze structured data
+
+```json
+{
+  "name": "hy3_analyze",
+  "arguments": {
+    "data_file_path": "./sales.csv",
+    "question": "Find trends and outliers",
+    "output_format": "text",
+    "language": "en"
+  }
+}
+```
+
+### Plan a chart
+
+```json
+{
+  "name": "hy3_plan_chart",
+  "arguments": {
+    "data_file_path": "./sales.csv",
+    "question": "Show monthly sales trend",
+    "chart_type_hint": "line",
+    "language": "en"
+  }
+}
+```
+
+### Render a chart from explicit config
+
+```json
+{
+  "name": "hy3_render_chart",
+  "arguments": {
+    "data_file_path": "./sales.csv",
     "chart_type": "bar",
+    "x_column": "month",
+    "y_column": "sales",
     "output_format": "png",
+    "theme": "nature",
     "language": "zh"
   }
 }
 ```
 
-### Sankey flow chart
+### Render a stacked bar chart
 
 ```json
 {
-  "name": "hy3_data_visualize",
+  "name": "hy3_render_chart",
   "arguments": {
-    "file_path": "./sales.csv",
-    "chart_type": "sankey",
-    "output_format": "png",
-    "language": "zh"
-  }
-}
-```
-
-### Scientific boxplot
-
-```json
-{
-  "name": "hy3_data_visualize",
-  "arguments": {
-    "file_path": "./sales.csv",
-    "chart_type": "boxplot",
-    "output_format": "png",
-    "language": "zh"
-  }
-}
-```
-
-### Bubble chart with size dimension
-
-```json
-{
-  "name": "hy3_data_visualize",
-  "arguments": {
-    "file_path": "./sales.csv",
-    "chart_type": "bubble",
-    "output_format": "png",
-    "language": "zh"
-  }
-}
-```
-
-### Stacked bar chart
-
-```json
-{
-  "name": "hy3_data_visualize",
-  "arguments": {
-    "file_path": "./sales.csv",
+    "data_file_path": "./sales.csv",
     "chart_type": "stacked_bar",
+    "x_column": "month",
+    "y_column": "sales",
+    "group_column": "region",
     "output_format": "png",
     "language": "zh"
   }
 }
 ```
 
-### Histogram
+### Render a Sankey flow chart
 
 ```json
 {
-  "name": "hy3_data_visualize",
+  "name": "hy3_render_chart",
   "arguments": {
-    "file_path": "./sales.csv",
-    "chart_type": "histogram",
+    "data_file_path": "./flow.csv",
+    "chart_type": "sankey",
+    "x_column": "source",
+    "y_column": "target",
+    "value_column": "value",
     "output_format": "png",
     "language": "zh"
   }
 }
 ```
 
-### Candlestick / K-line chart
+### Render a candlestick chart
 
 ```json
 {
-  "name": "hy3_data_visualize",
+  "name": "hy3_render_chart",
   "arguments": {
-    "file_path": "./stock.csv",
+    "data_file_path": "./stock.csv",
     "chart_type": "candlestick",
+    "x_column": "date",
+    "y_column": "close",
+    "open_column": "open",
+    "close_column": "close",
+    "low_column": "low",
+    "high_column": "high",
     "output_format": "png",
     "language": "zh"
   }
 }
 ```
 
-### Design a dashboard from multiple files
+### Plan a word cloud
 
 ```json
 {
-  "name": "hy3_design_dashboard",
+  "name": "hy3_plan_wordcloud",
+  "arguments": {
+    "file_path": "./reviews.csv",
+    "max_words": 80,
+    "language": "zh"
+  }
+}
+```
+
+### Render a word cloud
+
+```json
+{
+  "name": "hy3_render_wordcloud",
+  "arguments": {
+    "file_path": "./reviews.csv",
+    "max_words": 80,
+    "output_format": "png",
+    "language": "zh"
+  }
+}
+```
+
+### Plan a knowledge graph
+
+```json
+{
+  "name": "hy3_plan_knowledge_graph",
+  "arguments": {
+    "file_path": "./article.txt",
+    "max_entities": 30,
+    "language": "en"
+  }
+}
+```
+
+### Render a knowledge graph
+
+```json
+{
+  "name": "hy3_render_knowledge_graph",
+  "arguments": {
+    "nodes": "[{\"id\":\"A\",\"group\":1},{\"id\":\"B\",\"group\":2}]",
+    "links": "[{\"source\":\"A\",\"target\":\"B\",\"relation\":\"links\"}]",
+    "output_format": "png",
+    "language": "en"
+  }
+}
+```
+
+### Plan a dashboard
+
+```json
+{
+  "name": "hy3_plan_dashboard",
   "arguments": {
     "file_paths": ["./sales.csv", "./users.csv"],
     "title": "Monthly Operations Dashboard",
@@ -438,53 +521,11 @@ Open WebUI does not expose a stdio MCP host that `hdm init` can write to. To use
 }
 ```
 
-### Extract insights from text data
-
-```json
-{
-  "name": "hy3_wordcloud",
-  "arguments": {
-    "file_path": "./reviews.csv",
-    "column": "comment",
-    "max_words": 80,
-    "output_format": "png",
-    "language": "zh"
-  }
-}
-```
-
-### Extract and analyze a document
-
-First extract the raw text:
-
-```json
-{
-  "name": "hy3_extract_document",
-  "arguments": {
-    "file_path": "./report.pdf"
-  }
-}
-```
-
-Then analyze the extracted text:
-
-```json
-{
-  "name": "hy3_analyze_text",
-  "arguments": {
-    "text": "...",
-    "question": "Summarize the key findings and risks",
-    "output_format": "html",
-    "language": "en"
-  }
-}
-```
-
 ### Generate a complete data analysis report
 
 ```json
 {
-  "name": "hy3_data_report",
+  "name": "hy3_analyze_report",
   "arguments": {
     "file_paths": ["./sales.csv"],
     "question": "Analyze sales performance and highlight key drivers",
@@ -500,10 +541,12 @@ Then analyze the extracted text:
 
 ```json
 {
-  "name": "hy3_data_visualize",
+  "name": "hy3_render_chart",
   "arguments": {
-    "file_path": "./sales.csv",
+    "data_file_path": "./sales.csv",
     "chart_type": "bar3d",
+    "x_column": "month",
+    "y_column": "sales",
     "output_format": "png",
     "language": "en"
   }
@@ -514,9 +557,9 @@ Then analyze the extracted text:
 
 ```json
 {
-  "name": "hy3_data_visualize",
+  "name": "hy3_render_chart",
   "arguments": {
-    "file_path": "./sales.csv",
+    "data_file_path": "./sales.csv",
     "chart_type": "scatter3d",
     "x_column": "price",
     "y_column": "sales",
@@ -531,14 +574,31 @@ Then analyze the extracted text:
 
 ```json
 {
-  "name": "hy3_data_visualize",
+  "name": "hy3_render_chart",
   "arguments": {
-    "file_path": "./sales.csv",
+    "data_file_path": "./sales.csv",
     "chart_type": "dual_axis",
     "x_column": "month",
     "y_column": "sales",
     "value_column": "profit",
     "output_format": "png",
+    "language": "en"
+  }
+}
+```
+
+### Render with ECharts option overrides
+
+```json
+{
+  "name": "hy3_render_chart",
+  "arguments": {
+    "data_file_path": "./sales.csv",
+    "chart_type": "bar",
+    "x_column": "month",
+    "y_column": "sales",
+    "overrides": "{\"title\":{\"text\":\"Custom Title\"}}",
+    "output_format": "svg",
     "language": "en"
   }
 }
@@ -576,10 +636,12 @@ Example with the default Nature theme and a custom font:
 
 ```json
 {
-  "name": "hy3_data_visualize",
+  "name": "hy3_render_chart",
   "arguments": {
-    "file_path": "./sales.csv",
+    "data_file_path": "./sales.csv",
     "chart_type": "bar",
+    "x_column": "month",
+    "y_column": "sales",
     "output_format": "png",
     "theme": "nature",
     "font_family": "Inter",
@@ -605,10 +667,12 @@ Example with a custom palette:
 
 ```json
 {
-  "name": "hy3_data_visualize",
+  "name": "hy3_render_chart",
   "arguments": {
-    "file_path": "./sales.csv",
+    "data_file_path": "./sales.csv",
     "chart_type": "bar",
+    "x_column": "month",
+    "y_column": "sales",
     "output_format": "png",
     "theme": "nature",
     "palette": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"],
@@ -633,7 +697,7 @@ The `sample_data/` directory contains both simple and complex datasets for testi
 - `sample_data/complex/hierarchical_geo_sales.csv` — Region → city → category hierarchical data for treemaps and sunbursts.
 - `sample_data/complex/reviews.csv` — 20 realistic Chinese product reviews for word clouds and sentiment analysis.
 - `sample_data/stock.csv` — OHLC stock data for candlestick charts.
-- `sample_data/report.docx` — A sample Word document with a quarterly sales report and table, for testing `hy3_extract_document` and `hy3_analyze_text`.
+- `sample_data/report.docx` — A sample Word document with a quarterly sales report and table, for testing `hy3_extract_document` and `hy3_analyze`.
 - `sample_data/report.pdf` — The same report as a PDF file, for testing PDF parsing and text analysis.
 
 Run `node scripts/generate-sample-data.mjs` to regenerate the CSV datasets deterministically. Run `python scripts/generate-sample-documents.py` (in a Python environment with `python-docx` and `fpdf2`) to regenerate the DOCX/PDF samples.
@@ -652,7 +716,7 @@ npm run test:coverage   # generate coverage report
 npm run test:real       # requires HY3_API_KEY
 ```
 
-The test suite contains **138 unit, integration, and smoke tests** covering documents, utilities, themes, CLI config, dashboard rendering, client setup, streaming LLM output, async task execution, all visualization tools, chart rendering, and the MCP server handshake. As of the latest run, code coverage for the `src/` directory is approximately **95% statements / 85% branches / 96% functions** (overall ~92% statements when including uncovered helper scripts).
+The test suite contains **145 unit, integration, and smoke tests** covering documents, utilities, themes, CLI config, dashboard rendering, client setup, streaming LLM output, async task execution, all visualization tools, chart rendering, and the MCP server handshake. As of the latest run, code coverage for the `src/` directory is approximately **95% statements / 85% branches / 96% functions** (overall ~92% statements when including uncovered helper scripts).
 
 Debug with the [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
 
@@ -664,7 +728,7 @@ npx @modelcontextprotocol/inspector node dist/index.js
 
 ## Roadmap
 
-- [x] 7 core data analysis tools
+- [x] 11 core data analysis tools
 - [x] SVG / HTML / PNG output formats
 - [x] CLI installer (`hdm init`)
 - [x] PDF, DOCX, XLSX, CSV, JSON, TXT document support

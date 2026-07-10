@@ -61,6 +61,13 @@ export async function loadDataTable(filePath: string): Promise<DataTable> {
   return parseData(raw, ext);
 }
 
+/**
+ * Read a plain text file (txt, md, log, etc.) without parsing it as structured data.
+ */
+export async function readTextFile(filePath: string): Promise<string> {
+  return readLocalFile(filePath);
+}
+
 export function parseInlineData(data: string): DataTable {
   const parsed = JSON.parse(data);
   const rows = Array.isArray(parsed) ? parsed : [parsed];
@@ -184,4 +191,37 @@ export async function writeOutputFile(
   await mkdir(dirname(filePath), { recursive: true });
   await writeFile(filePath, content);
   return filePath;
+}
+
+export interface InputDataArgs {
+  data?: string;
+  data_file_path?: string;
+  file_path?: string;
+}
+
+/**
+ * Load a DataTable from one of the supported input forms:
+ * - `data`: inline JSON array string
+ * - `data_file_path`: path to CSV/JSON/XLSX containing structured data
+ * - `file_path`: alias for backward compatibility / general file input
+ */
+export async function loadInputData(args: InputDataArgs): Promise<DataTable> {
+  if (args.data) {
+    return parseInlineData(args.data);
+  }
+  const path = args.data_file_path || args.file_path;
+  if (!path) {
+    throw new Error("One of data, data_file_path, or file_path is required");
+  }
+  return loadDataTable(path);
+}
+
+/**
+ * Extract text content from a file regardless of whether it is plain text or structured.
+ * For structured files, returns the raw file content.
+ */
+export async function loadInputText(args: { text?: string; file_path?: string }): Promise<string> {
+  if (args.text) return args.text;
+  if (args.file_path) return readTextFile(args.file_path);
+  throw new Error("One of text or file_path is required");
 }

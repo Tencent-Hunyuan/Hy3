@@ -2,7 +2,7 @@
 
 ## 1. 我们要解决什么问题？
 
-改造前，`hy3-data-mcp` 的工具（如 `hy3_document_summary`、`hy3_data_visualize`、`hy3_data_report` 等）几乎都是**同步调用大模型**完成分析：
+改造前，`hy3-data-mcp` 的工具（如 `hy3_document_summary`、`hy3_data_visualize`、`hy3_data_report` 等）几乎都是**同步调用大模型**完成分析。2.0 架构将它们拆分为 `hy3_plan_*`（调用 LLM 做规划）和 `hy3_render_*`（确定性渲染）两类工具：
 
 ```ts
 const response = await openai.chat.completions.create({
@@ -79,7 +79,7 @@ import { z } from "zod";
 const server = new McpServer({ name: "hy3-data-mcp", version: "0.2.1" });
 
 server.tool(
-  "hy3_analyze_text",
+  "hy3_analyze",
   "Analyze extracted text with Hy3",
   {
     file_path: z.string(),
@@ -111,7 +111,7 @@ server.tool(
 
 ```ts
 server.experimental.tasks.registerToolTask(
-  "hy3_analyze_text",
+  "hy3_analyze",
   {
     description: "Analyze extracted text with Hy3",
     inputSchema: { text: z.string(), question: z.string().optional() },
@@ -123,7 +123,7 @@ server.experimental.tasks.registerToolTask(
       const task = await extra.taskStore.createTask(
         { ttl: 300000 },
         extra.requestId,
-        { method: "tools/call", params: { name: "hy3_analyze_text", arguments: args } }
+        { method: "tools/call", params: { name: "hy3_analyze", arguments: args } }
       );
 
       // 2. 后台执行，不 await
@@ -189,7 +189,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 
 const stream = client.experimental.tasks.callToolStream(
   {
-    name: "hy3_analyze_text",
+    name: "hy3_analyze",
     arguments: { text: "...", question: "总结核心风险" },
   },
   CallToolResultSchema,

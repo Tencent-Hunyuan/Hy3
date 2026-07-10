@@ -6,15 +6,17 @@ import type { CallToolResult, GetTaskResult } from "@modelcontextprotocol/sdk/ty
 import { z } from "zod";
 import { Hy3Client } from "../client.js";
 import { runToolAsTask } from "../tasks/runner.js";
-import { analyzeTextDefinition, runAnalyzeText, analyzeTextSchema } from "./analyzeText.js";
-import { designDashboardDefinition, runDesignDashboard, designDashboardSchema } from "./designDashboard.js";
-import { renderDashboardDefinition, runRenderDashboard, renderDashboardSchema } from "./renderDashboard.js";
-import { dataInsightDefinition, runDataInsight, dataInsightSchema } from "./dataInsight.js";
-import { dataReportDefinition, runDataReport, dataReportSchema } from "./dataReport.js";
-import { dataVisualizeDefinition, runDataVisualize, dataVisualizeSchema } from "./dataVisualize.js";
+import { analyzeDefinition, runAnalyze, analyzeSchema } from "./analyze.js";
+import { analyzeReportDefinition, runAnalyzeReport, analyzeReportSchema } from "./analyzeReport.js";
 import { extractDocumentDefinition, runExtractDocument, extractDocumentSchema } from "./extractDocument.js";
-import { knowledgeGraphDefinition, runKnowledgeGraph, knowledgeGraphSchema } from "./knowledgeGraph.js";
-import { wordcloudDefinition, runWordcloud, wordcloudSchema } from "./wordcloud.js";
+import { planChartDefinition, runPlanChart, planChartSchema } from "./planChart.js";
+import { planDashboardDefinition, runPlanDashboard, planDashboardSchema } from "./planDashboard.js";
+import { planKnowledgeGraphDefinition, runPlanKnowledgeGraph, planKnowledgeGraphSchema } from "./planKnowledgeGraph.js";
+import { planWordcloudDefinition, runPlanWordcloud, planWordcloudSchema } from "./planWordcloud.js";
+import { renderChartDefinition, runRenderChart, renderChartSchema } from "./renderChart.js";
+import { renderDashboardDefinition, runRenderDashboard, renderDashboardSchema } from "./renderDashboard.js";
+import { renderKnowledgeGraphDefinition, runRenderKnowledgeGraph, renderKnowledgeGraphSchema } from "./renderKnowledgeGraph.js";
+import { renderWordcloudDefinition, runRenderWordcloud, renderWordcloudSchema } from "./renderWordcloud.js";
 
 export type ProgressReporter = (progress: number, total?: number) => Promise<void> | void;
 
@@ -48,6 +50,24 @@ const staticTools = (): StaticToolRegistration[] => [
     run: runExtractDocument,
   },
   {
+    name: renderChartDefinition.name,
+    description: renderChartDefinition.description,
+    schema: renderChartSchema,
+    run: runRenderChart,
+  },
+  {
+    name: renderWordcloudDefinition.name,
+    description: renderWordcloudDefinition.description,
+    schema: renderWordcloudSchema,
+    run: runRenderWordcloud,
+  },
+  {
+    name: renderKnowledgeGraphDefinition.name,
+    description: renderKnowledgeGraphDefinition.description,
+    schema: renderKnowledgeGraphSchema,
+    run: runRenderKnowledgeGraph,
+  },
+  {
     name: renderDashboardDefinition.name,
     description: renderDashboardDefinition.description,
     schema: renderDashboardSchema,
@@ -57,46 +77,40 @@ const staticTools = (): StaticToolRegistration[] => [
 
 const llmTools = (): LlmToolRegistration[] => [
   {
-    name: analyzeTextDefinition.name,
-    description: analyzeTextDefinition.description,
-    schema: analyzeTextSchema,
-    run: runAnalyzeText as ToolRunner,
+    name: analyzeDefinition.name,
+    description: analyzeDefinition.description,
+    schema: analyzeSchema,
+    run: runAnalyze as ToolRunner,
   },
   {
-    name: dataVisualizeDefinition.name,
-    description: dataVisualizeDefinition.description,
-    schema: dataVisualizeSchema,
-    run: runDataVisualize as ToolRunner,
+    name: analyzeReportDefinition.name,
+    description: analyzeReportDefinition.description,
+    schema: analyzeReportSchema,
+    run: runAnalyzeReport as ToolRunner,
   },
   {
-    name: wordcloudDefinition.name,
-    description: wordcloudDefinition.description,
-    schema: wordcloudSchema,
-    run: runWordcloud as ToolRunner,
+    name: planChartDefinition.name,
+    description: planChartDefinition.description,
+    schema: planChartSchema,
+    run: runPlanChart as ToolRunner,
   },
   {
-    name: knowledgeGraphDefinition.name,
-    description: knowledgeGraphDefinition.description,
-    schema: knowledgeGraphSchema,
-    run: runKnowledgeGraph as ToolRunner,
+    name: planDashboardDefinition.name,
+    description: planDashboardDefinition.description,
+    schema: planDashboardSchema,
+    run: runPlanDashboard as ToolRunner,
   },
   {
-    name: designDashboardDefinition.name,
-    description: designDashboardDefinition.description,
-    schema: designDashboardSchema,
-    run: runDesignDashboard as ToolRunner,
+    name: planWordcloudDefinition.name,
+    description: planWordcloudDefinition.description,
+    schema: planWordcloudSchema,
+    run: runPlanWordcloud as ToolRunner,
   },
   {
-    name: dataReportDefinition.name,
-    description: dataReportDefinition.description,
-    schema: dataReportSchema,
-    run: runDataReport as ToolRunner,
-  },
-  {
-    name: dataInsightDefinition.name,
-    description: dataInsightDefinition.description,
-    schema: dataInsightSchema,
-    run: runDataInsight as ToolRunner,
+    name: planKnowledgeGraphDefinition.name,
+    description: planKnowledgeGraphDefinition.description,
+    schema: planKnowledgeGraphSchema,
+    run: runPlanKnowledgeGraph as ToolRunner,
   },
 ];
 

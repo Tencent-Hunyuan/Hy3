@@ -7,22 +7,26 @@ import type { ProgressReporter } from "./index.js";
 export const renderDashboardDefinition = {
   name: "hy3_render_dashboard",
   description:
-    "Render a dashboard design (from hy3_design_dashboard) into an interactive HTML page or a PNG composite image. Requires the same file_paths and a JSON design object.",
+    "Render a dashboard design (from hy3_plan_dashboard) into an interactive HTML page or a PNG composite image. Requires the same file_paths/data_file_path/data and a JSON design object.",
   inputSchema: {
     type: "object" as const,
     properties: {
       file_paths: {
         type: "array",
         items: { type: "string" },
-        description: "List of CSV or JSON files referenced by the design. Either this or `data` is required. Must match the order used in hy3_design_dashboard.",
+        description: "List of CSV or JSON files referenced by the design. Either this or `data` is required. Must match the order used in hy3_plan_dashboard.",
       },
       data: {
         type: "string",
-        description: "Inline data as a JSON array string. Either this or `file_paths` is required. If both are provided, inline data is placed at index 0.",
+        description: "Inline data as a JSON array string. Either this or `file_paths`/`data_file_path` is required. If both are provided, inline data is placed at index 0.",
+      },
+      data_file_path: {
+        type: "string",
+        description: "Path to a CSV/JSON/XLSX file. Either this or `data`/`file_paths` is required.",
       },
       design: {
         type: "object",
-        description: "Dashboard design JSON produced by hy3_design_dashboard.",
+        description: "Dashboard design JSON produced by hy3_plan_dashboard.",
         properties: {
           title: { type: "string" },
           layout: { type: "string", enum: ["grid", "rows", "columns", "hero", "compact"] },
@@ -59,7 +63,7 @@ export const renderDashboardDefinition = {
       },
       theme: {
         type: "string",
-        enum: ["light", "dark", "colorful", "minimal", "professional", "retro", "science", "nature"],
+        enum: ["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"],
         description: "Dashboard color theme.",
         default: "nature",
       },
@@ -107,6 +111,7 @@ const chartDesignSchema = z.object({
 
 export const renderDashboardSchema = z.object({
   file_paths: z.array(z.string().min(1)).optional(),
+  data_file_path: z.string().optional(),
   data: z.string().optional(),
   design: z.object({
     title: z.string(),
@@ -116,7 +121,7 @@ export const renderDashboardSchema = z.object({
   output_format: z.enum(["html", "png"]).default("html"),
   title: z.string().optional(),
   theme: z
-    .enum(["light", "dark", "colorful", "minimal", "professional", "retro", "science", "nature"])
+    .enum(["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"])
     .default("nature"),
   font_family: z.string().optional(),
   background_color: z.string().optional(),
@@ -135,6 +140,7 @@ export async function runRenderDashboard(
 ): Promise<{ content: Array<{ type: "text"; text: string }> }> {
   const {
     file_paths,
+    data_file_path,
     data,
     design,
     output_format,
@@ -151,8 +157,8 @@ export async function runRenderDashboard(
     language,
   } = renderDashboardSchema.parse(args);
 
-  if ((!file_paths || file_paths.length === 0) && (!data || data.trim().length === 0)) {
-    throw new Error("Either file_paths or data is required");
+  if ((!file_paths || file_paths.length === 0) && !data_file_path && (!data || data.trim().length === 0)) {
+    throw new Error("One of file_paths, data_file_path, or data is required");
   }
 
   await onProgress?.(10, 100);
@@ -165,6 +171,9 @@ export async function runRenderDashboard(
   const tables: { path: string; table: DataTable }[] = [];
   if (data) {
     tables.push({ path: "<inline-data>", table: parseInlineData(data) });
+  }
+  if (data_file_path) {
+    tables.push({ path: data_file_path, table: await loadDataTable(data_file_path) });
   }
   for (const path of file_paths ?? []) {
     tables.push({ path, table: await loadDataTable(path) });

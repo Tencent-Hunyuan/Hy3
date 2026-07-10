@@ -4,6 +4,7 @@ import { svgToPng } from "./png.js";
 import { applyTheme, getTheme } from "./themes.js";
 import type { Theme } from "./themes.js";
 import type { DataTable } from "../utils.js";
+export type { DataTable } from "../utils.js";
 
 export type ChartType =
   | "bar"
@@ -42,6 +43,7 @@ export interface ChartConfig {
   x_column: string;
   y_column: string;
   title: string;
+  subtitle?: string;
   width?: number;
   height?: number;
   value_column?: string;
@@ -60,6 +62,20 @@ export interface ChartConfig {
   split_line_color?: string;
   palette?: string[];
   primary_color?: string;
+  legend_position?: "top" | "bottom" | "left" | "right";
+  show_grid?: boolean;
+  show_tooltip?: boolean;
+  x_name?: string;
+  y_name?: string;
+  x_label_rotate?: number;
+  line_smooth?: boolean;
+  line_symbol?: "circle" | "rect" | "triangle" | "diamond" | "pin" | "arrow" | "none";
+  line_area?: boolean;
+  bar_stack?: boolean;
+  mark_point?: boolean;
+  mark_line?: boolean;
+  data_zoom?: boolean;
+  overrides?: string;
 }
 
 function themeOverridesFromConfig(config: ChartConfig): Partial<Omit<Theme, "name">> {
@@ -606,11 +622,138 @@ function buildEChartsOption(
 ): echarts.EChartsOption {
   const option = buildEChartsOptionRaw(chartType, table, config);
   const theme = getTheme(config.theme, config.font_family, themeOverridesFromConfig(config));
-  const themed = applyTheme(option, theme);
+  let themed = applyTheme(option, theme);
   if (theme.name === "premium" || theme.name === "professional") {
     applyPremiumStyling(themed, theme);
   }
+  themed = applyChartConfigOverrides(themed, config);
+  if (config.overrides) {
+    const parsed = parseOverrides(config.overrides);
+    if (parsed) {
+      themed = deepMerge(themed, parsed) as echarts.EChartsOption;
+    }
+  }
   return themed;
+}
+
+function parseOverrides(overrides: string): unknown {
+  try {
+    return JSON.parse(overrides);
+  } catch {
+    return null;
+  }
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function deepMerge(target: unknown, source: unknown): unknown {
+  if (isPlainObject(target) && isPlainObject(source)) {
+    const result: Record<string, unknown> = { ...target };
+    for (const key of Object.keys(source)) {
+      const sourceValue = source[key];
+      const targetValue = result[key];
+      if (isPlainObject(sourceValue) && isPlainObject(targetValue)) {
+        result[key] = deepMerge(targetValue, sourceValue);
+      } else {
+        result[key] = sourceValue;
+      }
+    }
+    return result;
+  }
+  return source;
+}
+
+function applyChartConfigOverrides(
+  option: echarts.EChartsOption,
+  config: ChartConfig
+): echarts.EChartsOption {
+  const opt = { ...option } as Record<string, unknown>;
+
+  if (config.subtitle) {
+    const title = (opt.title as Record<string, unknown>) || {};
+    opt.title = { ...title, subtext: config.subtitle };
+  }
+
+  if (config.legend_position) {
+    const positions: Record<string, Record<string, unknown>> = {
+      top: { top: 24 },
+      bottom: { bottom: 0 },
+      left: { left: 0, orient: "vertical" },
+      right: { right: 0, orient: "vertical" },
+    };
+    opt.legend = { ...(opt.legend as Record<string, unknown>), ...positions[config.legend_position] };
+  }
+
+  if (config.show_grid === false) {
+    if (opt.xAxis && isPlainObject(opt.xAxis)) {
+      opt.xAxis = { ...(opt.xAxis as Record<string, unknown>), splitLine: { show: false } };
+    }
+    if (opt.yAxis && isPlainObject(opt.yAxis)) {
+      opt.yAxis = { ...(opt.yAxis as Record<string, unknown>), splitLine: { show: false } };
+    }
+  }
+
+  if (config.show_tooltip === false) {
+    opt.tooltip = { show: false };
+  }
+
+  if (config.x_name && opt.xAxis && isPlainObject(opt.xAxis)) {
+    opt.xAxis = { ...(opt.xAxis as Record<string, unknown>), name: config.x_name };
+  }
+
+  if (config.y_name && opt.yAxis && isPlainObject(opt.yAxis)) {
+    opt.yAxis = { ...(opt.yAxis as Record<string, unknown>), name: config.y_name };
+  }
+
+  if (config.x_label_rotate !== undefined && opt.xAxis && isPlainObject(opt.xAxis)) {
+    const axis = opt.xAxis as Record<string, unknown>;
+    opt.xAxis = {
+      ...axis,
+      axisLabel: { ...(axis.axisLabel as Record<string, unknown>), rotate: config.x_label_rotate },
+    };
+  }
+
+  if (config.data_zoom && opt.xAxis) {
+    opt.dataZoom = [{ type: "inside" }, { type: "slider" }];
+  }
+
+  if (opt.series && Array.isArray(opt.series)) {
+    opt.series = opt.series.map((series: any) => {
+      if (!series) return series;
+      const s = { ...series };
+
+      if (s.type === "line") {
+        if (config.line_smooth !== undefined) s.smooth = config.line_smooth;
+        if (config.line_symbol !== undefined) s.symbol = config.line_symbol;
+        if (config.line_area === true) s.areaStyle = { ...(s.areaStyle || {}) };
+      }
+
+      if (s.type === "bar" && config.bar_stack === true) {
+        s.stack = "total";
+      }
+
+      if (config.mark_point === true) {
+        s.markPoint = {
+          data: [
+            { type: "max", name: "Max" },
+            { type: "min", name: "Min" },
+          ],
+        };
+      }
+
+      if (config.mark_line === true) {
+        s.markLine = {
+          data: [{ type: "average", name: "Avg" }],
+        };
+      }
+
+      return s;
+    });
+  }
+
+  return opt as echarts.EChartsOption;
 }
 
 function buildEChartsOptionRaw(

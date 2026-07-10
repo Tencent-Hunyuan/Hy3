@@ -17,20 +17,17 @@ function createMockClient(response = "mocked response") {
 }
 
 describe("integration tests", () => {
-  it("hy3_data_visualize generates an SVG file", async () => {
+  it("hy3_render_chart generates an SVG file", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const dataFile = join(dir, "data.csv");
     await writeFile(dataFile, "month,sales\nJan,100\nFeb,150\nMar,120\n");
 
     process.env.HY3_OUTPUT_DIR = join(dir, "output");
 
-    const client = createMockClient(
-      JSON.stringify({ x_column: "month", y_column: "sales", title: "Sales Trend" })
-    );
     const result = await handleToolCall(
-      "hy3_data_visualize",
-      { file_path: dataFile, chart_type: "bar", language: "en" },
-      client
+      "hy3_render_chart",
+      { file_path: dataFile, chart_type: "bar", x_column: "month", y_column: "sales", language: "en" },
+      {} as Hy3Client
     );
 
     const match = result.content[0].text.match(/File path: (.+)/);
@@ -38,30 +35,29 @@ describe("integration tests", () => {
     const svgPath = match![1].trim();
     const svg = await readFile(svgPath, "utf-8");
     expect(svg).toContain("<svg");
-    expect(svg).toContain("Sales Trend");
+    expect(svg).toContain("Data Chart");
   });
 
-  it("hy3_data_visualize applies custom colors", async () => {
+  it("hy3_render_chart applies custom colors", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const dataFile = join(dir, "data.csv");
     await writeFile(dataFile, "month,sales\nJan,100\nFeb,150\nMar,120\n");
 
     process.env.HY3_OUTPUT_DIR = join(dir, "output");
 
-    const client = createMockClient(
-      JSON.stringify({ x_column: "month", y_column: "sales", title: "Custom Colors" })
-    );
     const result = await handleToolCall(
-      "hy3_data_visualize",
+      "hy3_render_chart",
       {
         file_path: dataFile,
         chart_type: "bar",
+        x_column: "month",
+        y_column: "sales",
         language: "en",
         background_color: "#f0f9ff",
         text_color: "#0f172a",
         palette: ["#ef4444", "#3b82f6"],
       },
-      client
+      {} as Hy3Client
     );
 
     const match = result.content[0].text.match(/File path: (.+)/);
@@ -73,24 +69,14 @@ describe("integration tests", () => {
     expect(svg).toContain("#ef4444");
   });
 
-  it("hy3_wordcloud generates an SVG file", async () => {
+  it("hy3_render_wordcloud generates an SVG file", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
-    const textFile = join(dir, "text.txt");
-    await writeFile(textFile, "machine learning data science machine learning visualization data");
-
     process.env.HY3_OUTPUT_DIR = join(dir, "output");
 
-    const client = createMockClient(
-      JSON.stringify([
-        { word: "machine", weight: 100 },
-        { word: "learning", weight: 80 },
-        { word: "data", weight: 60 },
-      ])
-    );
     const result = await handleToolCall(
-      "hy3_wordcloud",
-      { file_path: textFile, language: "en" },
-      client
+      "hy3_render_wordcloud",
+      { text: "machine learning data science machine learning visualization data", language: "en" },
+      {} as Hy3Client
     );
 
     const match = result.content[0].text.match(/File path: (.+)/);
@@ -100,25 +86,17 @@ describe("integration tests", () => {
     expect(svg).toContain("<svg");
   });
 
-  it("hy3_data_visualize renders a sankey SVG", async () => {
+  it("hy3_render_chart renders a sankey SVG", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const dataFile = join(dir, "flow.csv");
     await writeFile(dataFile, "source,target,value\nA,X,10\nA,Y,20\nB,Y,15\n");
 
     process.env.HY3_OUTPUT_DIR = join(dir, "output");
 
-    const client = createMockClient(
-      JSON.stringify({
-        x_column: "source",
-        y_column: "target",
-        value_column: "value",
-        title: "Flow",
-      })
-    );
     const result = await handleToolCall(
-      "hy3_data_visualize",
-      { file_path: dataFile, chart_type: "sankey", language: "en" },
-      client
+      "hy3_render_chart",
+      { file_path: dataFile, chart_type: "sankey", x_column: "source", y_column: "target", value_column: "value", language: "en" },
+      {} as Hy3Client
     );
 
     const match = result.content[0].text.match(/File path: (.+)/);
@@ -128,20 +106,17 @@ describe("integration tests", () => {
     expect(svg).toContain("<svg");
   });
 
-  it("hy3_data_visualize renders a boxplot SVG", async () => {
+  it("hy3_render_chart renders a boxplot SVG", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const dataFile = join(dir, "data.csv");
     await writeFile(dataFile, "group,value\nA,10\nA,12\nA,15\nB,8\nB,14\nB,18\n");
 
     process.env.HY3_OUTPUT_DIR = join(dir, "output");
 
-    const client = createMockClient(
-      JSON.stringify({ x_column: "group", y_column: "value", title: "Distribution" })
-    );
     const result = await handleToolCall(
-      "hy3_data_visualize",
-      { file_path: dataFile, chart_type: "boxplot", language: "en" },
-      client
+      "hy3_render_chart",
+      { file_path: dataFile, chart_type: "boxplot", x_column: "group", y_column: "value", language: "en" },
+      {} as Hy3Client
     );
 
     const match = result.content[0].text.match(/File path: (.+)/);
@@ -151,7 +126,7 @@ describe("integration tests", () => {
     expect(svg).toContain("<svg");
   });
 
-  it("hy3_data_visualize renders a candlestick SVG", async () => {
+  it("hy3_render_chart renders a candlestick SVG", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const dataFile = join(dir, "stock.csv");
     await writeFile(
@@ -161,20 +136,20 @@ describe("integration tests", () => {
 
     process.env.HY3_OUTPUT_DIR = join(dir, "output");
 
-    const client = createMockClient(
-      JSON.stringify({
+    const result = await handleToolCall(
+      "hy3_render_chart",
+      {
+        file_path: dataFile,
+        chart_type: "candlestick",
         x_column: "date",
+        y_column: "close",
         open_column: "open",
         close_column: "close",
         low_column: "low",
         high_column: "high",
-        title: "Stock",
-      })
-    );
-    const result = await handleToolCall(
-      "hy3_data_visualize",
-      { file_path: dataFile, chart_type: "candlestick", language: "en" },
-      client
+        language: "en",
+      },
+      {} as Hy3Client
     );
 
     const match = result.content[0].text.match(/File path: (.+)/);
@@ -184,25 +159,17 @@ describe("integration tests", () => {
     expect(svg).toContain("<svg");
   });
 
-  it("hy3_data_visualize renders a stacked bar SVG", async () => {
+  it("hy3_render_chart renders a stacked bar SVG", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const dataFile = join(dir, "data.csv");
     await writeFile(dataFile, "month,product,sales\nJan,A,10\nJan,B,20\nFeb,A,15\nFeb,B,25\n");
 
     process.env.HY3_OUTPUT_DIR = join(dir, "output");
 
-    const client = createMockClient(
-      JSON.stringify({
-        x_column: "month",
-        y_column: "sales",
-        group_column: "product",
-        title: "Sales",
-      })
-    );
     const result = await handleToolCall(
-      "hy3_data_visualize",
-      { file_path: dataFile, chart_type: "stacked_bar", language: "en" },
-      client
+      "hy3_render_chart",
+      { file_path: dataFile, chart_type: "stacked_bar", x_column: "month", y_column: "sales", group_column: "product", language: "en" },
+      {} as Hy3Client
     );
 
     const match = result.content[0].text.match(/File path: (.+)/);
@@ -212,20 +179,17 @@ describe("integration tests", () => {
     expect(svg).toContain("<svg");
   });
 
-  it("hy3_data_visualize renders a bubble SVG", async () => {
+  it("hy3_render_chart renders a bubble SVG", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const dataFile = join(dir, "data.csv");
     await writeFile(dataFile, "x,y,size\n10,20,5\n15,25,10\n20,30,15\n");
 
     process.env.HY3_OUTPUT_DIR = join(dir, "output");
 
-    const client = createMockClient(
-      JSON.stringify({ x_column: "x", y_column: "y", size_column: "size", title: "Bubble" })
-    );
     const result = await handleToolCall(
-      "hy3_data_visualize",
-      { file_path: dataFile, chart_type: "bubble", language: "en" },
-      client
+      "hy3_render_chart",
+      { file_path: dataFile, chart_type: "bubble", x_column: "x", y_column: "y", size_column: "size", language: "en" },
+      {} as Hy3Client
     );
 
     const match = result.content[0].text.match(/File path: (.+)/);
@@ -235,20 +199,17 @@ describe("integration tests", () => {
     expect(svg).toContain("<svg");
   });
 
-  it("hy3_data_visualize renders a histogram SVG", async () => {
+  it("hy3_render_chart renders a histogram SVG", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const dataFile = join(dir, "data.csv");
     await writeFile(dataFile, "value\n10\n12\n15\n18\n20\n22\n25\n28\n30\n");
 
     process.env.HY3_OUTPUT_DIR = join(dir, "output");
 
-    const client = createMockClient(
-      JSON.stringify({ x_column: "value", y_column: "value", title: "Histogram" })
-    );
     const result = await handleToolCall(
-      "hy3_data_visualize",
-      { file_path: dataFile, chart_type: "histogram", language: "en" },
-      client
+      "hy3_render_chart",
+      { file_path: dataFile, chart_type: "histogram", x_column: "value", y_column: "value", language: "en" },
+      {} as Hy3Client
     );
 
     const match = result.content[0].text.match(/File path: (.+)/);
@@ -258,7 +219,7 @@ describe("integration tests", () => {
     expect(svg).toContain("<svg");
   });
 
-  it("hy3_data_report generates an HTML report with embedded chart", async () => {
+  it("hy3_analyze_report generates an HTML report with embedded chart", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const dataFile = join(dir, "data.csv");
     await writeFile(dataFile, "month,sales\nJan,100\nFeb,150\nMar,120\n");
@@ -286,7 +247,7 @@ describe("integration tests", () => {
     );
 
     const result = await handleToolCall(
-      "hy3_data_report",
+      "hy3_analyze_report",
       { file_paths: [dataFile], output_format: "html", language: "en" },
       client
     );
@@ -300,7 +261,7 @@ describe("integration tests", () => {
     expect(html).toContain("data:image/png;base64,");
   });
 
-  it("hy3_data_report generates a Markdown report", async () => {
+  it("hy3_analyze_report generates a Markdown report", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const dataFile = join(dir, "data.csv");
     await writeFile(dataFile, "month,sales\nJan,100\nFeb,150\nMar,120\n");
@@ -328,7 +289,7 @@ describe("integration tests", () => {
     );
 
     const result = await handleToolCall(
-      "hy3_data_report",
+      "hy3_analyze_report",
       { file_paths: [dataFile], output_format: "markdown", language: "en" },
       client
     );
@@ -342,7 +303,7 @@ describe("integration tests", () => {
     expect(md).toContain("data:image/png;base64,");
   });
 
-  it("hy3_data_report handles multiple files", async () => {
+  it("hy3_analyze_report handles multiple files", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const salesFile = join(dir, "sales.csv");
     const usersFile = join(dir, "users.csv");
@@ -384,7 +345,7 @@ describe("integration tests", () => {
     );
 
     const result = await handleToolCall(
-      "hy3_data_report",
+      "hy3_analyze_report",
       { file_paths: [salesFile, usersFile], output_format: "html", language: "en" },
       client
     );
@@ -398,20 +359,17 @@ describe("integration tests", () => {
     expect((html.match(/data:image\/png;base64,/g) || []).length).toBe(2);
   });
 
-  it("hy3_data_visualize renders a 3D bar chart", async () => {
+  it("hy3_render_chart renders a 3D bar chart", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const dataFile = join(dir, "data.csv");
     await writeFile(dataFile, "month,sales\nJan,100\nFeb,150\nMar,120\n");
 
     process.env.HY3_OUTPUT_DIR = join(dir, "output");
 
-    const client = createMockClient(
-      JSON.stringify({ x_column: "month", y_column: "sales", title: "3D Sales" })
-    );
     const result = await handleToolCall(
-      "hy3_data_visualize",
-      { file_path: dataFile, chart_type: "bar3d", language: "en" },
-      client
+      "hy3_render_chart",
+      { file_path: dataFile, chart_type: "bar3d", x_column: "month", y_column: "sales", language: "en" },
+      {} as Hy3Client
     );
 
     const match = result.content[0].text.match(/File path: (.+)/);
@@ -419,23 +377,20 @@ describe("integration tests", () => {
     const svgPath = match![1].trim();
     const svg = await readFile(svgPath, "utf-8");
     expect(svg).toContain("<svg");
-    expect(svg).toContain("3D Sales");
+    expect(svg).toContain("Data Chart");
   });
 
-  it("hy3_data_visualize renders a 3D scatter chart", async () => {
+  it("hy3_render_chart renders a 3D scatter chart", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const dataFile = join(dir, "data.csv");
     await writeFile(dataFile, "x,y,z\n10,20,5\n15,25,10\n20,30,15\n");
 
     process.env.HY3_OUTPUT_DIR = join(dir, "output");
 
-    const client = createMockClient(
-      JSON.stringify({ x_column: "x", y_column: "y", z_column: "z", title: "3D Scatter" })
-    );
     const result = await handleToolCall(
-      "hy3_data_visualize",
-      { file_path: dataFile, chart_type: "scatter3d", language: "en" },
-      client
+      "hy3_render_chart",
+      { file_path: dataFile, chart_type: "scatter3d", x_column: "x", y_column: "y", z_column: "z", language: "en" },
+      {} as Hy3Client
     );
 
     const match = result.content[0].text.match(/File path: (.+)/);
@@ -443,28 +398,20 @@ describe("integration tests", () => {
     const svgPath = match![1].trim();
     const svg = await readFile(svgPath, "utf-8");
     expect(svg).toContain("<svg");
-    expect(svg).toContain("3D Scatter");
+    expect(svg).toContain("Data Chart");
   });
 
-  it("hy3_data_visualize renders a dual-axis chart", async () => {
+  it("hy3_render_chart renders a dual-axis chart", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-data-mcp-"));
     const dataFile = join(dir, "data.csv");
     await writeFile(dataFile, "month,sales,profit\nJan,100,20\nFeb,150,35\nMar,120,28\n");
 
     process.env.HY3_OUTPUT_DIR = join(dir, "output");
 
-    const client = createMockClient(
-      JSON.stringify({
-        x_column: "month",
-        y_column: "sales",
-        value_column: "profit",
-        title: "Sales vs Profit",
-      })
-    );
     const result = await handleToolCall(
-      "hy3_data_visualize",
-      { file_path: dataFile, chart_type: "dual_axis", language: "en" },
-      client
+      "hy3_render_chart",
+      { file_path: dataFile, chart_type: "dual_axis", x_column: "month", y_column: "sales", value_column: "profit", language: "en" },
+      {} as Hy3Client
     );
 
     const match = result.content[0].text.match(/File path: (.+)/);
@@ -472,6 +419,6 @@ describe("integration tests", () => {
     const svgPath = match![1].trim();
     const svg = await readFile(svgPath, "utf-8");
     expect(svg).toContain("<svg");
-    expect(svg).toContain("Sales vs Profit");
+    expect(svg).toContain("Data Chart");
   });
 });

@@ -17,15 +17,15 @@ function createMockClient(response = "mocked response") {
 }
 
 describe("handleToolCall", () => {
-  it("routes hy3_data_insight and returns text content", async () => {
+  it("routes hy3_analyze and returns text content", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hy3-mcp-"));
     const file = join(dir, "data.csv");
     await writeFile(file, "name,value\nA,10\nB,20\n");
 
     const client = createMockClient('{"insight": "mock"}');
     const result = await handleToolCall(
-      "hy3_data_insight",
-      { file_path: file, question: "Summarize", language: "en" },
+      "hy3_analyze",
+      { data_file_path: file, question: "Summarize", language: "en" },
       client
     );
     expect(result.content).toHaveLength(1);

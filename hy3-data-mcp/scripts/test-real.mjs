@@ -79,11 +79,11 @@ async function main() {
   await new Promise((r) => setTimeout(r, 500));
 
   // Call a real tool
-  const testTool = process.env.TEST_TOOL || "hy3_data_insight";
+  const testTool = process.env.TEST_TOOL || "hy3_analyze";
   const toolArgs = process.env.TEST_ARGS
     ? JSON.parse(process.env.TEST_ARGS)
     : {
-        file_path: join(__dirname, "..", "sample_data", "sales.csv"),
+        data_file_path: join(__dirname, "..", "sample_data", "sales.csv"),
         question: "分析这份销售数据，找出前3个关键趋势和异常点",
         language: "zh",
       };

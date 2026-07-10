@@ -14,20 +14,15 @@ This PR introduces `hy3-data-mcp`, a TypeScript ESM MCP server that uses the Ten
 
 ### What’s included
 
-- **9 MCP tools** exposed via stdio:
-  - `hy3_data_visualize` — bar, line, area, pie, donut, rose, scatter, bubble, scatter_trend, radar, heatmap, funnel, sankey, treemap, sunburst, gauge, histogram, boxplot, candlestick, stacked_bar, grouped_bar, 3D charts (bar3d, scatter3d, line3d), and composite charts (line_bar, area_bar, dual_axis, stacked_area, grouped_line), each with 9 themes (Professional is the default), custom font support, and optional custom color overrides
-  - `hy3_wordcloud` — keyword extraction + word cloud
-  - `hy3_knowledge_graph` — entity/relation extraction + force-directed graph
-  - `hy3_design_dashboard` — designs a multi-file HTML dashboard layout and returns JSON
-  - `hy3_render_dashboard` — renders a dashboard design into HTML or PNG
-  - `hy3_data_report` — generate HTML/Markdown analysis reports with embedded charts
-  - `hy3_data_insight` — textual data analysis
-  - `hy3_extract_document` — extract raw text from PDF / DOCX / TXT / CSV / JSON / XLSX (no LLM)
-  - `hy3_analyze_text` — analyze extracted text with Hy3
+- **11 MCP tools** exposed via stdio, organized into Extract → Analyze → Plan → Render:
+  - **Extract:** `hy3_extract_document` — extract raw text/metadata from PDF / DOCX / TXT / CSV / JSON / XLSX (no LLM)
+  - **Analyze:** `hy3_analyze` — analyze text or structured data with Hy3; `hy3_analyze_report` — generate HTML/Markdown reports with embedded charts
+  - **Plan:** `hy3_plan_chart`, `hy3_plan_dashboard`, `hy3_plan_wordcloud`, `hy3_plan_knowledge_graph` — use Hy3 to produce JSON designs
+  - **Render:** `hy3_render_chart`, `hy3_render_wordcloud`, `hy3_render_knowledge_graph`, `hy3_render_dashboard` — render directly from explicit data + config (no LLM)
 - **Output formats:** `svg` (static), `html` (interactive / animated), `png` (rasterized via `sharp`)
 - **Document parsing:** PDF (`pdf2json`), DOCX (`mammoth`), XLSX/CSV/JSON (`xlsx` / `papaparse`)
 - **CLI installer:** `hdm init` detects CodeBuddy, Cursor, Cline, Roo Code, Continue, Codex CLI, OpenCode and writes the client config automatically
-- **Published on npm:** `hy3-data-mcp@0.1.6` — install with `npm install -g hy3-data-mcp` or run with `npx -y hy3-data-mcp`
+- **Packaged release:** `releases/hy3-data-mcp-0.3.0.tgz` — install with `npm install -g ./releases/hy3-data-mcp-0.3.0.tgz` or run with `hy3-data-mcp`
 - **Configuration:** all secrets via `.env` (`HY3_API_KEY`, `HY3_BASE_URL`, `HY3_MODEL`, `HY3_OUTPUT_DIR`); no hard-coded keys
 - **Demo:** `assets/demo.gif` generated from real API outputs
 
@@ -68,7 +63,7 @@ npm run test:real   # requires a valid HY3_API_KEY
 ```
 
 - `npm run build` compiles cleanly.
-- `npm test` runs 120+ unit/integration/smoke tests.
+- `npm test` runs 145 unit/integration/smoke tests.
 - `npm run test:coverage` generates a coverage report: `src/` coverage is ~95% statements / ~85% branches / ~96% functions (entry-point files excluded).
 - `npm run test:real` invokes every tool against the live Hy3 endpoint and writes files to `hy3-data-output/`.
 
@@ -122,9 +117,9 @@ hy3-data-mcp/
 ## Pre-submission checklist
 
 - [x] `npm run build` passes
-- [x] `npm test` passes (138/138)
-- [x] Real API smoke test passes for all 8 tools
-- [x] PNG output verified for `hy3_data_visualize` (including area, sankey, treemap, sunburst, gauge, boxplot, candlestick, bubble, histogram, stacked_bar), `hy3_wordcloud`, `hy3_knowledge_graph`, `hy3_design_dashboard` + `hy3_render_dashboard`, and `hy3_analyze_text`
+- [x] `npm test` passes (145/145)
+- [x] Real API smoke test passes for all LLM tools
+- [x] PNG/SVG output verified for `hy3_render_chart` (including area, sankey, treemap, sunburst, gauge, boxplot, candlestick, bubble, histogram, stacked_bar), `hy3_render_wordcloud`, `hy3_render_knowledge_graph`, `hy3_plan_dashboard` + `hy3_render_dashboard`, and `hy3_analyze`
 - [x] Theme, custom font, and custom color overrides verified across visualization tools
 - [x] README and README_CN updated with PNG examples
 - [x] `assets/demo.gif` generated from actual outputs

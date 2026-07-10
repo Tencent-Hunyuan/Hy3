@@ -10,10 +10,10 @@ import {
 } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
-export const designDashboardDefinition = {
-  name: "hy3_design_dashboard",
+export const planDashboardDefinition = {
+  name: "hy3_plan_dashboard",
   description:
-    "Design a dashboard layout from one or more CSV/JSON files. Hy3 chooses chart types, columns, and titles and returns a pure JSON design. Use the output with hy3_render_dashboard to actually render the dashboard.",
+    "Design a dashboard layout from structured data. Hy3 chooses chart types, columns, and titles and returns a pure JSON design. Use the output with hy3_render_dashboard to actually render the dashboard.",
   inputSchema: {
     type: "object" as const,
     properties: {
@@ -24,7 +24,11 @@ export const designDashboardDefinition = {
       },
       data: {
         type: "string",
-        description: "Inline data as a JSON array string, e.g. '[{\"month\":\"Jan\",\"sales\":100},...]'. Either this or `file_paths` is required.",
+        description: "Inline data as a JSON array string, e.g. '[{\"month\":\"Jan\",\"sales\":100},...]'. Either this or `file_paths`/`data_file_path` is required.",
+      },
+      data_file_path: {
+        type: "string",
+        description: "Path to a CSV/JSON/XLSX file. Either this or `data`/`file_paths` is required.",
       },
       title: {
         type: "string",
@@ -36,7 +40,12 @@ export const designDashboardDefinition = {
         description: "Preferred dashboard layout style.",
         default: "grid",
       },
-  
+      theme: {
+        type: "string",
+        enum: ["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"],
+        description: "Dashboard color theme.",
+        default: "nature",
+      },
       language: {
         type: "string",
         enum: ["zh", "en", "auto"],
@@ -48,17 +57,20 @@ export const designDashboardDefinition = {
   },
 };
 
-export const designDashboardSchema = z.object({
+export const planDashboardSchema = z.object({
   file_paths: z.array(z.string().min(1)).optional(),
+  data_file_path: z.string().optional(),
   data: z.string().optional(),
   title: z.string().optional(),
   layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).default("grid"),
+  theme: z.enum(["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"]).default("nature"),
   language: z.enum(["zh", "en", "auto"]).default("auto"),
 });
 
 export type DashboardDesign = {
   title: string;
   layout: "grid" | "rows" | "columns" | "hero" | "compact";
+  theme?: string;
   charts: Array<{
     file_index: number;
     chart_type: string;
@@ -72,17 +84,17 @@ export type DashboardDesign = {
   }>;
 };
 
-export async function runDesignDashboard(
+export async function runPlanDashboard(
   args: unknown,
   client: Hy3Client,
   onProgress?: ProgressReporter,
   signal?: AbortSignal,
   _onOutput?: (chunk: string) => void
 ): Promise<{ content: Array<{ type: "text"; text: string }> }> {
-  const { file_paths, data, title, layout, language } = designDashboardSchema.parse(args);
+  const { file_paths, data_file_path, data, title, layout, language, theme } = planDashboardSchema.parse(args);
 
-  if ((!file_paths || file_paths.length === 0) && (!data || data.trim().length === 0)) {
-    throw new Error("Either file_paths or data is required");
+  if ((!file_paths || file_paths.length === 0) && !data_file_path && (!data || data.trim().length === 0)) {
+    throw new Error("One of file_paths, data_file_path, or data is required");
   }
 
   await onProgress?.(10, 100);
@@ -90,6 +102,9 @@ export async function runDesignDashboard(
   const tables: { path: string; table: DataTable }[] = [];
   if (data) {
     tables.push({ path: "<inline-data>", table: parseInlineData(data) });
+  }
+  if (data_file_path) {
+    tables.push({ path: data_file_path, table: await loadDataTable(data_file_path) });
   }
   for (const path of file_paths ?? []) {
     tables.push({ path, table: await loadDataTable(path) });
@@ -130,6 +145,7 @@ export async function runDesignDashboard(
 
   if (title) design.title = title;
   if (!design.layout) design.layout = layout;
+  if (!design.theme) design.theme = theme;
   await onProgress?.(100, 100);
 
   return { content: [{ type: "text", text: JSON.stringify(design, null, 2) }] };
