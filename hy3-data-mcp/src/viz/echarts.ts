@@ -671,19 +671,37 @@ function applyChartConfigOverrides(
 ): echarts.EChartsOption {
   const opt = { ...option } as Record<string, unknown>;
 
+  const title = (opt.title as Record<string, unknown>) || {};
+  opt.title = { ...title, left: "center", top: 8 };
+
   if (config.subtitle) {
-    const title = (opt.title as Record<string, unknown>) || {};
-    opt.title = { ...title, subtext: config.subtitle };
+    opt.title = { ...(opt.title as Record<string, unknown>), subtext: config.subtitle };
   }
 
-  if (config.legend_position) {
+  const legend = (opt.legend as Record<string, unknown>) || {};
+  const hasLegendVerticalPos =
+    legend.top !== undefined ||
+    legend.bottom !== undefined ||
+    legend.left !== undefined ||
+    legend.right !== undefined;
+
+  if (config.legend_position === "top" || (!config.legend_position && !hasLegendVerticalPos)) {
+    const legendTop = config.subtitle ? 52 : 36;
+    opt.legend = { ...legend, top: legendTop };
+  } else if (config.legend_position) {
     const positions: Record<string, Record<string, unknown>> = {
-      top: { top: 24 },
       bottom: { bottom: 0 },
       left: { left: 0, orient: "vertical" },
       right: { right: 0, orient: "vertical" },
     };
-    opt.legend = { ...(opt.legend as Record<string, unknown>), ...positions[config.legend_position] };
+    opt.legend = { ...legend, ...positions[config.legend_position] };
+  }
+
+  if ((opt.legend as Record<string, unknown>)?.top !== undefined) {
+    const grid = (opt.grid as Record<string, unknown>) || {};
+    if (grid.top === undefined) {
+      opt.grid = { ...grid, top: 90, containLabel: true };
+    }
   }
 
   if (config.show_grid === false) {
