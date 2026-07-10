@@ -1,0 +1,13 @@
+state/
+index/
+visualizations/
+queue/
+crdt/sync/
+exports/
+secrets/
+events/
+knowledge/raw/
+knowledge/ratings/
+knowledge/usage/
+*.sqlite
+*.db

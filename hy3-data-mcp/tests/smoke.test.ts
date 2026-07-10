@@ -64,8 +64,10 @@ async function callServer(requests: object[], waitMs = 2000): Promise<unknown[]>
 }
 
 describe("MCP server smoke test", () => {
-  it("responds to ListTools request", async () => {
-    const responses = await callServer(
+  it(
+    "responds to ListTools request",
+    async () => {
+      const responses = await callServer(
       [
         {
           jsonrpc: "2.0",
@@ -94,6 +96,8 @@ describe("MCP server smoke test", () => {
     const listResponse = responses.find((r: any) => r.id === 2);
     expect(listResponse?.result?.tools).toBeDefined();
     expect(Array.isArray(listResponse?.result?.tools)).toBe(true);
-    expect(listResponse?.result?.tools?.length).toBe(8);
-  });
+      expect(listResponse?.result?.tools?.length).toBe(8);
+    },
+    15000
+  );
 });

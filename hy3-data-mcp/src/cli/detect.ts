@@ -70,11 +70,8 @@ const CLIENT_CANDIDATES: Candidate[] = [
     id: "continue",
     name: "Continue",
     command: "continue",
-    getPaths: (root) => [
-      join(root, ".continue", "config.json"),
-      home(".continue", "config.json"),
-    ],
-    getDefaultPath: (root) => join(root, ".continue", "config.json"),
+    getPaths: () => [home(".continue", "config.json")],
+    getDefaultPath: () => home(".continue", "config.json"),
     scope: "global",
     format: "json",
   },
@@ -91,7 +88,7 @@ const CLIENT_CANDIDATES: Candidate[] = [
     id: "claude",
     name: "Claude Code",
     command: "claude",
-    getPaths: (root) => [join(root, ".mcp.json"), home(".claude.json")],
+    getPaths: (root) => [join(root, ".mcp.json")],
     getDefaultPath: (root) => join(root, ".mcp.json"),
     scope: "project",
     format: "json",
@@ -275,7 +272,7 @@ export function getDefaultConfigPath(clientId: string): string {
     case "codex":
       return home(".codex", "config.toml");
     case "claude":
-      return home(".claude.json");
+      return join(root, ".mcp.json");
     case "opencode":
       return openCodeConfigPath();
     default:
