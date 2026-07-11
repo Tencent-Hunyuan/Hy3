@@ -111,6 +111,8 @@ Model usefulness is not fully captured by benchmarks. Based on extensive product
 
 ## Quickstart
 
+See [`docs/quickstart.md`](docs/quickstart.md) for the complete OpenAI-compatible API guide and runnable Python examples.
+
 Deploy Hy3 with [vLLM](#vllm) or [SGLang](#sglang) first, then call the OpenAI-compatible API:
 
 ```python
