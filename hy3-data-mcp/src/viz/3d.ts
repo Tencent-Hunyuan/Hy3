@@ -414,6 +414,11 @@ export function render3dWebGlHtml(
       beta: 40,
       minDistance: 150,
       maxDistance: 600,
+      rotateMouseButton: "left",
+      panMouseButton: "middle",
+      zoomSensitivity: 1,
+      panSensitivity: 1,
+      rotateSensitivity: 1,
     },
     light: {
       main: { intensity: 1.2, shadow: true },

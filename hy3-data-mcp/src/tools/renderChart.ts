@@ -95,7 +95,7 @@ export const renderChartDefinition = {
       overrides: { type: "string", description: "JSON string merged into the generated ECharts option." },
       show_data_table: { type: "boolean", description: "Whether to append the source data table below the chart (HTML only).", default: false },
       enable_theme_switcher: { type: "boolean", description: "Whether to add a theme switcher dropdown to the HTML output.", default: false },
-      interactive_3d: { type: "boolean", description: "For 3D chart types, render an interactive WebGL scene (HTML output only).", default: false },
+      interactive_3d: { type: "boolean", description: "For 3D chart types, render an interactive WebGL scene (HTML output only). Defaults to true for 3D charts.", default: true },
       language: { type: "string", enum: ["zh", "en", "auto"], default: "auto" },
     },
     required: ["chart_type", "x_column", "y_column"],
@@ -149,7 +149,7 @@ export const renderChartSchema = z.object({
   overrides: z.string().optional(),
   show_data_table: z.boolean().optional(),
   enable_theme_switcher: z.boolean().optional(),
-  interactive_3d: z.boolean().optional(),
+  interactive_3d: z.boolean().default(true),
   language: z.enum(["zh", "en", "auto"]).default("auto"),
 });
 

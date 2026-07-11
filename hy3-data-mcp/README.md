@@ -33,7 +33,7 @@ Beyond the standard MCP charting workflow, this fork adds a set of practical, us
 - **Custom output filenames** — All render and report tools accept `output_filename`, so generated files can have meaningful names instead of random timestamps.
 - **Source data table under charts** — `hy3_render_chart(..., show_data_table: true)` appends the raw data table to the HTML output for easy reference.
 - **HTML theme switcher** — Switch themes interactively for single charts (`enable_theme_switcher`) and dashboards (`enable_theme_switcher`) without re-rendering.
-- **Interactive WebGL 3D** — `bar3d`, `scatter3d`, and `line3d` can render as real WebGL scenes via ECharts GL when `interactive_3d: true` is set.
+- **Interactive WebGL 3D** — `bar3d`, `scatter3d`, and `line3d` default to real WebGL scenes via ECharts GL (mouse drag to rotate, wheel to zoom, middle button to pan). Set `interactive_3d: false` to fall back to a static SVG pseudo-3D projection.
 - **DOCX table extraction** — `hy3_extract_document` extracts tables from both PDF and DOCX files when `extract_tables: true`.
 - **Statistical charts** — Native `violin` and `errorbar` chart types are rendered directly as SVG, no ECharts built-in required.
 - **Dashboard KPI cards** — HTML dashboards automatically show Total / Average / Max / Min cards at the top (`show_kpi`).
@@ -82,7 +82,7 @@ In short: **Hy3 thinks, the server draws.** Plan and Analyze tools are registere
 
 | Tool | What it does |
 | --- | --- |
-| `hy3_render_chart` | Render a single chart from explicit data + config. Adds `mark_point`, `mark_line`, `data_zoom`, `x_name`, `output_filename`, `show_data_table`, `enable_theme_switcher`, `interactive_3d`, and more. |
+| `hy3_render_chart` | Render a single chart from explicit data + config. Adds `mark_point`, `mark_line`, `data_zoom`, `x_name`, `output_filename`, `show_data_table`, `enable_theme_switcher`, `interactive_3d` (default `true` for 3D HTML), and more. |
 | `hy3_render_dashboard` | Render a dashboard design into an interactive HTML page or PNG composite. Adds `show_kpi`, `enable_theme_switcher`, `output_filename`. |
 | `hy3_render_wordcloud` | Render a word cloud from explicit words or raw text. |
 | `hy3_render_knowledge_graph` | Render a knowledge graph from explicit nodes and links. |
