@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Hy3Client } from "../client.js";
+import { languageSchema, outputFilenameSchema, rawLanguageProperty, rawOutputFilenameProperty } from "../schemas.js";
 import {
   askHy3,
   loadInputData,
@@ -7,6 +8,7 @@ import {
   resolveOutputFilename,
   sampleText,
   tableSummary,
+  validateDataTable,
   writeOutputFile,
 } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
@@ -33,13 +35,8 @@ export const analyzeDefinition = {
         description: "Output format.",
         default: "text",
       },
-      language: {
-        type: "string",
-        enum: ["zh", "en", "auto"],
-        description: "Language of the output. 'auto' detects from input.",
-        default: "auto",
-      },
-      output_filename: { type: "string", description: "Optional custom output file name (without extension)." },
+      ...rawLanguageProperty("Language of the output. 'auto' detects from input."),
+      output_filename: rawOutputFilenameProperty(),
     },
     required: [],
   },
@@ -52,8 +49,8 @@ export const analyzeSchema = z.object({
   file_path: z.string().optional(),
   question: z.string().default("Summarize and extract key insights"),
   output_format: z.enum(["text", "json", "html"]).default("text"),
-  language: z.enum(["zh", "en", "auto"]).default("auto"),
-  output_filename: z.string().optional(),
+  language: languageSchema,
+  output_filename: outputFilenameSchema,
 });
 
 export async function runAnalyze(
@@ -90,6 +87,7 @@ export async function runAnalyze(
   } else {
     mode = "data";
     const table = await loadInputData({ data, data_file_path, file_path });
+    validateDataTable(table);
     resolvedLanguage = resolveLanguage(language, question, table.raw);
     userContent =
       resolvedLanguage === "zh"
@@ -100,11 +98,11 @@ export async function runAnalyze(
   const system =
     resolvedLanguage === "zh"
       ? mode === "text"
-        ? `你是一位文档分析专家。请基于提供的内容完成用户指定的任务，给出结构清晰、重点突出的回答。如果内容不足以回答，请明确说明。当 output_format 为 json 时，必须返回合法 JSON；为 html 时，返回完整 HTML 页面；为 text 时，返回纯文本。`
-        : `你是一位数据分析专家。请基于提供的数据进行严谨分析，给出清晰的结论、关键指标、趋势和异常点。如果数据不足以回答，请明确说明。当 output_format 为 json 时，必须返回合法 JSON；为 html 时，返回完整 HTML 页面；为 text 时，返回纯文本。`
+        ? `你是一位文档分析专家。请基于提供的内容完成用户指定的任务，给出结构清晰、重点突出的回答。如果内容不足以回答，请明确说明。当 output_format 为 json 时，必须返回合法 JSON；为 html 时，返回完整 HTML 页面，要求正文使用不小于 16px、清晰可读的字体和足够对比度的深色文字（如 #1f2937），不要用浅灰色作为正文主色；为 text 时，返回纯文本。`
+        : `你是一位数据分析专家。请基于提供的数据进行严谨分析，给出清晰的结论、关键指标、趋势和异常点。如果数据不足以回答，请明确说明。当 output_format 为 json 时，必须返回合法 JSON；为 html 时，返回完整 HTML 页面，要求正文使用不小于 16px、清晰可读的字体和足够对比度的深色文字（如 #1f2937），不要用浅灰色作为正文主色；为 text 时，返回纯文本。`
       : mode === "text"
-      ? `You are a document-analysis expert. Complete the user's task based on the provided content. Give a well-structured, focused answer. State clearly if the content is insufficient. When output_format is json, return valid JSON only; when html, return a complete HTML page; when text, return plain text.`
-      : `You are a data-analysis expert. Analyze the provided data rigorously and give clear conclusions, key metrics, trends and anomalies. State clearly if the data is insufficient. When output_format is json, return valid JSON only; when html, return a complete HTML page; when text, return plain text.`;
+      ? `You are a document-analysis expert. Complete the user's task based on the provided content. Give a well-structured, focused answer. State clearly if the content is insufficient. When output_format is json, return valid JSON only; when html, return a complete HTML page with readable fonts (at least 16px), high-contrast dark body text (e.g. #1f2937), and avoid light gray as the main text color; when text, return plain text.`
+      : `You are a data-analysis expert. Analyze the provided data rigorously and give clear conclusions, key metrics, trends and anomalies. State clearly if the data is insufficient. When output_format is json, return valid JSON only; when html, return a complete HTML page with readable fonts (at least 16px), high-contrast dark body text (e.g. #1f2937), and avoid light gray as the main text color; when text, return plain text.`;
 
   const outputFormatHint =
     resolvedLanguage === "zh" ? `输出格式要求：${output_format}` : `Required output format: ${output_format}`;
@@ -148,15 +146,30 @@ function escapeHtml(text: string): string {
 
 function normalizeHtmlAnswer(answer: string, question: string, language: "zh" | "en"): string {
   if (isCompleteHtml(answer)) {
-    return answer;
+    return injectReadabilityStyles(answer);
   }
   if (looksLikeEncodedHtml(answer)) {
     const decoded = decodeHtmlEntities(answer);
     if (isCompleteHtml(decoded)) {
-      return decoded;
+      return injectReadabilityStyles(decoded);
     }
   }
   return wrapHtmlAnswer(answer, question, language);
+}
+
+function injectReadabilityStyles(html: string): string {
+  const style = `<style>
+  body { font-size: 16px; line-height: 1.7; font-weight: 400; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", "PingFang SC", sans-serif; }
+  body:not([style*="color"]) { color: #1f2937; }
+  p:not([style*="color"]), li:not([style*="color"]), h1:not([style*="color"]), h2:not([style*="color"]), h3:not([style*="color"]), h4:not([style*="color"]), h5:not([style*="color"]), h6:not([style*="color"]) { color: #1f2937; }
+</style>`;
+  if (html.includes("</head>")) {
+    return html.replace("</head>", `${style}\n</head>`);
+  }
+  if (/<html[^>]*>/i.test(html)) {
+    return html.replace(/<html[^>]*>/i, (match) => `${match}\n<head>${style}</head>`);
+  }
+  return `<!DOCTYPE html>\n<html>\n<head>${style}</head>\n<body>${html}</body>\n</html>`;
 }
 
 function wrapHtmlAnswer(answer: string, question: string, language: "zh" | "en"): string {
@@ -166,7 +179,7 @@ function wrapHtmlAnswer(answer: string, question: string, language: "zh" | "en")
   <meta charset="UTF-8">
   <title>${escapeHtml(question)}</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 800px; margin: 40px auto; padding: 24px; background: #f6f8fa; color: #24292f; line-height: 1.6; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", "PingFang SC", sans-serif; max-width: 800px; margin: 40px auto; padding: 24px; background: #f6f8fa; color: #24292f; line-height: 1.7; font-size: 16px; font-weight: 400; }
     .container { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     h1 { font-size: 22px; margin-bottom: 16px; }
     pre { background: #f6f8fa; padding: 12px; border-radius: 6px; overflow-x: auto; }

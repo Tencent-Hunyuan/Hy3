@@ -6,12 +6,17 @@ import { handleToolCall } from "../src/tools/index.js";
 import { Hy3Client } from "../src/client.js";
 
 function createMockClient(response = "mocked response") {
+  const chatImpl = async (_messages: unknown, options?: { onToken?: (token: string) => void }) => {
+    if (options?.onToken) {
+      options.onToken(response);
+    }
+    return response;
+  };
   return {
-    chat: vi.fn().mockImplementation(async (_messages, options) => {
-      if (options?.onToken) {
-        options.onToken(response);
-      }
-      return response;
+    chat: vi.fn().mockImplementation(chatImpl),
+    chatWithUsage: vi.fn().mockImplementation(async (_messages, options) => {
+      const content = await chatImpl(_messages, options);
+      return { content, usage: { prompt_tokens: 10, completion_tokens: 10, total_tokens: 20 } };
     }),
   } as unknown as Hy3Client;
 }
@@ -157,6 +162,7 @@ describe("integration tests", () => {
     const svgPath = match![1].trim();
     const svg = await readFile(svgPath, "utf-8");
     expect(svg).toContain("<svg");
+    expect(svg).toContain("ecmeta_data_index");
   });
 
   it("hy3_render_chart renders a stacked bar SVG", async () => {

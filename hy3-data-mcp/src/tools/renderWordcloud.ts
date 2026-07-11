@@ -3,6 +3,19 @@ import { extname } from "path";
 import { renderWordcloudSvg } from "../viz/wordcloud.js";
 import { svgToPng } from "../viz/png.js";
 import { getTheme } from "../viz/themes.js";
+import {
+  colorOverrideSchema,
+  dimensionsSchema,
+  languageSchema,
+  outputFilenameSchema,
+  rawColorOverrideProperties,
+  rawDimensionsProperties,
+  rawLanguageProperty,
+  rawOutputFilenameProperty,
+  rawThemeProperty,
+  themeSchema,
+} from "../schemas.js";
+import { safeJsonParse } from "../llm-utils.js";
 import { buildThemeOverrides, loadDataTable, loadInputText, resolveLanguage, resolveOutputFilename, selectTextColumn, writeOutputFile } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
@@ -21,22 +34,18 @@ export const renderWordcloudDefinition = {
       file_path: { type: "string", description: "Path to a text file; keywords will be counted automatically." },
       max_words: { type: "number", description: "Maximum number of words.", default: 60 },
       output_format: { type: "string", enum: ["svg", "html", "png"], default: "svg" },
-      output_filename: { type: "string", description: "Optional custom output file name (without extension)." },
-      width: { type: "number", default: 800 },
-      height: { type: "number", default: 500 },
-      theme: { type: "string", enum: ["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"], default: "nature" },
+      output_filename: rawOutputFilenameProperty(),
+      ...rawDimensionsProperties(800, 500),
+      ...rawThemeProperty("nature"),
       font_family: { type: "string" },
-      background_color: { type: "string" },
-      text_color: { type: "string" },
-      axis_color: { type: "string" },
-      split_line_color: { type: "string" },
-      palette: { type: "array", items: { type: "string" } },
-      primary_color: { type: "string" },
-      language: { type: "string", enum: ["zh", "en", "auto"], default: "auto" },
+      ...rawColorOverrideProperties,
+      ...rawLanguageProperty(),
     },
     required: [],
   },
 };
+
+const wordItemSchema = z.object({ word: z.string().min(1), weight: z.number() });
 
 export const renderWordcloudSchema = z.object({
   words: z.string().optional(),
@@ -44,18 +53,12 @@ export const renderWordcloudSchema = z.object({
   file_path: z.string().optional(),
   max_words: z.number().int().min(5).max(200).default(60),
   output_format: z.enum(["svg", "html", "png"]).default("svg"),
-  output_filename: z.string().optional(),
-  width: z.number().int().min(200).max(2000).default(800),
-  height: z.number().int().min(200).max(2000).default(500),
-  theme: z.enum(["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"]).default("nature"),
+  output_filename: outputFilenameSchema,
+  ...dimensionsSchema(800, 500),
+  theme: themeSchema("nature"),
   font_family: z.string().optional(),
-  background_color: z.string().optional(),
-  text_color: z.string().optional(),
-  axis_color: z.string().optional(),
-  split_line_color: z.string().optional(),
-  palette: z.array(z.string()).optional(),
-  primary_color: z.string().optional(),
-  language: z.enum(["zh", "en", "auto"]).default("auto"),
+  ...colorOverrideSchema.shape,
+  language: languageSchema,
 });
 
 function fallbackWords(
@@ -144,7 +147,8 @@ export async function runRenderWordcloud(
   let resolvedLanguage: "zh" | "en";
 
   if (words) {
-    wordList = JSON.parse(words);
+    const parsed = safeJsonParse(words);
+    wordList = z.array(wordItemSchema).parse(parsed);
     resolvedLanguage = resolveLanguage(language);
   } else {
     let rawText: string;

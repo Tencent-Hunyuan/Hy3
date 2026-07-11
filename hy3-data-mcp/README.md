@@ -142,7 +142,7 @@ All screenshots are rendered with the **Professional** theme using the bundled s
 Install the local release tarball globally:
 
 ```bash
-npm install -g ./releases/hy3-data-mcp-0.3.0.tgz
+npm install -g ./releases/hy3-data-mcp-0.3.7.tgz
 ```
 
 Start the server:
@@ -749,6 +749,59 @@ Run `node scripts/generate-sample-data.mjs` to regenerate the CSV datasets deter
 
 ---
 
+## End-to-End Example
+
+Analyze the bundled e-commerce sales data and generate a complete HTML report:
+
+```bash
+# 1. Install and start the MCP server (see Quick Start above)
+# 2. Call hy3_analyze_report with sample_data/complex/ecommerce_sales.csv
+# 3. The report will be written to hy3-data-output/<YYYY-MM-DD>/html/data_report_<timestamp>.html
+```
+
+Or use the lower-level Plan → Render pipeline:
+
+1. `hy3_plan_chart` on `sample_data/complex/ecommerce_sales.csv` to get a JSON chart plan.
+2. `hy3_render_chart` with the plan fields to produce an SVG/PNG/HTML file.
+3. `hy3_render_dashboard` with a `hy3_plan_dashboard` design to combine multiple charts.
+
+All output files are organized under `hy3-data-output/<YYYY-MM-DD>/<ext>/` by date and file type.
+
+---
+
+## Parameter Quick Reference
+
+| Parameter | Applies to | Notes |
+|---|---|---|
+| `data` / `data_file_path` / `file_path` | Most tools | Provide exactly one source. `data` is a JSON array string; `data_file_path`/`file_path` point to CSV/JSON/XLSX. |
+| `theme` | Render + report tools | One of `light`, `dark`, `colorful`, `minimal`, `professional`, `premium`, `retro`, `science`, `nature`. |
+| `language` | All LLM tools | `zh`, `en`, or `auto`. Auto detects from the question or data. |
+| `output_format` | `hy3_render_chart`, `hy3_render_wordcloud`, `hy3_render_knowledge_graph` | `svg` (default), `html`, or `png`. |
+| `output_filename` | All writers | Optional base name; extension is added automatically. |
+| `width` / `height` | Render tools + report | Range 200–2000 pixels. |
+| `chart_type` | `hy3_render_chart` | 30+ supported types; required columns vary (see error messages). |
+
+---
+
+## Troubleshooting
+
+**MCP client times out on long analysis**
+- `hy3_analyze`, `hy3_analyze_report`, and all Plan tools support async task execution. The server returns a `taskId` and streams progress; synchronous clients poll automatically.
+
+**"Missing required column(s)" error**
+- Check the error message for available columns. For composite charts (`dual_axis`, `line_bar`, etc.) make sure `value_column` is supplied; for `bubble` supply `size_column`; for 3D charts supply `z_column`.
+
+**Model returns malformed JSON**
+- Plan tools now retry internally and validate the model output against a schema. If parsing still fails, a fallback plan is returned with a `_warning` field explaining the situation.
+
+**Output files pile up in one directory**
+- Since v0.3.4, outputs are organized as `hy3-data-output/<YYYY-MM-DD>/<ext>/filename`.
+
+**PNG rendering fails**
+- Ensure Node.js ≥ 18 and that `@napi-rs/canvas` installed its native binary. On Windows, a clean `npm install` usually resolves canvas issues.
+
+---
+
 ## Development
 
 ```bash
@@ -761,7 +814,7 @@ npm run test:coverage   # generate coverage report
 npm run test:real       # requires HY3_API_KEY
 ```
 
-The test suite contains **145 unit, integration, and smoke tests** covering documents, utilities, themes, CLI config, dashboard rendering, client setup, streaming LLM output, async task execution, all visualization tools, chart rendering, and the MCP server handshake. As of the latest run, code coverage for the `src/` directory is approximately **95% statements / 85% branches / 96% functions** (overall ~92% statements when including uncovered helper scripts).
+The test suite contains **168 unit, integration, and smoke tests** covering documents, utilities, themes, CLI config, dashboard rendering, client setup, streaming LLM output, async task execution, all visualization tools, chart rendering, and the MCP server handshake.
 
 Debug with the [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
 

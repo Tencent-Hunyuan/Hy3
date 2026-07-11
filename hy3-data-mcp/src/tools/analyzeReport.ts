@@ -2,8 +2,21 @@ import { z } from "zod";
 import { basename } from "node:path";
 
 import { Hy3Client } from "../client.js";
+import { askHy3Json } from "../llm-utils.js";
 import {
-  askHy3,
+  colorOverrideSchema,
+  dimensionsSchema,
+  languageSchema,
+  outputFilenameSchema,
+  rawColorOverrideProperties,
+  rawDimensionsProperties,
+  rawLanguageProperty,
+  rawOutputFilenameProperty,
+  rawThemeProperty,
+  themeSchema,
+} from "../schemas.js";
+import {
+  assertColumnsExist,
   buildThemeOverrides,
   DataTable,
   loadDataTable,
@@ -11,6 +24,7 @@ import {
   resolveLanguage,
   resolveOutputFilename,
   tableSummary,
+  validateDataTable,
   writeOutputFile,
 } from "../utils.js";
 import { renderChartSvg } from "../viz/echarts.js";
@@ -59,50 +73,12 @@ export const analyzeReportDefinition = {
         description: "Maximum number of charts to include in the report.",
         default: 4,
       },
-      width: {
-        type: "number",
-        description: "Chart width in pixels.",
-        default: 800,
-      },
-      height: {
-        type: "number",
-        description: "Chart height in pixels.",
-        default: 420,
-      },
-      theme: {
-        type: "string",
-        enum: [
-          "light",
-          "dark",
-          "colorful",
-          "minimal",
-          "professional",
-          "premium",
-          "retro",
-          "science",
-          "nature",
-        ],
-        description: "Color theme for charts.",
-        default: "professional",
-      },
+      ...rawDimensionsProperties(800, 420),
+      ...rawThemeProperty("professional", "Color theme for charts."),
       font_family: { type: "string", description: "Custom font family for charts and report." },
-      background_color: { type: "string", description: "Optional chart background color hex." },
-      text_color: { type: "string", description: "Optional chart text color hex." },
-      axis_color: { type: "string", description: "Optional chart axis color hex." },
-      split_line_color: { type: "string", description: "Optional chart grid line color hex." },
-      palette: {
-        type: "array",
-        items: { type: "string" },
-        description: "Optional custom color palette as an array of hex colors.",
-      },
-      primary_color: { type: "string", description: "Optional primary chart color hex." },
-      language: {
-        type: "string",
-        enum: ["zh", "en", "auto"],
-        description: "Language of the report. 'auto' detects from the question or data.",
-        default: "auto",
-      },
-      output_filename: { type: "string", description: "Optional custom output file name (without extension)." },
+      ...rawColorOverrideProperties,
+      ...rawLanguageProperty("Language of the report. 'auto' detects from the question or data."),
+      output_filename: rawOutputFilenameProperty(),
     },
     required: [],
   },
@@ -116,30 +92,12 @@ export const analyzeReportSchema = z.object({
   question: z.string().default("Generate a comprehensive data analysis report"),
   output_format: z.enum(["html", "markdown"]).default("html"),
   max_charts: z.number().int().min(1).max(8).default(4),
-  width: z.number().int().min(200).max(2000).default(800),
-  height: z.number().int().min(200).max(2000).default(420),
-  theme: z
-    .enum([
-      "light",
-      "dark",
-      "colorful",
-      "minimal",
-      "professional",
-      "premium",
-      "retro",
-      "science",
-      "nature",
-    ])
-    .default("professional"),
+  ...dimensionsSchema(800, 420),
+  theme: themeSchema("professional"),
   font_family: z.string().optional(),
-  background_color: z.string().optional(),
-  text_color: z.string().optional(),
-  axis_color: z.string().optional(),
-  split_line_color: z.string().optional(),
-  palette: z.array(z.string()).optional(),
-  primary_color: z.string().optional(),
-  language: z.enum(["zh", "en", "auto"]).default("auto"),
-  output_filename: z.string().optional(),
+  ...colorOverrideSchema.shape,
+  language: languageSchema,
+  output_filename: outputFilenameSchema,
 });
 
 interface ReportPlan {
@@ -165,7 +123,37 @@ interface ReportPlan {
     };
   }>;
   conclusions: string;
+  _warning?: string;
 }
+
+const reportPlanOutputSchema = z.object({
+  title: z.string().optional(),
+  overview: z.string().optional(),
+  sections: z.array(
+    z.object({
+      heading: z.string().optional(),
+      text: z.string().optional(),
+      chart: z
+        .object({
+          file_path: z.string().optional(),
+          chart_type: z.string(),
+          x_column: z.string().optional(),
+          y_column: z.string().optional(),
+          value_column: z.string().optional(),
+          open_column: z.string().optional(),
+          close_column: z.string().optional(),
+          high_column: z.string().optional(),
+          low_column: z.string().optional(),
+          group_column: z.string().optional(),
+          size_column: z.string().optional(),
+          z_column: z.string().optional(),
+          title: z.string().optional(),
+        })
+        .optional(),
+    })
+  ),
+  conclusions: z.string().optional(),
+});
 
 const SUPPORTED_CHART_TYPES: ChartType[] = [
   "bar",
@@ -296,9 +284,7 @@ export async function runAnalyzeReport(
     tables.push(await loadDataTable(path));
     inputPaths.push(path);
   }
-  if (tables.every((t) => t.columns.length === 0)) {
-    throw new Error("No columns found in the provided data files.");
-  }
+  tables.forEach((t) => validateDataTable(t));
   const firstTable = tables[0];
 
   const themeOverrides = buildThemeOverrides(
@@ -377,8 +363,33 @@ Requirements: at most ${max_charts} charts; each chart must only use columns tha
   let plan: ReportPlan;
   try {
     await onProgress?.(30, 100);
-    const answer = await askHy3(client, system, user, signal, onOutput);
-    plan = JSON.parse(answer) as ReportPlan;
+    const parsed = await askHy3Json(client, system, user, reportPlanOutputSchema, { signal, onToken: onOutput });
+    plan = {
+      title: parsed.data.title || (resolvedLanguage === "zh" ? "数据分析报告" : "Data Analysis Report"),
+      overview: parsed.data.overview || "",
+      sections: (parsed.data.sections || []).map((section) => ({
+        heading: section.heading || (resolvedLanguage === "zh" ? "分析" : "Analysis"),
+        text: section.text || "",
+        chart: section.chart
+          ? {
+              file_path: section.chart.file_path,
+              chart_type: section.chart.chart_type as ChartType,
+              x_column: section.chart.x_column || firstTable.columns[0],
+              y_column: section.chart.y_column || firstTable.columns[1] || firstTable.columns[0],
+              value_column: section.chart.value_column,
+              open_column: section.chart.open_column,
+              close_column: section.chart.close_column,
+              high_column: section.chart.high_column,
+              low_column: section.chart.low_column,
+              group_column: section.chart.group_column,
+              size_column: section.chart.size_column,
+              z_column: section.chart.z_column,
+              title: section.chart.title || (resolvedLanguage === "zh" ? "数据图表" : "Data Chart"),
+            }
+          : undefined,
+      })),
+      conclusions: parsed.data.conclusions || "",
+    };
   } catch {
     plan = {
       title: resolvedLanguage === "zh" ? "数据分析报告" : "Data Analysis Report",
@@ -396,6 +407,7 @@ Requirements: at most ${max_charts} charts; each chart must only use columns tha
         },
       ],
       conclusions: "",
+      _warning: resolvedLanguage === "zh" ? "模型输出解析失败，已使用默认报告方案。" : "Model output could not be parsed; using default report plan.",
     };
   }
 
@@ -425,6 +437,11 @@ Requirements: at most ${max_charts} charts; each chart must only use columns tha
           const idx = inputPaths.findIndex((p) => p === section.chart!.file_path);
           if (idx >= 0) chartTable = tables[idx];
         }
+        assertColumnsExist(
+          chartTable,
+          [section.chart.x_column, section.chart.y_column, section.chart.value_column, section.chart.group_column, section.chart.size_column, section.chart.z_column],
+          `Report chart '${section.chart.title}'`
+        );
         const svg = renderChartSvg(section.chart.chart_type, chartTable, cfg as any);
         const png = await svgToPng(svg, width, height);
         const base64 = Buffer.from(png).toString("base64");
@@ -506,11 +523,13 @@ function buildHtmlReport(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(plan.title)}</title>
   <style>
-    body { font-family: ${theme.fontFamily}; margin: 0; padding: 32px; background: ${theme.backgroundColor}; color: ${theme.textColor}; line-height: 1.6; }
+    body { font-family: ${theme.fontFamily}; margin: 0; padding: 32px; background: ${theme.backgroundColor}; color: ${theme.textColor}; line-height: 1.7; font-size: 16px; font-weight: 400; }
     .container { max-width: 900px; margin: 0 auto; background: ${theme.backgroundColor}; }
-    h1 { font-size: 28px; margin-bottom: 8px; }
+    h1 { font-size: 28px; margin-bottom: 8px; font-weight: 600; }
+    h2 { font-weight: 600; }
     .meta { color: ${theme.axisColor}; font-size: 14px; margin-bottom: 24px; }
     .overview, .conclusions { background: rgba(0,0,0,0.03); border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+    p, li { font-size: 16px; }
   </style>
 </head>
 <body>

@@ -13,6 +13,8 @@ import {
   writeOutputFile,
   selectTextColumn,
   resolveOutputFilename,
+  validateDataTable,
+  assertColumnsExist,
 } from "../src/utils.js";
 
 describe("parseData", () => {
@@ -171,9 +173,41 @@ describe("writeOutputFile", () => {
 
   it("writes content to the output directory and returns the absolute path", async () => {
     const filePath = await writeOutputFile("charts/test.svg", "<svg></svg>");
-    expect(filePath).toBe(join(tempDir, "charts", "test.svg"));
+    const now = new Date();
+    const dateFolder = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    expect(filePath).toBe(join(tempDir, dateFolder, "svg", "test.svg"));
     const content = await (await import("fs/promises")).readFile(filePath, "utf-8");
     expect(content).toBe("<svg></svg>");
+  });
+});
+
+describe("validateDataTable", () => {
+  it("throws for empty columns", () => {
+    expect(() => validateDataTable({ columns: [], rows: [], raw: "" })).toThrow("no columns");
+  });
+
+  it("throws for empty rows", () => {
+    expect(() => validateDataTable({ columns: ["a"], rows: [], raw: "a" })).toThrow("no rows");
+  });
+
+  it("throws when required columns are missing", () => {
+    expect(() =>
+      validateDataTable({ columns: ["a", "b"], rows: [{ a: 1, b: 2 }], raw: "" }, ["c"])
+    ).toThrow("Missing required column");
+  });
+
+  it("passes for valid table", () => {
+    expect(() =>
+      validateDataTable({ columns: ["a", "b"], rows: [{ a: 1, b: 2 }], raw: "" }, ["a"])
+    ).not.toThrow();
+  });
+});
+
+describe("assertColumnsExist", () => {
+  it("throws with available columns when a column is missing", () => {
+    const table = { columns: ["month", "sales"], rows: [{ month: "Jan", sales: 100 }], raw: "" };
+    expect(() => assertColumnsExist(table, ["month", "profit"], "Chart")).toThrow("profit");
+    expect(() => assertColumnsExist(table, ["month", "profit"], "Chart")).toThrow("month, sales");
   });
 });
 

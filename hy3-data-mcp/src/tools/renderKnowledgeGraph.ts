@@ -1,6 +1,17 @@
 import { z } from "zod";
 import { renderKnowledgeGraphHtml, renderKnowledgeGraphSvg } from "../viz/echarts.js";
 import { svgToPng } from "../viz/png.js";
+import {
+  colorOverrideSchema,
+  dimensionsSchema,
+  outputFilenameSchema,
+  rawColorOverrideProperties,
+  rawDimensionsProperties,
+  rawOutputFilenameProperty,
+  rawThemeProperty,
+  themeSchema,
+} from "../schemas.js";
+import { safeJsonParse } from "../llm-utils.js";
 import { buildThemeOverrides, resolveOutputFilename, writeOutputFile } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
@@ -21,38 +32,33 @@ export const renderKnowledgeGraphDefinition = {
       },
       title: { type: "string", default: "Knowledge Graph" },
       output_format: { type: "string", enum: ["svg", "html", "png"], default: "svg" },
-      output_filename: { type: "string", description: "Optional custom output file name (without extension)." },
-      width: { type: "number", default: 900 },
-      height: { type: "number", default: 600 },
-      theme: { type: "string", enum: ["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"], default: "nature" },
+      output_filename: rawOutputFilenameProperty(),
+      ...rawDimensionsProperties(900, 600),
+      ...rawThemeProperty("nature"),
       font_family: { type: "string" },
-      background_color: { type: "string" },
-      text_color: { type: "string" },
-      axis_color: { type: "string" },
-      split_line_color: { type: "string" },
-      palette: { type: "array", items: { type: "string" } },
-      primary_color: { type: "string" },
+      ...rawColorOverrideProperties,
     },
     required: ["nodes", "links"],
   },
 };
+
+const nodeSchema = z.object({ id: z.string().min(1), group: z.number().int().optional() });
+const linkSchema = z.object({
+  source: z.string().min(1),
+  target: z.string().min(1),
+  relation: z.string().optional(),
+});
 
 export const renderKnowledgeGraphSchema = z.object({
   nodes: z.string().min(1),
   links: z.string().min(1),
   title: z.string().default("Knowledge Graph"),
   output_format: z.enum(["svg", "html", "png"]).default("svg"),
-  output_filename: z.string().optional(),
-  width: z.number().int().min(200).max(2000).default(900),
-  height: z.number().int().min(200).max(2000).default(600),
-  theme: z.enum(["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"]).default("nature"),
+  output_filename: outputFilenameSchema,
+  ...dimensionsSchema(900, 600),
+  theme: themeSchema("nature"),
   font_family: z.string().optional(),
-  background_color: z.string().optional(),
-  text_color: z.string().optional(),
-  axis_color: z.string().optional(),
-  split_line_color: z.string().optional(),
-  palette: z.array(z.string()).optional(),
-  primary_color: z.string().optional(),
+  ...colorOverrideSchema.shape,
 });
 
 export async function runRenderKnowledgeGraph(
@@ -84,8 +90,14 @@ export async function runRenderKnowledgeGraph(
     theme
   );
 
-  const nodes: { id: string; group: number }[] = JSON.parse(nodesRaw);
-  let links: { source: string; target: string; relation: string }[] = JSON.parse(linksRaw);
+  const nodes = z
+    .array(nodeSchema)
+    .parse(safeJsonParse(nodesRaw))
+    .map((n) => ({ id: n.id, group: n.group ?? 0 }));
+  let links = z
+    .array(linkSchema)
+    .parse(safeJsonParse(linksRaw))
+    .map((l) => ({ source: l.source, target: l.target, relation: l.relation ?? "" }));
 
   const nodeIds = new Set(nodes.map((n) => n.id));
   links = links.filter((l) => nodeIds.has(l.source) && nodeIds.has(l.target));

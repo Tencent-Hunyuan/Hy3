@@ -1122,16 +1122,6 @@ function buildEChartsOptionRaw(
       const close = config.close_column || "close";
       const low = config.low_column || "low";
       const high = config.high_column || "high";
-      const source = [
-        [config.x_column, open, close, low, high],
-        ...table.rows.map((row) => [
-          String(row[config.x_column] ?? ""),
-          Number(row[open]) || 0,
-          Number(row[close]) || 0,
-          Number(row[low]) || 0,
-          Number(row[high]) || 0,
-        ]),
-      ];
       return {
         ...base,
         tooltip: { trigger: "axis" },
@@ -1143,8 +1133,12 @@ function buildEChartsOptionRaw(
         series: [
           {
             type: "candlestick",
-            encode: { x: config.x_column, y: [open, close, low, high] },
-            data: source.slice(1),
+            data: table.rows.map((row) => [
+              Number(row[open]) || 0,
+              Number(row[close]) || 0,
+              Number(row[low]) || 0,
+              Number(row[high]) || 0,
+            ]),
           },
         ],
       };

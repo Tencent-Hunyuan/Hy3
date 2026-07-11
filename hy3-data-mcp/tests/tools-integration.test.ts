@@ -13,14 +13,20 @@ const sampleDir = join(__dirname, "..", "sample_data");
 
 function createMockClient(response: string | string[] = "mocked response") {
   const queue = Array.isArray(response) ? [...response] : [response];
-  const fn = vi.fn().mockImplementation(async (_messages, options) => {
+  const chatImpl = async (_messages: unknown, options?: { onToken?: (token: string) => void }) => {
     const next = queue.shift() ?? (Array.isArray(response) ? "" : response);
     if (options?.onToken) {
       options.onToken(next);
     }
     return next;
-  });
-  return { chat: fn } as unknown as Hy3Client;
+  };
+  return {
+    chat: vi.fn().mockImplementation(chatImpl),
+    chatWithUsage: vi.fn().mockImplementation(async (_messages, options) => {
+      const content = await chatImpl(_messages, options);
+      return { content, usage: { prompt_tokens: 10, completion_tokens: 10, total_tokens: 20 } };
+    }),
+  } as unknown as Hy3Client;
 }
 
 describe("tool integration tests", () => {

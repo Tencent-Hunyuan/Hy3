@@ -1,6 +1,6 @@
-import { readFile } from "fs/promises";
+import { readFile, stat } from "fs/promises";
 import { mkdir, writeFile } from "fs/promises";
-import { dirname, resolve } from "path";
+import { basename, dirname, extname, resolve } from "path";
 import Papa from "papaparse";
 import { Hy3Client } from "./client.js";
 import { parseXlsx } from "./documents.js";
@@ -49,8 +49,17 @@ export async function readLocalFile(filePath: string): Promise<string> {
   }
 }
 
+export const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
+export const MAX_ROW_COUNT = 100_000;
+
 export async function loadDataTable(filePath: string): Promise<DataTable> {
   const ext = filePath.split(".").pop()?.toLowerCase();
+  const fileStats = await stat(filePath).catch(() => null);
+  if (fileStats && fileStats.size > MAX_FILE_SIZE_BYTES) {
+    throw new Error(
+      `File '${filePath}' is too large (${(fileStats.size / 1024 / 1024).toFixed(1)} MB). Maximum supported size is ${MAX_FILE_SIZE_BYTES / 1024 / 1024} MB.`
+    );
+  }
 
   if (ext === "xlsx" || ext === "xls") {
     const buffer = await readFile(filePath);
@@ -71,6 +80,9 @@ export async function readTextFile(filePath: string): Promise<string> {
 export function parseInlineData(data: string): DataTable {
   const parsed = JSON.parse(data);
   const rows = Array.isArray(parsed) ? parsed : [parsed];
+  if (rows.length > MAX_ROW_COUNT) {
+    throw new Error(`Inline data contains ${rows.length} rows, exceeding the maximum supported ${MAX_ROW_COUNT} rows.`);
+  }
   const columns = rows.length > 0 ? Array.from(new Set(rows.flatMap(Object.keys))) : [];
   return { columns, rows: rows.map(normalizeRow(columns)), raw: data };
 }
@@ -109,6 +121,9 @@ export function parseData(raw: string, ext?: string): DataTable {
     });
     return record;
   });
+  if (rows.length > MAX_ROW_COUNT) {
+    throw new Error(`CSV/JSON file contains ${rows.length} rows, exceeding the maximum supported ${MAX_ROW_COUNT} rows.`);
+  }
   return { columns, rows, raw };
 }
 
@@ -225,12 +240,23 @@ export function resolveLanguage(
   return detectLanguage(combined);
 }
 
+function getTodayFolder(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export async function writeOutputFile(
   relativePath: string,
   content: string | Buffer
 ): Promise<string> {
   const outputDir = loadOutputDir();
-  const filePath = resolve(outputDir, relativePath);
+  const fileName = basename(relativePath);
+  const ext = extname(fileName).slice(1).toLowerCase() || "files";
+  const organizedRelative = `${getTodayFolder()}/${ext}/${fileName}`;
+  const filePath = resolve(outputDir, organizedRelative);
   await mkdir(dirname(filePath), { recursive: true });
   await writeFile(filePath, content);
   return filePath;
@@ -272,6 +298,34 @@ export interface InputDataArgs {
  * - `data_file_path`: path to CSV/JSON/XLSX containing structured data
  * - `file_path`: alias for backward compatibility / general file input
  */
+export function validateDataTable(table: DataTable, requiredColumns?: string[]): void {
+  if (table.columns.length === 0) {
+    throw new Error("Input data has no columns.");
+  }
+  if (table.rows.length === 0) {
+    throw new Error("Input data has no rows.");
+  }
+  if (requiredColumns && requiredColumns.length > 0) {
+    const missing = requiredColumns.filter((col) => !table.columns.includes(col));
+    if (missing.length > 0) {
+      throw new Error(
+        `Missing required column(s): ${missing.join(", ")}. Available columns: ${table.columns.join(", ")}.`
+      );
+    }
+  }
+}
+
+export function assertColumnsExist(table: DataTable, columns: (string | undefined)[], context: string): void {
+  const required = columns.filter(Boolean) as string[];
+  if (required.length === 0) return;
+  const missing = required.filter((col) => !table.columns.includes(col));
+  if (missing.length > 0) {
+    throw new Error(
+      `${context}: missing column(s) ${missing.join(", ")}. Available columns: ${table.columns.join(", ")}.`
+    );
+  }
+}
+
 export async function loadInputData(args: InputDataArgs): Promise<DataTable> {
   if (args.data) {
     return parseInlineData(args.data);

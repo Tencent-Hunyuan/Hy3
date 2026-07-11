@@ -27,6 +27,12 @@ export type ChatOptions = Partial<
   onToken?: (token: string) => void;
 };
 
+export interface UsageInfo {
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  total_tokens?: number;
+}
+
 export class Hy3Client {
   private client: OpenAI;
   private model: string;
@@ -43,6 +49,14 @@ export class Hy3Client {
     messages: OpenAI.Chat.ChatCompletionMessageParam[],
     options?: ChatOptions
   ): Promise<string> {
+    const result = await this.chatWithUsage(messages, options);
+    return result.content;
+  }
+
+  async chatWithUsage(
+    messages: OpenAI.Chat.ChatCompletionMessageParam[],
+    options?: ChatOptions
+  ): Promise<{ content: string; usage?: UsageInfo }> {
     const { signal, onToken, ...createOptions } = options ?? {};
 
     if (onToken) {
@@ -68,7 +82,7 @@ export class Hy3Client {
           onToken(token);
         }
       }
-      return result.trim();
+      return { content: result.trim() };
     }
 
     const response = await this.client.chat.completions.create(
@@ -81,6 +95,14 @@ export class Hy3Client {
       },
       { signal }
     );
-    return response.choices[0]?.message?.content?.trim() || "";
+    const content = response.choices[0]?.message?.content?.trim() || "";
+    const usage = response.usage
+      ? {
+          prompt_tokens: response.usage.prompt_tokens,
+          completion_tokens: response.usage.completion_tokens,
+          total_tokens: response.usage.total_tokens,
+        }
+      : undefined;
+    return { content, usage };
   }
 }

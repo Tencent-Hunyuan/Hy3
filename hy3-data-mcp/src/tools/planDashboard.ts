@@ -1,13 +1,8 @@
 import { z } from "zod";
 import { Hy3Client } from "../client.js";
-import {
-  askHy3,
-  DataTable,
-  loadDataTable,
-  parseInlineData,
-  resolveLanguage,
-  tableSummary,
-} from "../utils.js";
+import { askHy3Json } from "../llm-utils.js";
+import { languageSchema, rawLanguageProperty, rawThemeProperty, themeSchema } from "../schemas.js";
+import { DataTable, loadDataTable, parseInlineData, resolveLanguage, tableSummary, validateDataTable } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
 export const planDashboardDefinition = {
@@ -40,18 +35,8 @@ export const planDashboardDefinition = {
         description: "Preferred dashboard layout style.",
         default: "grid",
       },
-      theme: {
-        type: "string",
-        enum: ["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"],
-        description: "Dashboard color theme.",
-        default: "nature",
-      },
-      language: {
-        type: "string",
-        enum: ["zh", "en", "auto"],
-        description: "Language of titles and labels.",
-        default: "auto",
-      },
+      ...rawThemeProperty("nature", "Dashboard color theme."),
+      ...rawLanguageProperty("Language of titles and labels."),
     },
     required: [],
   },
@@ -63,8 +48,8 @@ export const planDashboardSchema = z.object({
   data: z.string().optional(),
   title: z.string().optional(),
   layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).default("grid"),
-  theme: z.enum(["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"]).default("nature"),
-  language: z.enum(["zh", "en", "auto"]).default("auto"),
+  theme: themeSchema("nature"),
+  language: languageSchema,
 });
 
 export type DashboardDesign = {
@@ -82,7 +67,26 @@ export type DashboardDesign = {
     z_column?: string;
     title: string;
   }>;
+  _warning?: string;
 };
+
+const dashboardDesignOutputSchema = z.object({
+  title: z.string().optional(),
+  layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).optional(),
+  charts: z.array(
+    z.object({
+      file_index: z.number().int().min(0),
+      chart_type: z.string(),
+      x_column: z.string(),
+      y_column: z.string(),
+      value_column: z.string().optional(),
+      group_column: z.string().optional(),
+      size_column: z.string().optional(),
+      z_column: z.string().optional(),
+      title: z.string().optional(),
+    })
+  ),
+});
 
 export async function runPlanDashboard(
   args: unknown,
@@ -109,6 +113,7 @@ export async function runPlanDashboard(
   for (const path of file_paths ?? []) {
     tables.push({ path, table: await loadDataTable(path) });
   }
+  tables.forEach(({ table }) => validateDataTable(table));
   await onProgress?.(30, 100);
 
   const resolvedLanguage = resolveLanguage(language, title);
@@ -127,12 +132,28 @@ export async function runPlanDashboard(
   let design: DashboardDesign;
   try {
     await onProgress?.(70, 100);
-    const answer = await askHy3(client, system, summaryText, signal, _onOutput);
-    design = JSON.parse(answer) as DashboardDesign;
+    const parsed = await askHy3Json(client, system, summaryText, dashboardDesignOutputSchema, { signal, onToken: _onOutput });
+    design = {
+      title: parsed.data.title || title || (resolvedLanguage === "zh" ? "数据大屏" : "Data Dashboard"),
+      layout: parsed.data.layout || layout,
+      theme,
+      charts: parsed.data.charts.map((chart, i) => ({
+        file_index: chart.file_index,
+        chart_type: chart.chart_type,
+        x_column: chart.x_column,
+        y_column: chart.y_column,
+        value_column: chart.value_column,
+        group_column: chart.group_column,
+        size_column: chart.size_column,
+        z_column: chart.z_column,
+        title: chart.title || `${resolvedLanguage === "zh" ? "图表" : "Chart"} ${i + 1}`,
+      })),
+    };
   } catch {
     design = {
       title: title || (resolvedLanguage === "zh" ? "数据大屏" : "Data Dashboard"),
       layout,
+      theme,
       charts: tables.slice(0, 1).map(({ table }, i) => ({
         file_index: i,
         chart_type: "bar",
@@ -140,6 +161,7 @@ export async function runPlanDashboard(
         y_column: table.columns[1] || table.columns[0],
         title: resolvedLanguage === "zh" ? "概览" : "Overview",
       })),
+      _warning: resolvedLanguage === "zh" ? "模型输出解析失败，已使用默认单图大屏方案。" : "Model output could not be parsed; using default single-chart dashboard.",
     };
   }
 

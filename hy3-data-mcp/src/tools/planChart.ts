@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { Hy3Client } from "../client.js";
-import { askHy3, loadInputData, resolveLanguage, tableSummary } from "../utils.js";
+import { askHy3Json } from "../llm-utils.js";
+import { dataInputShape, languageSchema, rawDataInputProperties, rawLanguageProperty } from "../schemas.js";
+import { loadInputData, resolveLanguage, tableSummary, validateDataTable } from "../utils.js";
 import type { ChartType } from "../viz/echarts.js";
 import type { ProgressReporter } from "./index.js";
 
@@ -43,9 +45,7 @@ export const planChartDefinition = {
   inputSchema: {
     type: "object" as const,
     properties: {
-      data: { type: "string", description: "Inline structured data as a JSON array string." },
-      data_file_path: { type: "string", description: "Path to a CSV/JSON/XLSX file." },
-      file_path: { type: "string", description: "Alias for data_file_path." },
+      ...rawDataInputProperties,
       question: {
         type: "string",
         description: "What the chart should show.",
@@ -55,25 +55,23 @@ export const planChartDefinition = {
         type: "string",
         description: "Optional preferred chart type.",
       },
-      language: {
-        type: "string",
-        enum: ["zh", "en", "auto"],
-        description: "Language of the output.",
-        default: "auto",
-      },
+      ...rawLanguageProperty("Language of the output."),
     },
     required: [],
   },
 };
 
-export const planChartSchema = z.object({
-  data: z.string().optional(),
-  data_file_path: z.string().optional(),
-  file_path: z.string().optional(),
-  question: z.string().default("Recommend a chart"),
-  chart_type_hint: z.string().optional(),
-  language: z.enum(["zh", "en", "auto"]).default("auto"),
-});
+export const planChartSchema = z
+  .object({
+    ...dataInputShape,
+    question: z.string().default("Recommend a chart"),
+    chart_type_hint: z.string().optional(),
+    language: languageSchema,
+  })
+  .refine(
+    (args) => Boolean(args.data?.trim()) || Boolean(args.data_file_path?.trim()) || Boolean(args.file_path?.trim()),
+    { message: "One of data, data_file_path, or file_path is required" }
+  );
 
 export interface ChartPlan {
   chart_type: ChartType;
@@ -89,7 +87,24 @@ export interface ChartPlan {
   z_column?: string;
   title: string;
   theme?: string;
+  _warning?: string;
 }
+
+const chartPlanOutputSchema = z.object({
+  chart_type: z.enum(SUPPORTED_CHART_TYPES as [string, ...string[]]),
+  x_column: z.string(),
+  y_column: z.string(),
+  value_column: z.string().optional(),
+  open_column: z.string().optional(),
+  close_column: z.string().optional(),
+  high_column: z.string().optional(),
+  low_column: z.string().optional(),
+  group_column: z.string().optional(),
+  size_column: z.string().optional(),
+  z_column: z.string().optional(),
+  title: z.string().optional(),
+  theme: z.string().optional(),
+});
 
 export async function runPlanChart(
   args: unknown,
@@ -101,17 +116,10 @@ export async function runPlanChart(
   const { data, data_file_path, file_path, question, chart_type_hint, language } =
     planChartSchema.parse(args);
 
-  if (!data && !data_file_path && !file_path) {
-    throw new Error("One of data, data_file_path, or file_path is required");
-  }
-
   await onProgress?.(10, 100);
   const table = await loadInputData({ data, data_file_path, file_path });
   await onProgress?.(30, 100);
-
-  if (table.columns.length === 0) {
-    throw new Error("No columns found in the data.");
-  }
+  validateDataTable(table);
 
   const resolvedLanguage = resolveLanguage(language, question, table.raw);
 
@@ -130,31 +138,27 @@ export async function runPlanChart(
       : `User need: ${question}\nPreferred chart type: ${chart_type_hint || "(none)"}\nData summary:\n${tableSummary(table)}`;
 
   await onProgress?.(60, 100);
-  const answer = await askHy3(client, system, user, signal, onOutput);
-  await onProgress?.(90, 100);
 
   let plan: ChartPlan;
   try {
-    const parsed = JSON.parse(answer);
-    const chartType = parsed.chart_type || "bar";
-    const xColumn = parsed.x_column || table.columns[0];
-    const yColumn = parsed.y_column || table.columns[1] || table.columns[0];
+    const parsed = await askHy3Json(client, system, user, chartPlanOutputSchema, { signal, onToken: onOutput });
+    const chartType = parsed.data.chart_type as ChartType;
+    const xColumn = parsed.data.x_column || table.columns[0];
+    const yColumn = parsed.data.y_column || table.columns[1] || table.columns[0];
     plan = {
       chart_type: chartType,
       x_column: xColumn,
       y_column: yColumn,
-      value_column:
-        parsed.value_column ||
-        (["sunburst", "treemap"].includes(chartType) ? yColumn : undefined),
-      open_column: parsed.open_column,
-      close_column: parsed.close_column,
-      high_column: parsed.high_column,
-      low_column: parsed.low_column,
-      group_column: parsed.group_column,
-      size_column: parsed.size_column,
-      z_column: parsed.z_column,
-      title: parsed.title || (resolvedLanguage === "zh" ? "数据图表" : "Data Chart"),
-      theme: parsed.theme,
+      value_column: parsed.data.value_column || (["sunburst", "treemap"].includes(chartType) ? yColumn : undefined),
+      open_column: parsed.data.open_column,
+      close_column: parsed.data.close_column,
+      high_column: parsed.data.high_column,
+      low_column: parsed.data.low_column,
+      group_column: parsed.data.group_column,
+      size_column: parsed.data.size_column,
+      z_column: parsed.data.z_column,
+      title: parsed.data.title || (resolvedLanguage === "zh" ? "数据图表" : "Data Chart"),
+      theme: parsed.data.theme,
     };
   } catch {
     plan = {
@@ -162,6 +166,7 @@ export async function runPlanChart(
       x_column: table.columns[0],
       y_column: table.columns[1] || table.columns[0],
       title: resolvedLanguage === "zh" ? "数据图表" : "Data Chart",
+      _warning: resolvedLanguage === "zh" ? "模型输出解析失败，已使用默认柱状图方案。" : "Model output could not be parsed; using default bar chart.",
     };
   }
 

@@ -117,6 +117,18 @@ describe("renderChartSvg", () => {
     expect(svg).toContain("<svg");
     expect(svg).toContain(`${type} chart`);
   });
+
+  it("renders candlestick bodies and wicks", () => {
+    const svg = renderChartSvg("candlestick", candlestickTable, {
+      title: "K-line",
+      x_column: "date",
+      open_column: "open",
+      close_column: "close",
+      low_column: "low",
+      high_column: "high",
+    });
+    expect(svg).toContain("ecmeta_data_index");
+  });
 });
 
 describe("renderChartHtml", () => {

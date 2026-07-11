@@ -1,6 +1,16 @@
 import { z } from "zod";
 import { renderDashboardHtml, renderDashboardPng, type ChartType } from "../viz/echarts.js";
-import { buildThemeOverrides, DataTable, loadDataTable, parseInlineData, resolveLanguage, resolveOutputFilename, writeOutputFile } from "../utils.js";
+import {
+  colorOverrideSchema,
+  languageSchema,
+  outputFilenameSchema,
+  rawColorOverrideProperties,
+  rawLanguageProperty,
+  rawOutputFilenameProperty,
+  rawThemeProperty,
+  themeSchema,
+} from "../schemas.js";
+import { assertColumnsExist, buildThemeOverrides, DataTable, loadDataTable, parseInlineData, resolveLanguage, resolveOutputFilename, writeOutputFile } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
 
@@ -61,37 +71,18 @@ export const renderDashboardDefinition = {
         type: "string",
         description: "Optional title override. If omitted, uses design.title.",
       },
-      theme: {
-        type: "string",
-        enum: ["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"],
-        description: "Dashboard color theme.",
-        default: "nature",
-      },
+      ...rawThemeProperty("nature", "Dashboard color theme."),
       font_family: {
         type: "string",
         description: "Custom font family for titles and labels.",
       },
-      background_color: { type: "string", description: "Optional background color hex." },
-      text_color: { type: "string", description: "Optional text/label color hex." },
-      axis_color: { type: "string", description: "Optional axis line/tick color hex." },
-      split_line_color: { type: "string", description: "Optional grid split line color hex." },
-      palette: {
-        type: "array",
-        items: { type: "string" },
-        description: "Optional custom color palette.",
-      },
-      primary_color: { type: "string", description: "Optional primary color hex." },
+      ...rawColorOverrideProperties,
       layout: {
         type: "string",
         enum: ["grid", "rows", "columns", "hero", "compact"],
         description: "Optional layout override. If omitted, uses design.layout.",
       },
-      language: {
-        type: "string",
-        enum: ["zh", "en", "auto"],
-        description: "Language of the returned summary.",
-        default: "auto",
-      },
+      ...rawLanguageProperty("Language of the returned summary."),
       show_kpi: {
         type: "boolean",
         description: "Whether to render a KPI summary row at the top of the dashboard (HTML only).",
@@ -102,7 +93,7 @@ export const renderDashboardDefinition = {
         description: "Whether to add a theme switcher dropdown to the dashboard (HTML only).",
         default: false,
       },
-      output_filename: { type: "string", description: "Optional custom output file name (without extension)." },
+      output_filename: rawOutputFilenameProperty(),
     },
     required: ["design"],
   },
@@ -131,21 +122,14 @@ export const renderDashboardSchema = z.object({
   }),
   output_format: z.enum(["html", "png"]).default("html"),
   title: z.string().optional(),
-  theme: z
-    .enum(["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"])
-    .default("nature"),
+  theme: themeSchema("nature"),
   font_family: z.string().optional(),
-  background_color: z.string().optional(),
-  text_color: z.string().optional(),
-  axis_color: z.string().optional(),
-  split_line_color: z.string().optional(),
-  palette: z.array(z.string()).optional(),
-  primary_color: z.string().optional(),
+  ...colorOverrideSchema.shape,
   layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).optional(),
-  language: z.enum(["zh", "en", "auto"]).default("auto"),
+  language: languageSchema,
   show_kpi: z.boolean().default(true),
   enable_theme_switcher: z.boolean().default(false),
-  output_filename: z.string().optional(),
+  output_filename: outputFilenameSchema,
 });
 
 export async function runRenderDashboard(
@@ -202,9 +186,16 @@ export async function runRenderDashboard(
   const resolvedTitle = title || design.title;
 
   const chartInputs = design.charts
-    .map((chart) => {
+    .map((chart, index) => {
       const source = tables[chart.file_index] ?? tables[0];
-      if (!source) return null;
+      if (!source) {
+        throw new Error(`Chart #${index + 1} references file_index ${chart.file_index} but no data is available.`);
+      }
+      assertColumnsExist(
+        source.table,
+        [chart.x_column, chart.y_column, chart.value_column, chart.group_column, chart.size_column, chart.z_column],
+        `Dashboard chart #${index + 1} (${chart.title})`
+      );
       return {
         chartType: chart.chart_type as ChartType,
         table: source.table,

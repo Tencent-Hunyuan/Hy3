@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { extname } from "path";
 import { Hy3Client } from "../client.js";
-import { askHy3, loadDataTable, loadInputText, resolveLanguage, sampleText, selectTextColumn } from "../utils.js";
+import { askHy3Json } from "../llm-utils.js";
+import { languageSchema, rawLanguageProperty } from "../schemas.js";
+import { loadDataTable, loadInputText, resolveLanguage, sampleText, selectTextColumn } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
 export const planWordcloudDefinition = {
@@ -18,22 +20,19 @@ export const planWordcloudDefinition = {
         description: "Maximum number of words.",
         default: 60,
       },
-      language: {
-        type: "string",
-        enum: ["zh", "en", "auto"],
-        description: "Language of the text.",
-        default: "auto",
-      },
+      ...rawLanguageProperty("Language of the text."),
     },
     required: [],
   },
 };
 
+const wordItemSchema = z.object({ word: z.string().min(1), weight: z.number() });
+
 export const planWordcloudSchema = z.object({
   text: z.string().optional(),
   file_path: z.string().optional(),
   max_words: z.number().int().min(5).max(200).default(60),
-  language: z.enum(["zh", "en", "auto"]).default("auto"),
+  language: languageSchema,
 });
 
 export interface WordcloudPlan {
@@ -78,17 +77,19 @@ export async function runPlanWordcloud(
       : `You are a text-analysis expert. Extract the most representative keywords and their weights (0-100) from the text below. Return a pure JSON array: [{"word": "keyword", "weight": 80}, ...]. At most ${max_words} words. No extra text.`;
 
   await onProgress?.(60, 100);
-  const answer = await askHy3(client, system, sampleText(inputText), signal, onOutput);
-  await onProgress?.(90, 100);
 
   let words: { word: string; weight: number }[];
+  let warning = "";
   try {
-    words = JSON.parse(answer);
-    if (!Array.isArray(words)) words = [];
+    const parsed = await askHy3Json(client, system, sampleText(inputText), z.array(wordItemSchema), { signal, onToken: onOutput });
+    words = parsed.data;
   } catch {
     words = [];
+    warning = resolvedLanguage === "zh" ? "模型输出解析失败，未返回有效关键词。" : "Model output could not be parsed; no keywords returned.";
   }
 
   await onProgress?.(100, 100);
-  return { content: [{ type: "text" as const, text: JSON.stringify({ words }, null, 2) }] };
+  const result: WordcloudPlan & { _warning?: string } = { words };
+  if (warning) result._warning = warning;
+  return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
 }
