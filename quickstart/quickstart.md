@@ -136,7 +136,7 @@ print(response.choices[0].message.content)
 
 ### 5.2 流式响应
 
-```json
+```txt
 data: {"id": "REPLACED_ID", "object": "chat.completion.chunk", "created": 1779958293, "model": "hy3", "choices": [{"index": 0, "delta": {"role": "assistant"}}]}
 data: {"id": "REPLACED_ID", "object": "chat.completion.chunk", "created": 1779958293, "model": "hy3", "choices": [{"index": 0, "delta": {"content": "你好"}}]}
 data: {"id": "REPLACED_ID", "object": "chat.completion.chunk", "created": 1779958293, "model": "hy3", "choices": [{"index": 0, "delta": {"content": "！"}}]}
@@ -159,12 +159,12 @@ data: [DONE]
 
 查看 `examples/` 目录中的示例代码，了解更多使用场景：
 
-1. [basic_chat](examples/01_basic_chat.md) - 基础对话（单轮/多轮）
-2. [streaming](examples/02_streaming.md) - 流式请求
-3. [streaming_comparison](examples/03_streaming_comparison.md) - 流式 vs 非流式对比
-4. [tool_calling](examples/04_tool_calling.md) - 工具调用
-5. [reasoning_mode](examples/05_reasoning_mode.md) - 思考模式
-6. [error_handling](examples/06_error_handling.md) - 错误处理与重试
+1. [basic_chat](examples/01_basic_chat) - 基础对话（单轮/多轮）
+2. [streaming](examples/02_streaming) - 流式请求
+3. [streaming_comparison](examples/03_streaming_comparison) - 流式 vs 非流式对比
+4. [tool_calling](examples/04_tool_calling) - 工具调用
+5. [reasoning_mode](examples/05_reasoning_mode) - 思考模式
+6. [error_handling](examples/06_error_handling) - 错误处理与重试
 
 每一个样例都包含有说明文档、notebook、单纯python运行文件
 ！！！注意配置.env文件，样例见.env.example
