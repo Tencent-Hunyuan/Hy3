@@ -1,6 +1,5 @@
 # Hy3 数据分析 MCP
 
-[![npm](https://img.shields.io/npm/v/hy3-data-mcp.svg)](https://www.npmjs.com/package/hy3-data-mcp)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](#license)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)](#)
 [![MCP](https://img.shields.io/badge/MCP-1.0+-green)](#)
