@@ -1,6 +1,6 @@
 {
   "name": "hy3-data-mcp",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "description": "A data-analysis MCP server powered by Tencent Hunyuan Hy3. Generates charts, word clouds, knowledge graphs and dashboards from CSV/JSON data.",
   "type": "module",
   "main": "dist/index.js",
@@ -12,7 +12,8 @@
   "files": [
     "dist",
     "README.md",
-    "README_CN.md"
+    "README_CN.md",
+    "sample_data"
   ],
   "scripts": {
     "build": "tsc",
