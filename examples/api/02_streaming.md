@@ -56,20 +56,19 @@ The command uses the configured API. The first block records a live run; the sec
 
 ## Example output
 
-**Verified live observation**
+**Verified live evidence summary (sanitized; not literal stdout)**
 
-```text
-Backend: OpenRouter
-Model requested: tencent/hy3:free
-Model resolved: not exposed by this script's stream snapshot
-Observed on: 2026-07-11
+The script's actual CLI output uses fixed English labels, prints streamed `Content:`, and then prints a JSON summary. This list is a reviewed summary, not a transcript:
 
-content: a two-sentence explanation of what an API is
-reasoning: ""
-finish_reason: stop
-usage.total_tokens: 77
-tool_calls: []
-```
+- Backend: OpenRouter
+- Model requested: `tencent/hy3:free`
+- Response model: unavailable in this script's retained result
+- Observed on: 2026-07-11
+- Content: a two-sentence explanation of what an API is
+- Reasoning: empty
+- Finish reason: `stop`
+- `usage.total_tokens`: 77
+- Tool calls: empty list
 
 **Deterministic offline example**
 

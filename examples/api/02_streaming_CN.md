@@ -56,20 +56,19 @@ python examples/api/02_streaming.py
 
 ## 示例输出
 
-**已验证的实时观测**
+**已验证在线证据摘要（已脱敏，并非逐字标准输出）**
 
-```text
-后端：OpenRouter
-请求模型：tencent/hy3:free
-解析模型：该脚本的流式快照未提供
-观测日期：2026-07-11
+脚本实际 CLI 会使用代码中固定的英文标签，流式打印 `Content:`，随后打印 JSON 摘要。下列列表是经过审查的摘要，并非运行记录转录：
 
-content：用两句话解释 API
-reasoning：""
-finish_reason：stop
-usage.total_tokens：77
-tool_calls：[]
-```
+- 后端：OpenRouter
+- 请求模型：`tencent/hy3:free`
+- 响应模型：该脚本保留的结果中不可用
+- 观测日期：2026-07-11
+- Content：用两句话解释 API
+- Reasoning：空
+- Finish reason：`stop`
+- `usage.total_tokens`：77
+- Tool calls：空列表
 
 **确定性离线示例**
 

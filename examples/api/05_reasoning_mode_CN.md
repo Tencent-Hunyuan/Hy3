@@ -65,25 +65,21 @@ python examples/api/05_reasoning_mode.py
 
 ## 示例输出
 
-**已验证的实时观测**
+**已验证在线证据摘要（已脱敏，并非逐字标准输出）**
 
-```text
-后端：OpenRouter
-请求模型：tencent/hy3:free
-解析模型：该脚本的 ModeResult 未保留
-观测日期：2026-07-11
+脚本实际 CLI 会使用代码中固定的英文标签，并将每个 `ModeResult` 打印为 JSON。下列列表是经过审查的摘要，并非运行记录转录：
 
-no_think：
-  content：60 km/h
-  reasoning：不可用
-  usage.total_tokens：121
-
-high：
-  content：60 km/h
-  reasoning：已提供，为 1 个 reasoning_details 项
-  usage.reasoning_tokens：39
-  usage.total_tokens：127
-```
+- 后端：OpenRouter
+- 请求模型：`tencent/hy3:free`
+- 响应模型：该脚本保留的结果中不可用
+- 观测日期：2026-07-11
+- `no_think` content：`60 km/h`
+- `no_think` reasoning：不可用
+- `no_think` `usage.total_tokens`：121
+- `high` content：`60 km/h`
+- `high` reasoning：已提供，为 1 个 `reasoning_details` 项
+- `high` `usage.completion_tokens_details.reasoning_tokens`：39
+- `high` `usage.total_tokens`：127
 
 该观测只报告 reasoning 是否可用及其计数，有意不逐字披露内部 reasoning 文本。
 

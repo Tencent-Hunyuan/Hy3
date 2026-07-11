@@ -63,6 +63,55 @@ class DocumentationContractTests(unittest.TestCase):
                 with self.subTest(path=path.relative_to(ROOT), heading=heading):
                     self.assertIn(f"## {heading}", text)
 
+    def test_live_evidence_is_marked_as_sanitized_summary(self) -> None:
+        for path in REQUIRED_DOCS[6:]:
+            text = path.read_text(encoding="utf-8")
+            if path.stem.endswith("_CN"):
+                marker = "已验证在线证据摘要（已脱敏，并非逐字标准输出）"
+            else:
+                marker = (
+                    "Verified live evidence summary "
+                    "(sanitized; not literal stdout)"
+                )
+
+            with self.subTest(path=path.relative_to(ROOT)):
+                self.assertIn(marker, text)
+
+    def test_basic_chat_keeps_deterministic_offline_example(self) -> None:
+        expected = {
+            API_DIR / "01_basic_chat.md": "Deterministic offline example",
+            API_DIR / "01_basic_chat_CN.md": "确定性离线示例",
+        }
+        for path, marker in expected.items():
+            with self.subTest(path=path.relative_to(ROOT)):
+                self.assertIn(marker, path.read_text(encoding="utf-8"))
+
+    def test_reasoning_tokens_use_nested_usage_path(self) -> None:
+        for path in (
+            API_DIR / "05_reasoning_mode.md",
+            API_DIR / "05_reasoning_mode_CN.md",
+        ):
+            text = path.read_text(encoding="utf-8")
+            with self.subTest(path=path.relative_to(ROOT)):
+                self.assertNotIn("usage.reasoning_tokens", text)
+                self.assertIn(
+                    "usage.completion_tokens_details.reasoning_tokens",
+                    text,
+                )
+
+    def test_tool_call_live_summary_does_not_claim_unprinted_call_ids(self) -> None:
+        for path in (
+            API_DIR / "04_tool_calling.md",
+            API_DIR / "04_tool_calling_CN.md",
+        ):
+            text = path.read_text(encoding="utf-8")
+            with self.subTest(path=path.relative_to(ROOT)):
+                self.assertNotIn("completed live tool loop", text)
+                self.assertNotIn("完成的实时工具循环", text)
+                self.assertNotIn("循环已完成", text)
+                self.assertIn("CLI", text)
+                self.assertIn("call ID", text)
+
     def test_quickstarts_use_supported_reasoning_configuration(self) -> None:
         for path in REQUIRED_DOCS[2:4]:
             if not path.is_file():

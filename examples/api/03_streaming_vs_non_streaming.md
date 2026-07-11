@@ -65,19 +65,18 @@ These commands use the configured API and live clock. The first block is one liv
 
 ## Example output
 
-**Verified live observation (one observation, not a benchmark)**
+**Verified live evidence summary (sanitized; not literal stdout)**
 
-```text
-Backend: OpenRouter
-Model requested: tencent/hy3:free
-Model resolved: not exposed by this timing script
-Observed on: 2026-07-11
+The script's actual CLI output uses fixed English timing labels. This list is a reviewed summary of one observation, not a transcript or benchmark:
 
-Non-streaming total: 4.465s
-Streaming first output: 1.306s
-Streaming first content: 1.306s
-Streaming total: 3.175s
-```
+- Backend: OpenRouter
+- Model requested: `tencent/hy3:free`
+- Response model: unavailable in this script's retained result
+- Observed on: 2026-07-11
+- Non-streaming total: 4.465s
+- Streaming first output: 1.306s
+- Streaming first content: 1.306s
+- Streaming total: 3.175s
 
 These numbers are one transient observation, not a benchmark or a claim that streaming is always faster.
 

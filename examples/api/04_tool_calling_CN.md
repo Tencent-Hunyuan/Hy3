@@ -80,23 +80,22 @@ client.chat.completions.create(
 python examples/api/04_tool_calling.py
 ```
 
-该命令使用已配置 API。第一个区块记录一次完成的实时工具循环。后续同一 assistant 回合多调用序列仍来自确定性单元测试数据；Python 循环会先执行 call 1，再执行 call 2。
+该命令使用已配置 API。在线部分只摘要最终 CLI 响应，不转录中间调用。后续同一 assistant 回合多调用序列仍来自确定性单元测试数据；Python 循环会先执行 call 1，再执行 call 2。
 
 ## 示例输出
 
-**已验证的实时观测**
+**已验证在线证据摘要（已脱敏，并非逐字标准输出）**
 
-```text
-后端：OpenRouter
-请求模型：tencent/hy3:free
-解析模型：tencent/hy3-20260706:free
-观测日期：2026-07-11
+脚本实际 CLI 会使用代码中固定的英文标签，并将最终结果打印为 JSON。下列列表是经过审查的摘要，并非运行记录转录：
 
-最终 assistant content：Shenzhen is currently rainy with a temperature of 29°C.
-usage.total_tokens：306
-```
+- 后端：OpenRouter
+- 请求模型：`tencent/hy3:free`
+- 解析模型：`tencent/hy3-20260706:free`
+- 观测日期：2026-07-11
+- 最终 assistant content：`Shenzhen is currently rainy with a temperature of 29°C.`
+- `usage.total_tokens`：306
 
-成功得到最终回答证明 model-to-tool-to-model 循环已完成。天气值来自脚本固定的 `DEMO_WEATHER` 表，并非真实的当前天气。
+实时 CLI 的最终答案与脚本固定的 `DEMO_WEATHER` 数据一致，并非真实的当前天气。CLI 不打印中间 tool call 或 tool result，因此仅凭该在线摘要不能证明 call ID。下方确定性离线证据覆盖这些未打印的协议行为。
 
 **确定性离线示例**
 
@@ -109,9 +108,11 @@ tool_call_id order: call_1, call_2
 final assistant content: Done.
 ```
 
+多调用 fixture 验证 assistant/tool history 和 `tool_call_id` 传递；另一项确定性 loop-limit fixture 验证 `max_rounds=4` 边界。
+
 ## 限制与注意事项
 
-- 天气值（包括实时运行的最终措辞）来自 `DEMO_WEATHER`，不能当作当前天气展示；确定性输出中的 `source` 字段固定为 `demo data`。
+- 天气值（包括实时运行的最终措辞）与 `DEMO_WEATHER` 一致，不能当作当前天气展示；确定性输出中的 `source` 字段固定为 `demo data`。
 - 只允许 `get_weather`；未知名称返回 `unknown_tool`。
 - 循环不使用 `eval`；参数必须是能够解码为对象的 JSON 字符串。
 - 工具错误会作为 tool result 返回给模型，让模型有机会恢复，但不保证一定恢复。

@@ -70,20 +70,19 @@ python examples/api/06_error_handling_retry.py
 
 ## 示例输出
 
-**已验证的实时观测**
+**已验证在线证据摘要（已脱敏，并非逐字标准输出）**
 
-```text
-后端：OpenRouter
-请求模型：tencent/hy3:free
-解析模型：tencent/hy3-20260706:free
-观测日期：2026-07-11
+脚本实际 CLI 会使用代码中固定的英文重试标签，并将成功响应打印为 JSON。下列列表是经过审查的摘要，并非运行记录转录：
 
-Retry 2/4 in 0.00s after APIConnectionError
-Retry 3/4 in 0.25s after APIConnectionError
-Retry 4/4 in 1.73s after APIConnectionError
-content：关于可靠 API client 的一句话
-usage.total_tokens：49
-```
+- 后端：OpenRouter
+- 请求模型：`tencent/hy3:free`
+- 解析模型：`tencent/hy3-20260706:free`
+- 观测日期：2026-07-11
+- 第 2/4 次尝试前重试：`APIConnectionError` 后等待 `0.00s`
+- 第 3/4 次尝试前重试：`APIConnectionError` 后等待 `0.25s`
+- 第 4/4 次尝试前重试：`APIConnectionError` 后等待 `1.73s`
+- Content：关于可靠 API client 的一句话
+- `usage.total_tokens`：49
 
 这只是一次实时瞬时恢复观测，不承诺精确的失败序列和 jitter 延迟能够复现。
 

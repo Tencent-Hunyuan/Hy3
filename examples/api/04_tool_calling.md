@@ -80,23 +80,22 @@ From the repository root:
 python examples/api/04_tool_calling.py
 ```
 
-This uses the configured API. The first block records a completed live tool loop. The following multi-call assistant turn remains deterministic unit-test data; the Python loop executes call 1 and then call 2.
+This uses the configured API. The live section summarizes only the final CLI response; it does not reproduce intermediate calls. The following multi-call assistant turn remains deterministic unit-test data; the Python loop executes call 1 and then call 2.
 
 ## Example output
 
-**Verified live observation**
+**Verified live evidence summary (sanitized; not literal stdout)**
 
-```text
-Backend: OpenRouter
-Model requested: tencent/hy3:free
-Model resolved: tencent/hy3-20260706:free
-Observed on: 2026-07-11
+The script's actual CLI output uses a fixed English label and prints the final result as JSON. This list is a reviewed summary, not a transcript:
 
-final assistant content: Shenzhen is currently rainy with a temperature of 29°C.
-usage.total_tokens: 306
-```
+- Backend: OpenRouter
+- Model requested: `tencent/hy3:free`
+- Model resolved: `tencent/hy3-20260706:free`
+- Observed on: 2026-07-11
+- Final assistant content: `Shenzhen is currently rainy with a temperature of 29°C.`
+- `usage.total_tokens`: 306
 
-The successful final answer confirms that the model-to-tool-to-model loop completed. The weather value came from the script's fixed `DEMO_WEATHER` table; it was not real current weather.
+The live CLI's final answer is consistent with the script's fixed `DEMO_WEATHER` data, not real current weather. The CLI does not print intermediate tool calls or tool results, so this live summary alone does not establish call IDs. The deterministic offline evidence below covers the omitted protocol behavior.
 
 **Deterministic offline example**
 
@@ -109,9 +108,11 @@ tool_call_id order: call_1, call_2
 final assistant content: Done.
 ```
 
+The multi-call fixture verifies assistant/tool history and `tool_call_id` propagation. A separate deterministic loop-limit fixture verifies the `max_rounds=4` bound.
+
 ## Limitations
 
-- Weather values, including the live run's final wording, originate from `DEMO_WEATHER` and must not be treated as current conditions.
+- Weather values, including the live run's final wording, are consistent with `DEMO_WEATHER` and must not be treated as current conditions.
 - Only `get_weather` is allowed; unknown names return `unknown_tool`.
 - The loop does not use `eval`; arguments must be a JSON string decoding to an object.
 - A tool error is sent back to the model as a tool result so the model can recover, but recovery is not guaranteed.

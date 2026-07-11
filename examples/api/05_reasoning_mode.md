@@ -65,25 +65,21 @@ The command uses the configured backend. The first block records a live comparis
 
 ## Example output
 
-**Verified live observation**
+**Verified live evidence summary (sanitized; not literal stdout)**
 
-```text
-Backend: OpenRouter
-Model requested: tencent/hy3:free
-Model resolved: not retained by this script's ModeResult
-Observed on: 2026-07-11
+The script's actual CLI output uses fixed English labels and prints each `ModeResult` as JSON. This list is a reviewed summary, not a transcript:
 
-no_think:
-  content: 60 km/h
-  reasoning: unavailable
-  usage.total_tokens: 121
-
-high:
-  content: 60 km/h
-  reasoning: present as 1 reasoning_details item
-  usage.reasoning_tokens: 39
-  usage.total_tokens: 127
-```
+- Backend: OpenRouter
+- Model requested: `tencent/hy3:free`
+- Response model: unavailable in this script's retained result
+- Observed on: 2026-07-11
+- `no_think` content: `60 km/h`
+- `no_think` reasoning: unavailable
+- `no_think` `usage.total_tokens`: 121
+- `high` content: `60 km/h`
+- `high` reasoning: present as 1 `reasoning_details` item
+- `high` `usage.completion_tokens_details.reasoning_tokens`: 39
+- `high` `usage.total_tokens`: 127
 
 The observation reports only reasoning availability and counts; it intentionally does not reproduce internal reasoning text.
 

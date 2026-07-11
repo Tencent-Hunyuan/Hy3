@@ -65,27 +65,39 @@ python examples/api/01_basic_chat.py
 
 ## 示例输出
 
-**已验证的实时观测**
+**已验证在线证据摘要（已脱敏，并非逐字标准输出）**
+
+脚本实际 CLI 还会使用代码中固定的英文标签打印 request 和 response JSON。下列列表是经过审查的摘要，并非运行记录转录：
+
+- 后端：OpenRouter
+- 请求模型：`tencent/hy3:free`
+- 解析模型：`tencent/hy3-20260706:free`
+- 观测日期：2026-07-11
+- 单轮 content：简短的自我介绍
+- 单轮 reasoning：不可用
+- 单轮 `usage.total_tokens`：71
+- 多轮 content：列出助手可以协助的任务类型
+- 多轮 `usage.total_tokens`：226
+
+**确定性离线示例**
 
 ```text
-后端：OpenRouter
-请求模型：tencent/hy3:free
-解析模型：tencent/hy3-20260706:free
-观测日期：2026-07-11
+Single-turn response:
+content: I am Hy3.
+reasoning: brief plan
+finish_reason: stop
+usage.total_tokens: 5
 
-单轮响应：
-content：简短的自我介绍
-reasoning：不可用
-usage.total_tokens：71
-
-多轮响应：
-content：列出助手可以协助的任务类型
-usage.total_tokens：226
+Multi-turn response:
+content: I can help with APIs.
+reasoning: ""
+finish_reason: stop
+usage.total_tokens: 5
 ```
 
 ## 限制与注意事项
 
-- 上述 content 描述是一次实时运行的安全摘要，不是精确输出断言；实时措辞与 token usage 会变化。
+- 在线 content 描述是安全摘要，不是精确输出断言。确定性文本是虚构测试数据；实时措辞与 token usage 会变化。
 - 示例假设 completion 至少有一个 choice；缺少 choices 时共享 normalizer 会抛出异常。
 - 示例不处理流式输出、工具执行，也不会把 reasoning 字段加入第二轮 assistant 历史。
 - 该短命 CLI 创建 client 后依赖进程退出释放资源。

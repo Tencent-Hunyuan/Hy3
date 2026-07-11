@@ -65,27 +65,39 @@ This command uses the configured API. The observation below was captured from a 
 
 ## Example output
 
-**Verified live observation**
+**Verified live evidence summary (sanitized; not literal stdout)**
+
+The script's actual CLI output also prints the request and response JSON with fixed English labels. This list is a reviewed summary, not a transcript:
+
+- Backend: OpenRouter
+- Model requested: `tencent/hy3:free`
+- Model resolved: `tencent/hy3-20260706:free`
+- Observed on: 2026-07-11
+- Single-turn content: a brief self-introduction
+- Single-turn reasoning: unavailable
+- Single-turn `usage.total_tokens`: 71
+- Multi-turn content: a list of task types the assistant can help with
+- Multi-turn `usage.total_tokens`: 226
+
+**Deterministic offline example**
 
 ```text
-Backend: OpenRouter
-Model requested: tencent/hy3:free
-Model resolved: tencent/hy3-20260706:free
-Observed on: 2026-07-11
-
 Single-turn response:
-content: a brief self-introduction
-reasoning: unavailable
-usage.total_tokens: 71
+content: I am Hy3.
+reasoning: brief plan
+finish_reason: stop
+usage.total_tokens: 5
 
 Multi-turn response:
-content: a list of task types the assistant can help with
-usage.total_tokens: 226
+content: I can help with APIs.
+reasoning: ""
+finish_reason: stop
+usage.total_tokens: 5
 ```
 
 ## Limitations
 
-- The content descriptions above are safe summaries of one live run, not exact-output assertions. Live wording and token usage vary.
+- The live content descriptions are safe summaries, not exact-output assertions. The deterministic text is fake test data; live wording and token usage vary.
 - The example assumes the completion contains at least one choice. The shared normalizer raises when choices are missing.
 - It does not stream, execute tools, or preserve reasoning fields in the second-turn assistant history.
 - The script creates a client for a short-lived CLI and relies on process exit for cleanup.

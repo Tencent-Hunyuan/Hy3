@@ -70,20 +70,19 @@ python examples/api/06_error_handling_retry.py
 
 ## Example output
 
-**Verified live observation**
+**Verified live evidence summary (sanitized; not literal stdout)**
 
-```text
-Backend: OpenRouter
-Model requested: tencent/hy3:free
-Model resolved: tencent/hy3-20260706:free
-Observed on: 2026-07-11
+The script's actual CLI output uses fixed English retry labels and prints the successful response as JSON. This list is a reviewed summary, not a transcript:
 
-Retry 2/4 in 0.00s after APIConnectionError
-Retry 3/4 in 0.25s after APIConnectionError
-Retry 4/4 in 1.73s after APIConnectionError
-content: one sentence about reliable API clients
-usage.total_tokens: 49
-```
+- Backend: OpenRouter
+- Model requested: `tencent/hy3:free`
+- Model resolved: `tencent/hy3-20260706:free`
+- Observed on: 2026-07-11
+- Retry before attempt 2/4: `0.00s` after `APIConnectionError`
+- Retry before attempt 3/4: `0.25s` after `APIConnectionError`
+- Retry before attempt 4/4: `1.73s` after `APIConnectionError`
+- Content: one sentence about reliable API clients
+- `usage.total_tokens`: 49
 
 This is one transient live recovery observation. The exact failure sequence and jitter delays are not promised to recur.
 
