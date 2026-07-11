@@ -142,7 +142,7 @@ All screenshots are rendered with the **Professional** theme using the bundled s
 Install the local release tarball globally:
 
 ```bash
-npm install -g ./releases/hy3-data-mcp-0.3.8.tgz
+npm install -g ./releases/hy3-data-mcp-0.3.9.tgz
 ```
 
 Start the server:

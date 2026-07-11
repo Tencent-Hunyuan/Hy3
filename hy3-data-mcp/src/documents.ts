@@ -1,6 +1,9 @@
 import { readFile } from "fs/promises";
-import * as XLSX from "xlsx";
+import exceljs from "exceljs";
+import type { Worksheet } from "exceljs";
 import PDFParser from "pdf2json";
+
+const Workbook = exceljs.Workbook;
 import * as mammoth from "mammoth";
 import { DataTable, maybeNumber } from "./utils.js";
 
@@ -49,11 +52,47 @@ async function extractDocxText(filePath: string): Promise<string> {
   return result.value;
 }
 
+function formatCellValue(value: unknown): string {
+  if (value == null) return "";
+  if (value instanceof Date) return value.toISOString().split("T")[0];
+  if (
+    typeof value === "object" &&
+    "richText" in value &&
+    Array.isArray((value as { richText?: Array<{ text?: unknown }> }).richText)
+  ) {
+    return (value as { richText: Array<{ text?: unknown }> }).richText
+      .map((part) => String(part.text ?? ""))
+      .join("");
+  }
+  return String(value);
+}
+
+function escapeCsvCell(value: string): string {
+  if (/[",\n\r]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
+
+function worksheetToCsv(worksheet: Worksheet): string {
+  const rows: string[][] = [];
+  worksheet.eachRow((row) => {
+    const cells: string[] = [];
+    row.eachCell({ includeEmpty: true }, (cell) => {
+      cells.push(formatCellValue(cell.value));
+    });
+    rows.push(cells);
+  });
+  return rows.map((row) => row.map(escapeCsvCell).join(",")).join("\n");
+}
+
 async function extractXlsxText(filePath: string): Promise<string> {
   const buffer = await readFile(filePath);
-  const workbook = XLSX.read(buffer, { type: "buffer" });
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  return XLSX.utils.sheet_to_csv(sheet);
+  const workbook = new Workbook();
+  await workbook.xlsx.load(buffer as any);
+  const worksheet = workbook.worksheets[0];
+  if (!worksheet) return "";
+  return worksheetToCsv(worksheet);
 }
 
 export async function extractTablesFromDocx(filePath: string): Promise<DataTable[]> {
@@ -263,25 +302,50 @@ async function extractPdfText(filePath: string): Promise<string> {
   return text;
 }
 
-export function parseXlsx(buffer: Buffer): DataTable {
-  const workbook = XLSX.read(buffer, { type: "buffer" });
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
+export async function parseXlsx(buffer: Buffer): Promise<DataTable> {
+  const workbook = new Workbook();
+  await workbook.xlsx.load(buffer as any);
+  const worksheet = workbook.worksheets[0];
 
-  if (json.length === 0) {
+  if (!worksheet || worksheet.rowCount === 0) {
     return { columns: [], rows: [], raw: "" };
   }
 
-  const columns = Array.from(new Set(json.flatMap((row) => Object.keys(row))));
-  const rows = json.map((row: Record<string, unknown>) => {
+  const columnCount = worksheet.getRow(1).cellCount;
+  const rawRows: unknown[][] = [];
+  worksheet.eachRow((row) => {
+    const rowValues: unknown[] = [];
+    for (let i = 1; i <= columnCount; i++) {
+      rowValues.push(row.getCell(i).value);
+    }
+    rawRows.push(rowValues);
+  });
+
+  if (rawRows.length === 0) {
+    return { columns: [], rows: [], raw: "" };
+  }
+
+  const columns = rawRows[0].map((value) => String(value));
+  const rows = rawRows.slice(1).map((rowValues) => {
     const record: Record<string, string | number> = {};
-    columns.forEach((col) => {
-      const value = row[col];
-      if (typeof value === "number") record[col] = value;
-      else record[col] = value == null ? "" : String(value);
+    columns.forEach((col, idx) => {
+      const value = rowValues[idx];
+      if (typeof value === "number") {
+        record[col] = value;
+      } else if (value instanceof Date) {
+        record[col] = value.toISOString().split("T")[0];
+      } else {
+        record[col] = value == null ? "" : String(value);
+      }
     });
     return record;
   });
 
-  return { columns, rows, raw: XLSX.utils.sheet_to_csv(sheet) };
+  return {
+    columns,
+    rows,
+    raw: rawRows
+      .map((row) => row.map((v) => escapeCsvCell(formatCellValue(v))).join(","))
+      .join("\n"),
+  };
 }

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, writeFile, rm } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
+import { Workbook } from "exceljs";
 import {
   parseData,
   loadDataTable,
@@ -67,14 +68,13 @@ describe("loadDataTable", () => {
 
   it("loads an XLSX file", async () => {
     const file = join(tempDir, "data.xlsx");
-    const xlsx = await import("xlsx");
-    const workbook = xlsx.utils.book_new();
-    const sheet = xlsx.utils.aoa_to_sheet([
+    const workbook = new Workbook();
+    const sheet = workbook.addWorksheet("Sheet1");
+    sheet.addRows([
       ["Month", "Sales"],
       ["Jan", 100],
     ]);
-    xlsx.utils.book_append_sheet(workbook, sheet, "Sheet1");
-    await writeFile(file, Buffer.from(xlsx.write(workbook, { type: "array", bookType: "xlsx" })));
+    await writeFile(file, await workbook.xlsx.writeBuffer());
     const table = await loadDataTable(file);
     expect(table.columns).toEqual(["Month", "Sales"]);
     expect(table.rows).toHaveLength(1);
