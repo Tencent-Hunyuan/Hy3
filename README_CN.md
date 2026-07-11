@@ -128,6 +128,9 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
+完整 API 入门请参阅 [Hy3 API 快速开始](./quickstart_CN.md)
+和 [API 示例](./examples/api/README_CN.md)。
+
 > **推荐参数**：`temperature=0.9`，`top_p=1.0`。
 >
 > **推理模式**：复杂任务（数学、编程、推理）建议设置 `reasoning_effort="high"`，日常对话可使用默认的 `"no_think"` 直接回复。

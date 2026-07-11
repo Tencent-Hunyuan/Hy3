@@ -131,6 +131,9 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
+For complete API onboarding, see the [Hy3 API Quickstart](./quickstart.md)
+and [API Examples](./examples/api/README.md).
+
 > **Recommended parameters**: `temperature=0.9`, `top_p=1.0`.
 >
 > **Reasoning mode**: Set `reasoning_effort` to `"high"` for complex tasks (math, coding, reasoning) or `"no_think"` for direct responses.
