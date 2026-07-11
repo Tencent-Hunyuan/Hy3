@@ -77,35 +77,63 @@ Do not use generated, mocked, or placeholder media as verification evidence.
 
 ## Showcase Project
 
-The independent showcase project is **Hy3 TokenHub Developer Brief CLI**.
+Part A documents the nine client integrations above. Part B is a standalone showcase that calls Hy3 directly through Tencent Cloud TokenHub's OpenAI-compatible Chat Completions endpoint.
 
-The showcase is a Node.js CLI that calls Hy3 through Tencent Cloud TokenHub's OpenAI-compatible chat completions endpoint. It reads a project note and code sample, then generates a developer brief with a project summary, code-review findings, and suggested next steps. The linked demo media shows both the first chat check and the end-to-end developer brief flow.
+The independent showcase project is **Hy3 TokenHub Spec-to-Diff Reviewer**.
 
-The demo video is 25 seconds long and shows the chat, summarize, code-review, and developer brief flow.
+The Node.js CLI compares a written specification with a proposed unified diff and asks Hy3 to generate a structured Markdown PR-readiness report. It accepts specification and diff files, reads a diff from standard input, or reviews changes already staged in Git. Streaming is enabled by default, and a completed report can be published atomically with `--output`.
 
-The showcase exercises Hy3's reasoning capability by analyzing a project note and JavaScript code sample, then producing a structured developer brief.
+The report includes:
 
-![Hy3 TokenHub Developer Brief CLI demo](assets/showcase/showcase-brief-tokenhub.png)
+- an executive verdict;
+- requirement-by-requirement coverage;
+- evidence-grounded P0-P3 findings;
+- missing tests;
+- uncertainties; and
+- recommended next steps.
 
-It is separate from this Hy3 repository and demonstrates Tencent Cloud TokenHub usage with:
+The bundled sample intentionally contains an incomplete implementation, so `Not ready` is the expected verdict. This allows the showcase to demonstrate coverage analysis, prioritized findings, uncertainty handling, and missing-test detection.
 
-- Base URL / endpoint: `https://tokenhub.tencentmaas.com/v1/chat/completions`
+The demo shows a real streaming request through the Guangzhou / China-mainland TokenHub service boundary, followed by the same completed report rendered as Markdown.
+
+![Hy3 Spec-to-Diff Reviewer streaming in PowerShell](assets/showcase/showcase-spec-to-diff-terminal.png)
+
+![Rendered Hy3 PR-readiness report](assets/showcase/showcase-spec-to-diff-report.png)
+
+The showcase is separate from this Hy3 repository and uses:
+
+- Endpoint: `https://tokenhub.tencentmaas.com/v1/chat/completions`
 - Model: `hy3`
-- Protocol: OpenAI-compatible chat completions
+- Protocol: OpenAI-compatible Chat Completions
+- Output: structured Markdown
+- Default transport: SSE streaming
+- Runtime: Node.js 18 or later
 
 Project links:
 
 - Repository: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief
-- Demo video: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief/blob/main/docs/assets/demo-all.mp4
-- First chat screenshot: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief/blob/main/docs/assets/demo-chat.png
-- Developer brief screenshot: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief/blob/main/docs/assets/demo-brief.png
+- Demo video: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief/blob/main/docs/assets/hy3-spec-to-diff-demo.mp4
+- Streaming screenshot: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief/blob/main/docs/assets/hy3-spec-to-diff-terminal.png
+- Rendered report screenshot: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief/blob/main/docs/assets/hy3-spec-to-diff-report.png
 
-Run commands:
+Run the bundled sample:
 
 ```bash
 npm install
 # Copy .env.example to .env, then set TOKENHUB_API_KEY.
-npm run brief
-# Or run the full demo flow.
-npm run all
+npm run review:sample
+```
+
+The equivalent direct CLI command is:
+
+```bash
+node hy3_showcase.js diff-review \
+  --spec samples/issue.md \
+  --diff samples/change.diff
+```
+
+Use the normal non-streaming response path when needed:
+
+```bash
+npm run review:sample:no-stream
 ```
