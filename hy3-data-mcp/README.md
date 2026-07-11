@@ -274,6 +274,19 @@ The original implementation tried to do everything in one synchronous call:
 | Tool responsibility | Mega-tools mixed reading, reasoning, and rendering | Each tool has a single responsibility and is composable by the agent |
 | Backwards compatibility | N/A — old clients use sync path | `taskSupport: "optional"` means task-aware and legacy clients both work |
 
+### v0.3.x: stable packaging & validation hardening
+
+The 0.3.x releases focused on making the server reliable, maintainable, and easy to distribute:
+
+- **Shared schemas** — `src/schemas.ts` centralizes theme, language, dimensions, color overrides, output filename, and data input definitions used by all 11 tools.
+- **Robust LLM JSON parsing** — `src/llm-utils.ts` adds `askHy3Json` with retry, markdown-fence extraction, and Zod schema validation, so malformed model output no longer crashes plan tools.
+- **Input validation** — `validateDataTable`, `assertColumnsExist`, file size/row limits, and JSON shape checks for wordcloud and knowledge graph inputs.
+- **Date/type organized outputs** — generated files are written to `hy3-data-output/<YYYY-MM-DD>/<ext>/`.
+- **Version synchronization** — `scripts/bump-version.mjs` and `tests/version.test.ts` keep `package.json`, `package-lock.json`, and `src/server.ts` in sync.
+- **K-line fix** — candlestick charts now render correctly via direct `xAxis.data` + `series.data`.
+- **Dependency hardening** — replaced vulnerable `xlsx`/`exceljs` with `read-excel-file`; updated all dependencies to latest compatible versions; `npm audit` reports 0 vulnerabilities.
+- **Report readability** — analysis reports use 16px dark body text (`#1f2937`) for better readability.
+
 ### Why this is better
 
 1. **Timeouts become irrelevant.** By returning a `taskId` immediately, the MCP client never holds an HTTP request open while Hy3 generates a long report. The 60-second `DEFAULT_REQUEST_TIMEOUT_MSEC` no longer kills complex jobs.
@@ -839,6 +852,12 @@ npx @modelcontextprotocol/inspector node dist/index.js
 - [x] More dashboard layouts
 - [x] Streaming progress for long-running analysis
 - [x] Multi-language UI labels auto-detection
+- [x] Shared Zod schemas across all tools
+- [x] Robust LLM JSON output validation and retry
+- [x] Input validation (file size, row limits, column checks)
+- [x] Date/type organized output directory
+- [x] K-line (candlestick) chart rendering fix
+- [x] Dependency refresh and vulnerability cleanup
 
 ---
 

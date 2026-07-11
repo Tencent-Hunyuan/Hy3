@@ -274,6 +274,19 @@ for await (const message of stream) {
 | 工具职责 | 巨型工具把读取、推理、渲染混在一起 | 每个工具职责单一，Agent 可自由组合 |
 | 向后兼容 | 无任务支持 | `taskSupport: "optional"`，支持任务和不支持任务的客户端都能用 |
 
+### v0.3.x：稳定封装与校验加固
+
+0.3.x 系列主要围绕“可靠、可维护、易分发”做加固：
+
+- **共享 schema** —— `src/schemas.ts` 集中管理所有 11 个工具共用的主题、语言、尺寸、颜色覆盖、输出文件名和数据输入定义。
+- **LLM JSON 输出加固** —— `src/llm-utils.ts` 提供 `askHy3Json`，支持重试、Markdown 代码块提取和 Zod 校验，模型返回异常不再导致 Plan 工具崩溃。
+- **输入校验** —— `validateDataTable`、`assertColumnsExist`、文件大小/行数限制，以及对词云、知识图谱 JSON 的形状校验。
+- **按日期/类型组织输出** —— 生成文件统一写入 `hy3-data-output/<YYYY-MM-DD>/<ext>/`。
+- **版本同步** —— `scripts/bump-version.mjs` 与 `tests/version.test.ts` 保证 `package.json`、`package-lock.json` 和 `src/server.ts` 版本一致。
+- **K-line 修复** —— 蜡烛图通过直接使用 `xAxis.data` + `series.data` 正确渲染。
+- **依赖加固** —— 将存在漏洞的 `xlsx`/`exceljs` 替换为 `read-excel-file`；所有依赖升级到最新兼容版本；`npm audit` 0 漏洞。
+- **报告可读性** —— 分析报告正文使用 16px 深色文字（`#1f2937`），阅读体验更好。
+
 ### 为什么更好
 
 1. **超时不再是问题。** 立即返回 `taskId` 后，MCP 客户端不需要长时间挂起 HTTP 请求等待 Hy3 生成长报告，默认 60 秒超时不会再杀死复杂任务。
@@ -839,6 +852,12 @@ npx @modelcontextprotocol/inspector node dist/index.js
 - [x] 更多数据大屏布局
 - [x] 长分析任务的流式进度反馈
 - [x] UI 标签多语言自动检测
+- [x] 所有工具共享 Zod schema
+- [x] LLM JSON 输出校验与重试
+- [x] 输入校验（文件大小、行数限制、字段检查）
+- [x] 按日期/类型组织输出目录
+- [x] K-line（蜡烛图）渲染修复
+- [x] 依赖升级与漏洞清理
 
 ---
 
