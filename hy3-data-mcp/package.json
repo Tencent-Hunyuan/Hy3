@@ -1,6 +1,6 @@
 {
   "name": "hy3-data-mcp",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "description": "A data-analysis MCP server powered by Tencent Hunyuan Hy3. Generates charts, word clouds, knowledge graphs and dashboards from CSV/JSON data.",
   "type": "module",
   "main": "dist/index.js",
@@ -55,7 +55,7 @@
     "@napi-rs/canvas": "^1.0.2",
     "dotenv": "^17.4.2",
     "echarts": "^6.1.0",
-    "exceljs": "^4.4.0",
+    "read-excel-file": "^9.3.1",
     "mammoth": "^1.12.0",
     "node-rs-wordcloud": "^0.0.4",
     "openai": "^6.46.0",
@@ -71,12 +71,10 @@
     "@vitest/coverage-v8": "^4.1.10",
     "prettier": "^3.9.5",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "write-excel-file": "^4.1.1"
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "overrides": {
-    "uuid": "^11.1.1"
   }
 }

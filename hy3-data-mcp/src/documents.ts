@@ -1,9 +1,6 @@
 import { readFile } from "fs/promises";
-import exceljs from "exceljs";
-import type { Worksheet } from "exceljs";
+import { readSheet } from "read-excel-file/node";
 import PDFParser from "pdf2json";
-
-const Workbook = exceljs.Workbook;
 import * as mammoth from "mammoth";
 import { DataTable, maybeNumber } from "./utils.js";
 
@@ -55,15 +52,6 @@ async function extractDocxText(filePath: string): Promise<string> {
 function formatCellValue(value: unknown): string {
   if (value == null) return "";
   if (value instanceof Date) return value.toISOString().split("T")[0];
-  if (
-    typeof value === "object" &&
-    "richText" in value &&
-    Array.isArray((value as { richText?: Array<{ text?: unknown }> }).richText)
-  ) {
-    return (value as { richText: Array<{ text?: unknown }> }).richText
-      .map((part) => String(part.text ?? ""))
-      .join("");
-  }
   return String(value);
 }
 
@@ -74,25 +62,13 @@ function escapeCsvCell(value: string): string {
   return value;
 }
 
-function worksheetToCsv(worksheet: Worksheet): string {
-  const rows: string[][] = [];
-  worksheet.eachRow((row) => {
-    const cells: string[] = [];
-    row.eachCell({ includeEmpty: true }, (cell) => {
-      cells.push(formatCellValue(cell.value));
-    });
-    rows.push(cells);
-  });
-  return rows.map((row) => row.map(escapeCsvCell).join(",")).join("\n");
+function rowsToCsv(rows: unknown[][]): string {
+  return rows.map((row) => row.map((cell) => escapeCsvCell(formatCellValue(cell))).join(",")).join("\n");
 }
 
 async function extractXlsxText(filePath: string): Promise<string> {
-  const buffer = await readFile(filePath);
-  const workbook = new Workbook();
-  await workbook.xlsx.load(buffer as any);
-  const worksheet = workbook.worksheets[0];
-  if (!worksheet) return "";
-  return worksheetToCsv(worksheet);
+  const rows = await readSheet(filePath);
+  return rowsToCsv(rows as unknown[][]);
 }
 
 export async function extractTablesFromDocx(filePath: string): Promise<DataTable[]> {
@@ -303,30 +279,14 @@ async function extractPdfText(filePath: string): Promise<string> {
 }
 
 export async function parseXlsx(buffer: Buffer): Promise<DataTable> {
-  const workbook = new Workbook();
-  await workbook.xlsx.load(buffer as any);
-  const worksheet = workbook.worksheets[0];
+  const rows = (await readSheet(buffer as any)) as unknown[][];
 
-  if (!worksheet || worksheet.rowCount === 0) {
+  if (!rows || rows.length === 0) {
     return { columns: [], rows: [], raw: "" };
   }
 
-  const columnCount = worksheet.getRow(1).cellCount;
-  const rawRows: unknown[][] = [];
-  worksheet.eachRow((row) => {
-    const rowValues: unknown[] = [];
-    for (let i = 1; i <= columnCount; i++) {
-      rowValues.push(row.getCell(i).value);
-    }
-    rawRows.push(rowValues);
-  });
-
-  if (rawRows.length === 0) {
-    return { columns: [], rows: [], raw: "" };
-  }
-
-  const columns = rawRows[0].map((value) => String(value));
-  const rows = rawRows.slice(1).map((rowValues) => {
+  const columns = rows[0].map((value) => String(value));
+  const dataRows = rows.slice(1).map((rowValues) => {
     const record: Record<string, string | number> = {};
     columns.forEach((col, idx) => {
       const value = rowValues[idx];
@@ -343,9 +303,7 @@ export async function parseXlsx(buffer: Buffer): Promise<DataTable> {
 
   return {
     columns,
-    rows,
-    raw: rawRows
-      .map((row) => row.map((v) => escapeCsvCell(formatCellValue(v))).join(","))
-      .join("\n"),
+    rows: dataRows,
+    raw: rowsToCsv(rows),
   };
 }

@@ -15,7 +15,7 @@ export async function startServer() {
   const server = new McpServer(
     {
       name: "hy3-data-mcp",
-      version: "0.3.9",
+      version: "0.3.10",
     },
     {
       capabilities: {

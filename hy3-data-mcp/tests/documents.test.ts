@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { join } from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-import { Workbook } from "exceljs";
+import writeXlsxFile from "write-excel-file/node";
 import {
   detectDocumentType,
   extractTablesFromDocx,
@@ -78,14 +78,11 @@ describe("extractTablesFromDocx", () => {
 
 describe("parseXlsx", () => {
   it("parses an XLSX buffer into a DataTable", async () => {
-    const workbook = new Workbook();
-    const sheet = workbook.addWorksheet("Sheet1");
-    sheet.addRows([
+    const buffer = await writeXlsxFile([
       ["Month", "Sales"],
       ["Jan", 100],
       ["Feb", 150],
-    ]);
-    const buffer = await workbook.xlsx.writeBuffer();
+    ]).toBuffer();
 
     const table = await parseXlsx(buffer as Buffer);
     expect(table.columns).toEqual(["Month", "Sales"]);
@@ -95,9 +92,7 @@ describe("parseXlsx", () => {
   });
 
   it("returns empty table for an empty workbook", async () => {
-    const workbook = new Workbook();
-    workbook.addWorksheet("Sheet1");
-    const buffer = await workbook.xlsx.writeBuffer();
+    const buffer = await writeXlsxFile([]).toBuffer();
 
     const table = await parseXlsx(buffer as Buffer);
     expect(table.columns).toEqual([]);

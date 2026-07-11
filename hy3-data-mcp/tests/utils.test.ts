@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, writeFile, rm } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
-import { Workbook } from "exceljs";
+import writeXlsxFile from "write-excel-file/node";
 import {
   parseData,
   loadDataTable,
@@ -68,13 +68,11 @@ describe("loadDataTable", () => {
 
   it("loads an XLSX file", async () => {
     const file = join(tempDir, "data.xlsx");
-    const workbook = new Workbook();
-    const sheet = workbook.addWorksheet("Sheet1");
-    sheet.addRows([
+    const buffer = await writeXlsxFile([
       ["Month", "Sales"],
       ["Jan", 100],
-    ]);
-    await writeFile(file, await workbook.xlsx.writeBuffer());
+    ]).toBuffer();
+    await writeFile(file, buffer);
     const table = await loadDataTable(file);
     expect(table.columns).toEqual(["Month", "Sales"]);
     expect(table.rows).toHaveLength(1);
