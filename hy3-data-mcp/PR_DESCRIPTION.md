@@ -1,136 +1,92 @@
-# PR: Add Hy3-powered Data Analysis MCP Server
+## 关联 Issue
 
-**Target repository:** `Tencent-Hunyuan/Hy3`  
-**Target branch:** `rhinobird2026`  
-**New directory:** `hy3-data-mcp/`  
-**Author:** `xy200303`  
-**Related issue:** [Build an MCP Server powered by Hy3](https://github.com/Tencent-Hunyuan/Hy3/issues/3)
+Closes [Tencent-Hunyuan/Hy3#3](https://github.com/Tencent-Hunyuan/Hy3/issues/3)
 
----
+## 项目简介
 
-## Summary
+**Hy3 Data MCP**（`hy3-data-mcp`）是一个基于 [Model Context Protocol](https://modelcontextprotocol.io) 的本地 stdio MCP Server。它调用 **腾讯混元 Hy3** API，把 CSV / JSON / Excel / PDF / Word / 文本等数据转换成图表、数据大屏、词云、知识图谱和分析报告。
 
-This PR introduces `hy3-data-mcp`, a TypeScript ESM MCP server that uses the Tencent Hunyuan **Hy3** model for analytical reasoning and generates static/interactive data visualizations locally.
+输出格式支持 **SVG**、**HTML**、**PNG**，并内置 `hdm init` 命令行安装器，可一键配置 CodeBuddy、Cursor、Cline、Roo Code、Continue、Codex CLI、OpenCode 等客户端。
 
-### What’s included
+## 核心功能
 
-- **11 MCP tools** exposed via stdio, organized into Extract → Analyze → Plan → Render:
-  - **Extract:** `hy3_extract_document` — extract raw text/metadata from PDF / DOCX / TXT / CSV / JSON / XLSX (no LLM)
-  - **Analyze:** `hy3_analyze` — analyze text or structured data with Hy3; `hy3_analyze_report` — generate HTML/Markdown reports with embedded charts
-  - **Plan:** `hy3_plan_chart`, `hy3_plan_dashboard`, `hy3_plan_wordcloud`, `hy3_plan_knowledge_graph` — use Hy3 to produce JSON designs
-  - **Render:** `hy3_render_chart`, `hy3_render_wordcloud`, `hy3_render_knowledge_graph`, `hy3_render_dashboard` — render directly from explicit data + config (no LLM)
-- **Output formats:** `svg` (static), `html` (interactive / animated), `png` (rasterized via `sharp`)
-- **Document parsing:** PDF (`pdf2json`), DOCX (`mammoth`), XLSX/CSV/JSON (`xlsx` / `papaparse`)
-- **CLI installer:** `hdm init` detects CodeBuddy, Cursor, Cline, Roo Code, Continue, Codex CLI, OpenCode and writes the client config automatically
-- **Packaged release:** `releases/hy3-data-mcp-0.3.0.tgz` — install with `npm install -g ./releases/hy3-data-mcp-0.3.0.tgz` or run with `hy3-data-mcp`
-- **Configuration:** all secrets via `.env` (`HY3_API_KEY`, `HY3_BASE_URL`, `HY3_MODEL`, `HY3_OUTPUT_DIR`); no hard-coded keys
-- **Demo:** `assets/demo.gif` generated from real API outputs
+- **11 个 MCP 工具**，按 **Extract → Analyze → Plan → Render** 四阶段拆分
+- **文档解析**：PDF、DOCX、TXT、CSV、JSON、XLSX，支持表格提取
+- **数据分析**：Hy3 驱动的文本 / 数据分析、完整 HTML / Markdown 报告
+- **图表规划与渲染**：30+ 图表类型，包括 3D、K-line、桑基、小提琴、双轴组合等
+- **数据大屏**：多图表仪表盘，支持 KPI 卡片与主题切换
+- **词云 & 知识图谱**：从文本抽取关键词 / 实体关系并渲染
+- **异步任务**：MCP Task / Stream，支持进度上报、流式输出、真实取消
+- **多主题 & 自定义颜色**：light / dark / professional / nature 等 9 套主题
 
----
-
-## Demo
-
-![Hy3 Data MCP demo](./assets/demo.gif)
-
-## Screenshot gallery
-
-All screenshots are rendered with the **Professional** theme from the bundled sample datasets.
-
-| | |
-|---|---|
-| ![Stacked bar](./assets/screenshots/01-stacked-bar.png) | ![Bubble](./assets/screenshots/02-bubble.png) |
-| ![Boxplot](./assets/screenshots/03-boxplot.png) | ![Candlestick](./assets/screenshots/04-candlestick.png) |
-| ![Funnel](./assets/screenshots/05-funnel.png) | ![Sunburst](./assets/screenshots/06-sunburst.png) |
-| ![Radar](./assets/screenshots/07-radar.png) | ![Wordcloud](./assets/screenshots/08-wordcloud.png) |
-| ![Knowledge graph](./assets/screenshots/09-knowledge-graph.png) | ![Dashboard](./assets/screenshots/10-dashboard.png) |
-| ![3D bar](./assets/screenshots/11-bar3d.png) | ![3D scatter](./assets/screenshots/12-scatter3d.png) |
-| ![3D line](./assets/screenshots/13-line3d.png) | ![Line + bar](./assets/screenshots/14-line_bar.png) |
-| ![Dual axis](./assets/screenshots/15-dual_axis.png) | ![Stacked area](./assets/screenshots/16-stacked_area.png) |
-| ![Grouped line](./assets/screenshots/17-grouped_line.png) | ![Area + bar](./assets/screenshots/18-area_bar.png) |
-
----
-
-## How to verify
+## 安装与验证
 
 ```bash
-cd hy3-data-mcp
-cp .env.example .env
-# fill in HY3_API_KEY
-npm install
-npm run build
-npm test
-npm run test:real   # requires a valid HY3_API_KEY
+npm install -g ./releases/hy3-data-mcp-0.3.11.tgz
+hy3-data-mcp
+hdm init
 ```
 
-- `npm run build` compiles cleanly.
-- `npm test` runs 145 unit/integration/smoke tests.
-- `npm run test:coverage` generates a coverage report: `src/` coverage is ~95% statements / ~85% branches / ~96% functions (entry-point files excluded).
-- `npm run test:real` invokes every tool against the live Hy3 endpoint and writes files to `hy3-data-output/`.
+验证结果：
 
----
+- `npm test`：**174 / 174** 通过
+- `npm audit`：**0** 漏洞
 
-## Files added
+## 演示视频
 
-All files live under the new `hy3-data-mcp/` directory:
+<video src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/demo.mp4" controls width="100%"></video>
 
-```
-hy3-data-mcp/
-├── assets/demo.gif
-├── sample_data/
-│   ├── complex/
-│   │   ├── ecommerce_sales.csv
-│   │   ├── customers.csv
-│   │   ├── marketing_campaigns.csv
-│   │   ├── clinical_trial.csv
-│   │   ├── employee_performance.csv
-│   │   ├── hierarchical_geo_sales.csv
-│   │   └── reviews.csv
-│   ├── sales.csv
-│   ├── stock.csv
-│   ├── article.txt
-│   ├── report.docx
-│   └── report.pdf
-├── scripts/
-│   ├── generate-demo-gif.mjs
-│   ├── generate-sample-data.mjs
-│   └── test-real.mjs
-├── src/
-│   ├── cli/
-│   ├── tools/
-│   ├── viz/
-│   ├── client.ts
-│   ├── documents.ts
-│   ├── index.ts
-│   ├── server.ts
-│   └── utils.ts
-├── tests/
-├── .env.example
-├── .gitignore
-├── package.json
-├── README.md
-├── README_CN.md
-└── tsconfig.json
-```
+## 效果图展示
 
----
+<table>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/01-stacked-bar.png" width="420" alt="堆叠柱状图"><br/>堆叠柱状图</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/02-bubble.png" width="420" alt="气泡图"><br/>气泡图</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/03-boxplot.png" width="420" alt="箱线图"><br/>箱线图</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/04-candlestick.png" width="420" alt="K 线图"><br/>K 线图</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/05-funnel.png" width="420" alt="漏斗图"><br/>漏斗图</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/06-sunburst.png" width="420" alt="旭日图"><br/>旭日图</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/07-radar.png" width="420" alt="雷达图"><br/>雷达图</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/08-wordcloud.png" width="420" alt="词云"><br/>词云</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/09-knowledge-graph.png" width="420" alt="知识图谱"><br/>知识图谱</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/10-dashboard.png" width="420" alt="单仪表盘"><br/>单仪表盘</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/11-bar3d.png" width="420" alt="3D 柱状图"><br/>3D 柱状图</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/12-scatter3d.png" width="420" alt="3D 散点图"><br/>3D 散点图</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/13-line3d.png" width="420" alt="3D 折线图"><br/>3D 折线图</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/14-line_bar.png" width="420" alt="折线+柱状组合"><br/>折线 + 柱状组合</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/15-dual_axis.png" width="420" alt="双轴组合"><br/>双轴组合</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/16-stacked_area.png" width="420" alt="堆叠面积图"><br/>堆叠面积图</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/17-grouped_line.png" width="420" alt="分组折线图"><br/>分组折线图</td>
+    <td align="center"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/screenshots/18-area_bar.png" width="420" alt="面积+柱状组合"><br/>面积 + 柱状组合</td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><img src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/dashboard_2024_Sales___Profit_Dashboard_1783662671334.png" width="860" alt="2024 Sales & Profit Dashboard"><br/>2024 Sales &amp; Profit Dashboard（PNG 合成大屏）</td>
+  </tr>
+</table>
 
-## Pre-submission checklist
+## RhinoBird 2026 提交清单
 
-- [x] `npm run build` passes
-- [x] `npm test` passes (145/145)
-- [x] Real API smoke test passes for all LLM tools
-- [x] PNG/SVG output verified for `hy3_render_chart` (including area, sankey, treemap, sunburst, gauge, boxplot, candlestick, bubble, histogram, stacked_bar), `hy3_render_wordcloud`, `hy3_render_knowledge_graph`, `hy3_plan_dashboard` + `hy3_render_dashboard`, and `hy3_analyze`
-- [x] Theme, custom font, and custom color overrides verified across visualization tools
-- [x] README and README_CN updated with PNG examples
-- [x] `assets/demo.gif` generated from actual outputs
-- [x] `.env` is listed in `.gitignore` and is not committed
-- [x] No API keys or secrets are hard-coded
-- [x] Follows the existing project license (Apache-2.0)
-
----
-
-## Notes
-
-- The server uses the OpenAI-compatible Hy3 endpoint (`https://tokenhub.tencentmaas.com/v1`) with model `hy3-preview`.
-- Generated files are written to `hy3-data-output/` by default; this directory is ignored by Git.
-- Some npm audit warnings exist in transitive dependencies; they can be addressed in a follow-up.
+- [x] 基于 Hy3 的 MCP Server
+- [x] 至少 3 个 tool
+- [x] 外部数据源 / 工具
+- [x] 本地 stdio 模式
+- [x] 不硬编码 API Key
+- [x] 在 2+ 个 MCP 客户端验证
+- [x] 一键安装包
+- [x] 完整 README、演示视频与效果图
