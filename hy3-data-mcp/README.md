@@ -42,6 +42,21 @@ Beyond the standard MCP charting workflow, this fork adds a set of practical, us
 
 ---
 
+## 🧠 Where Does Hunyuan Hy3 Come In?
+
+Hy3 Data MCP is deliberately split into **LLM-powered** and **deterministic** phases, so you always know when the Hunyuan model is being consulted and when the server is simply rendering.
+
+| Phase | Tools | Does Hy3 run? | What Hy3 does |
+| --- | --- | --- | --- |
+| **Extract** | `hy3_extract_document` | ❌ No | Pure file parsing (PDF, DOCX, XLSX, CSV, JSON, TXT). No model calls, no API cost. |
+| **Plan** | `hy3_plan_chart`, `hy3_plan_dashboard`, `hy3_plan_wordcloud`, `hy3_plan_knowledge_graph` | ✅ Yes | Looks at the data/text and decides chart type, axes, columns, title, theme, dashboard layout, keywords, entities, and relationships. |
+| **Analyze** | `hy3_analyze`, `hy3_analyze_report` | ✅ Yes | Reads the content, writes insights, conclusions, and report narratives, and recommends which charts best tell the story. |
+| **Render** | `hy3_render_chart`, `hy3_render_dashboard`, `hy3_render_wordcloud`, `hy3_render_knowledge_graph` | ❌ No | Deterministic rendering from explicit config. Fast, reproducible, and LLM-free. |
+
+In short: **Hy3 thinks, the server draws.** Plan and Analyze tools are registered as MCP tasks with optional progress streaming, so long-running model calls do not block the client.
+
+---
+
 ## Features
 
 `hy3-data-mcp` exposes **11 tools** split into three phases: **Extract & Analyze**, **Plan** (LLM decisions), and **Render** (deterministic output).
