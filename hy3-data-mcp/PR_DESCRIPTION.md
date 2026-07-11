@@ -34,7 +34,9 @@ hdm init
 
 ## 演示视频
 
-<video src="https://raw.githubusercontent.com/xy200303/Hy3/feat/add-hy3-data-mcp/hy3-data-mcp/assets/demo.mp4" controls width="100%"></video>
+<video src="https://github.com/xy200303/Hy3/blob/feat/add-hy3-data-mcp/hy3-data-mcp/assets/demo.mp4?raw=true" controls width="100%"></vide
+
+> 如果上方视频无法播放，可[点击这里查看 demo.mp4](https://github.com/xy200303/Hy3/blob/feat/add-hy3-data-mcp/hy3-data-mcp/assets/demo.mp4)。
 
 ## 效果图展示
 

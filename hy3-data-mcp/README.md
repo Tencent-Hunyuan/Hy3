@@ -9,7 +9,7 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server that reads CS
 
 Outputs are rendered as **SVG**, **HTML**, or **PNG**.
 
-<video src="assets/demo.mp4" controls width="100%"></video>
+<video src="https://github.com/xy200303/Hy3/blob/feat/add-hy3-data-mcp/hy3-data-mcp/assets/demo.mp4?raw=true" controls width="100%"></video>
 
 ![Demo](assets/demo.gif)
 
