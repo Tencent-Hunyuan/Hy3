@@ -241,9 +241,9 @@ Ready-to-copy config snippets live in [`examples/`](examples/): [`claude-code.mc
 
 ## reasoning_effort 设计 / Design
 
-四个工具按任务性质分成两档 `reasoning_effort`，而不是统一拉满——这是本项目相对"一段 prompt 走天下"的竞品的核心工程差异点之一。
+四个工具按任务性质分成两档 `reasoning_effort`，而不是统一拉满，把推理预算花在需要的地方。
 
-The four tools split across two `reasoning_effort` tiers by task nature, rather than maxing out uniformly — one of this project's core engineering differentiators versus "one prompt for everything" competitors.
+The four tools split across two `reasoning_effort` tiers by task nature rather than maxing out uniformly, spending reasoning budget where it's needed.
 
 - **`no_think`** — `audit_command`(未命中快速路径时)、`scan_secrets`：本质是**策略执行**——对着一份固定的分类规则表逐条比对、给出结构化裁决，不需要长链条推理。这类任务吃的是 Hy3 的 **SkillsBench**（策略/规则执行）强项，`no_think` 换来更低延迟和更省 token，且不牺牲准确率。
 - **`high`** — `review_diff`、`vuln_intel`：本质是**研究综合**——review_diff 要在一整段 diff 的上下文里定位、关联、解释一处弱点；vuln_intel 要把多条 OSV.dev 原始数据交叉验证、综合出中文可读的处置建议。这类任务吃的是 Hy3 的 **WideSearch / DeepSearchQA**（跨信息源检索与综合）强项，需要更深的推理预算才能不遗漏、不臆造。
@@ -254,9 +254,9 @@ The four tools split across two `reasoning_effort` tiers by task nature, rather 
 
 ## 评测 / Evaluation
 
-评测语料是本项目相对"只给一段 prompt、不给评测"的竞品的另一个核心差异化：一套广覆盖、贴近真实、对抗性强的测试集（见 [`eval/cases/README.md`](eval/cases/README.md)），外加一个独立的评测 runner 和拦截率/误报率报告。
+评测语料是一套覆盖 7 类 × 3 攻击面、危险与形似安全成对的测试集（见 [`eval/cases/README.md`](eval/cases/README.md)），配一个独立的评测 runner 和拦截率/误报率报告。
 
-The evaluation corpus is another core differentiator versus "ship a prompt with no eval" competitors: a broad, realistic, adversarial test set (see [`eval/cases/README.md`](eval/cases/README.md)) plus an independent runner and a detection/false-positive report.
+The evaluation corpus is a paired danger/safe test set across 7 categories × 3 attack surfaces (see [`eval/cases/README.md`](eval/cases/README.md)), with a separate runner and a detection/false-positive report.
 
 语料规模 / Corpus size：**88 条命令用例**（7 个危险类别 × 3 种攻击面 `direct`/`prompt_injection`/`indirect_inducement`，58 danger + 30 safe——含注入话术包装的 benign 命令，检验"别被吓到而过度拦截"）+ **22 个 diff 夹具**（11 malicious + 11 benign）。
 

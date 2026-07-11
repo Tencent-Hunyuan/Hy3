@@ -1,8 +1,8 @@
 # 评测语料 · Evaluation Corpus (`hy3-security-mcp`)
 
-这是安全审计 MCP 服务器的评测语料——纯数据，供独立的评测 runner 消费。它是本项目相对"只给一段 prompt、不给评测"的竞品的核心差异化：一套**广覆盖、贴近真实、对抗性强**的测试集。
+这是安全审计 MCP 服务器的评测语料——纯数据，供独立的评测 runner 消费。语料按危险 / 形似安全成对组织，覆盖 7 类 × 3 攻击面。
 
-This is the evaluation corpus for the security-audit MCP server — pure data consumed by a separate runner. It is the project's differentiator: a broad, realistic, adversarial test set (vs. competitors that ship a prompt with no evaluation).
+This is the evaluation corpus for the security-audit MCP server — pure data consumed by a separate runner. The cases are organised as danger/safe pairs across 7 categories × 3 attack surfaces.
 
 被评测的两个工具 / Two tools under test:
 - `audit_command` — 把一条 shell 命令判定为 `allow` / `confirm` / `deny`，并归入 7 个危险类别之一。
