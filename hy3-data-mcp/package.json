@@ -1,0 +1,81 @@
+{
+  "name": "hy3-data-mcp",
+  "version": "0.3.11",
+  "description": "A data-analysis MCP server powered by Tencent Hunyuan Hy3. Generates charts, word clouds, knowledge graphs and dashboards from CSV/JSON data.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "hy3-data-mcp": "dist/index.js",
+    "hdm": "dist/cli/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README_CN.md",
+    "sample_data"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:real": "node scripts/test-real.mjs",
+    "demo:gif": "node scripts/generate-demo-gif.mjs",
+    "demo:screenshots": "node scripts/generate-demo-screenshots.mjs",
+    "pack:release": "node scripts/pack-release.mjs",
+    "test:watch": "vitest",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "hy3",
+    "hunyuan",
+    "data-analysis",
+    "visualization",
+    "charts",
+    "knowledge-graph",
+    "dashboard"
+  ],
+  "author": "xy200303",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xy200303/Hy3.git",
+    "directory": "hy3-data-mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/xy200303/Hy3/issues"
+  },
+  "homepage": "https://github.com/xy200303/Hy3",
+  "dependencies": {
+    "@clack/prompts": "^1.7.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@napi-rs/canvas": "^1.0.2",
+    "dotenv": "^17.4.2",
+    "echarts": "^6.1.0",
+    "read-excel-file": "^9.3.1",
+    "mammoth": "^1.12.0",
+    "node-rs-wordcloud": "^0.0.4",
+    "openai": "^6.46.0",
+    "papaparse": "^5.5.4",
+    "pdf2json": "^4.0.3",
+    "picocolors": "^1.1.1",
+    "sharp": "^0.35.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "@types/papaparse": "^5.5.2",
+    "@vitest/coverage-v8": "^4.1.10",
+    "prettier": "^3.9.5",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.0",
+    "write-excel-file": "^4.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

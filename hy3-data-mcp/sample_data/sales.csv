@@ -1,0 +1,13 @@
+month,region,product,sales,profit
+2024-01,North,Laptop,120,15
+2024-01,South,Laptop,95,12
+2024-01,East,Phone,210,22
+2024-01,West,Phone,180,19
+2024-02,North,Laptop,135,18
+2024-02,South,Laptop,110,14
+2024-02,East,Phone,230,25
+2024-02,West,Phone,195,20
+2024-03,North,Laptop,150,20
+2024-03,South,Laptop,125,16
+2024-03,East,Phone,250,28
+2024-03,West,Phone,220,24
