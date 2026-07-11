@@ -12,3 +12,6 @@ hy3-data-output/
 .gen-venv/
 __pycache__/
 *.pyc
+
+# Large media files that should not be committed
+assets/demo.mp4
