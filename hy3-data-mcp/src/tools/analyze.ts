@@ -114,32 +114,10 @@ export async function runAnalyze(
   await onProgress?.(90, 100);
 
   if (output_format === "html") {
-    const html = `<!DOCTYPE html>
-<html lang="${resolvedLanguage === "zh" ? "zh-CN" : "en"}">
-<head>
-  <meta charset="UTF-8">
-  <title>${escapeHtml(question)}</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 800px; margin: 40px auto; padding: 24px; background: #f6f8fa; color: #24292f; line-height: 1.6; }
-    .container { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    h1 { font-size: 22px; margin-bottom: 16px; }
-    pre { background: #f6f8fa; padding: 12px; border-radius: 6px; overflow-x: auto; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>${escapeHtml(question)}</h1>
-    <div>${answer
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/\n/g, "<br/>")}</div>
-  </div>
-</body>
-</html>`;
+    const htmlContent = normalizeHtmlAnswer(answer, question, resolvedLanguage);
     const outputPath = await writeOutputFile(
       resolveOutputFilename(output_filename, `analyze_${Date.now()}`, "html"),
-      html
+      htmlContent
     );
     await onProgress?.(100, 100);
     return {
@@ -166,4 +144,56 @@ function escapeHtml(text: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function normalizeHtmlAnswer(answer: string, question: string, language: "zh" | "en"): string {
+  if (isCompleteHtml(answer)) {
+    return answer;
+  }
+  if (looksLikeEncodedHtml(answer)) {
+    const decoded = decodeHtmlEntities(answer);
+    if (isCompleteHtml(decoded)) {
+      return decoded;
+    }
+  }
+  return wrapHtmlAnswer(answer, question, language);
+}
+
+function wrapHtmlAnswer(answer: string, question: string, language: "zh" | "en"): string {
+  return `<!DOCTYPE html>
+<html lang="${language === "zh" ? "zh-CN" : "en"}">
+<head>
+  <meta charset="UTF-8">
+  <title>${escapeHtml(question)}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 800px; margin: 40px auto; padding: 24px; background: #f6f8fa; color: #24292f; line-height: 1.6; }
+    .container { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    h1 { font-size: 22px; margin-bottom: 16px; }
+    pre { background: #f6f8fa; padding: 12px; border-radius: 6px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>${escapeHtml(question)}</h1>
+    <div>${answer.replace(/\n/g, "<br/>")}</div>
+  </div>
+</body>
+</html>`;
+}
+
+function looksLikeEncodedHtml(text: string): boolean {
+  return /&lt;|&gt;|&quot;|&#39;|&amp;lt;/.test(text);
+}
+
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
+function isCompleteHtml(text: string): boolean {
+  return /^\s*<(!DOCTYPE|html)/i.test(text);
 }
