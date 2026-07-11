@@ -1,0 +1,23 @@
+diff --git a/app/cache/session.py b/app/cache/session.py
+index 77aa001..2bc3f4e 100644
+--- a/app/cache/session.py
++++ b/app/cache/session.py
+@@ -1,12 +1,15 @@
+-import json
++import pickle
++import base64
+ from flask import request
+
+
+ def load_session():
+-    raw = request.cookies.get("session", "{}")
+-    return json.loads(raw)
++    # session payload is base64-encoded pickle for richer object support
++    raw = request.cookies.get("session", "")
++    blob = base64.b64decode(raw)
++    return pickle.loads(blob)
+
+
+ def save_session(data) -> str:
+-    return json.dumps(data)
++    return base64.b64encode(pickle.dumps(data)).decode()

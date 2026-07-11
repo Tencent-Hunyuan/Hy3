@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "hy3-security-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["hy3-security-mcp"],
+      "env": {
+        "HY3_BASE_URL": "https://openrouter.ai/api/v1",
+        "HY3_API_KEY": "REPLACE_WITH_YOUR_HY3_API_KEY",
+        "HY3_MODEL": "tencent/hy3:free"
+      }
+    }
+  }
+}

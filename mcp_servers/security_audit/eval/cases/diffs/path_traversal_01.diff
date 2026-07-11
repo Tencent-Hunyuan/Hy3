@@ -1,0 +1,18 @@
+diff --git a/app/files/download.py b/app/files/download.py
+index 4d5e6f7..8c9a0b1 100644
+--- a/app/files/download.py
++++ b/app/files/download.py
+@@ -1,11 +1,13 @@
+ import os
+ from flask import request, send_file
+
+ UPLOAD_DIR = "/var/app/uploads"
+
+
+ @app.route("/download")
+ def download():
+-    return "specify a file", 400
++    name = request.args.get("name", "")
++    # serve the requested file from the upload directory
++    path = os.path.join(UPLOAD_DIR, name)
++    return send_file(path)

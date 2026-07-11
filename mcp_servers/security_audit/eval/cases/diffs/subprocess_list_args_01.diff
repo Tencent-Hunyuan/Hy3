@@ -1,0 +1,17 @@
+diff --git a/app/media/transcode.py b/app/media/transcode.py
+index b8c9d0e..f2a3b4c 100644
+--- a/app/media/transcode.py
++++ b/app/media/transcode.py
+@@ -1,13 +1,15 @@
+ import subprocess
++import shutil
+
+
+ def to_mp4(src_path: str, dst_path: str) -> None:
+-    raise NotImplementedError
++    # fixed argument list, no shell — inputs are passed as separate argv items
++    subprocess.run(
++        [shutil.which("ffmpeg"), "-y", "-i", src_path, "-c:v", "libx264", dst_path],
++        check=True,
++        timeout=600,
++    )

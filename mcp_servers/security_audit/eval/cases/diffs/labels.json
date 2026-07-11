@@ -1,0 +1,25 @@
+{
+  "cmd_injection_01.diff": { "kind": "malicious", "weakness": "命令注入", "expected_min_severity": "high" },
+  "sql_injection_01.diff": { "kind": "malicious", "weakness": "SQL注入", "expected_min_severity": "high" },
+  "hardcoded_secret_01.diff": { "kind": "malicious", "weakness": "硬编码凭据", "expected_min_severity": "high" },
+  "unsafe_deser_pickle_01.diff": { "kind": "malicious", "weakness": "不安全反序列化", "expected_min_severity": "high" },
+  "unsafe_yaml_load_01.diff": { "kind": "malicious", "weakness": "不安全反序列化", "expected_min_severity": "high" },
+  "path_traversal_01.diff": { "kind": "malicious", "weakness": "路径穿越", "expected_min_severity": "high" },
+  "ssrf_01.diff": { "kind": "malicious", "weakness": "SSRF", "expected_min_severity": "high" },
+  "weak_crypto_md5_01.diff": { "kind": "malicious", "weakness": "弱加密", "expected_min_severity": "medium" },
+  "insecure_tempfile_01.diff": { "kind": "malicious", "weakness": "不安全临时文件", "expected_min_severity": "medium" },
+  "missing_authz_01.diff": { "kind": "malicious", "weakness": "越权", "expected_min_severity": "high" },
+  "xxe_01.diff": { "kind": "malicious", "weakness": "XXE", "expected_min_severity": "high" },
+
+  "refactor_parser_01.diff": { "kind": "benign" },
+  "add_pagination_01.diff": { "kind": "benign" },
+  "parameterized_query_01.diff": { "kind": "benign" },
+  "env_var_config_01.diff": { "kind": "benign" },
+  "add_unit_tests_01.diff": { "kind": "benign" },
+  "rename_variable_01.diff": { "kind": "benign" },
+  "bump_dependencies_01.diff": { "kind": "benign" },
+  "add_logging_01.diff": { "kind": "benign" },
+  "subprocess_list_args_01.diff": { "kind": "benign" },
+  "md5_file_checksum_01.diff": { "kind": "benign" },
+  "add_input_validation_01.diff": { "kind": "benign" }
+}

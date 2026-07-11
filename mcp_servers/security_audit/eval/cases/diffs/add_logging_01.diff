@@ -1,0 +1,20 @@
+diff --git a/app/jobs/mailer.py b/app/jobs/mailer.py
+index a7b8c9d..e1f2a3b 100644
+--- a/app/jobs/mailer.py
++++ b/app/jobs/mailer.py
+@@ -1,12 +1,17 @@
++import logging
+ from app.mail import client
+
++logger = logging.getLogger(__name__)
++
+
+ def send_welcome(user_id: int, address: str) -> None:
++    logger.info("sending welcome email to user=%s", user_id)
+     try:
+         client.send(template="welcome", to=address)
++        logger.info("welcome email queued for user=%s", user_id)
+     except client.TransientError:
+-        raise
++        logger.warning("transient mail error for user=%s, will retry", user_id)
++        raise

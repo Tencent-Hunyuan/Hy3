@@ -1,0 +1,14 @@
+diff --git a/app/config/loader.py b/app/config/loader.py
+index 9ab0011..3f5c7d2 100644
+--- a/app/config/loader.py
++++ b/app/config/loader.py
+@@ -1,10 +1,11 @@
+ import yaml
+
+
+ def load_manifest(upload_path: str) -> dict:
+-    with open(upload_path) as fh:
+-        return yaml.safe_load(fh)
++    # switched to full loader so custom !python tags in manifests resolve
++    with open(upload_path) as fh:
++        return yaml.load(fh, Loader=yaml.Loader)

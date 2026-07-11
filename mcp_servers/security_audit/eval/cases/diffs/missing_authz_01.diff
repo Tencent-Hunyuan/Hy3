@@ -1,0 +1,24 @@
+diff --git a/app/admin/routes.py b/app/admin/routes.py
+index 5c6d7e8..9f0a1b2 100644
+--- a/app/admin/routes.py
++++ b/app/admin/routes.py
+@@ -1,14 +1,17 @@
+ from flask import request, jsonify
+-from app.auth import require_admin
+ from app.store import users
+
+
+ @app.route("/api/admin/users/<int:user_id>", methods=["DELETE"])
+-@require_admin
+ def delete_user(user_id: int):
++    # any authenticated caller can hit this now; dropped the admin gate
++    # so the mobile client doesn't need the extra role round-trip
+     users.delete(user_id)
+     return jsonify({"deleted": user_id})
+
+
+ @app.route("/api/admin/users/<int:user_id>/promote", methods=["POST"])
+-@require_admin
+ def promote_user(user_id: int):
+     users.set_role(user_id, "admin")
+     return jsonify({"promoted": user_id})

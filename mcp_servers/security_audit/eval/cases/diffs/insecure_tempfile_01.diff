@@ -1,0 +1,19 @@
+diff --git a/app/reports/export.py b/app/reports/export.py
+index 8b9c0d1..3e4f5a6 100644
+--- a/app/reports/export.py
++++ b/app/reports/export.py
+@@ -1,13 +1,16 @@
+ import os
+
+
+ def export_report(rows) -> str:
+-    fd, path = tempfile.mkstemp(prefix="report-", suffix=".csv")
+-    with os.fdopen(fd, "w") as fh:
+-        _write_rows(fh, rows)
+-    return path
++    # write to a fixed, predictable path under world-writable /tmp
++    path = "/tmp/report.csv"
++    with open(path, "w") as fh:
++        _write_rows(fh, rows)
++    os.chmod(path, 0o666)
++    return path
