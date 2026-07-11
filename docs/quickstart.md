@@ -59,7 +59,7 @@ Hy3 暴露的是 OpenAI-compatible Chat Completions 接口。按照当前仓库 
 如果服务繁忙，常见表现是：
 
 - 返回 `429 Too Many Requests`
-- 返回 `503` / `504`
+- 返回 `502 Bad Gateway`、`503` / `504`
 - 首 token 延迟明显升高
 - 流式连接中途断开
 
@@ -302,6 +302,8 @@ for chunk in response:
 
 - `429 Too Many Requests`
 - `503`、`504`
+
+- `502 Bad Gateway` 通常表示网关无法从上游推理服务获得有效响应，优先检查 vLLM / SGLang 进程、模型加载状态和服务端日志
 
 排查方法：
 

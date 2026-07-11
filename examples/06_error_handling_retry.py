@@ -42,6 +42,7 @@ from config import (
     MODEL,
     RETRY_BASE_DELAY_SECONDS,
     RETRY_MAX_DELAY_SECONDS,
+    TIMEOUT_SECONDS,
     build_client,
     reasoning_extra_body,
 )
@@ -53,7 +54,7 @@ def sleep_with_backoff(
     max_delay: float = RETRY_MAX_DELAY_SECONDS,
 ) -> None:
     sleep_time = min(base_delay * (2 ** attempt), max_delay)
-    print(f"Retrying in {sleep_time:.1f}s...")
+    print(f"Retrying in {sleep_time:.1f}s...", flush=True)
     time.sleep(sleep_time)
 
 
@@ -71,7 +72,7 @@ def create_completion_with_retry(client: OpenAI, max_retries: int = MAX_RETRIES)
                 temperature=0.3,
                 top_p=1.0,
                 max_tokens=256,
-                timeout=30,
+                timeout=TIMEOUT_SECONDS,
                 extra_body=reasoning_extra_body("no_think"),
             )
         except AuthenticationError as exc:
@@ -85,12 +86,15 @@ def create_completion_with_retry(client: OpenAI, max_retries: int = MAX_RETRIES)
         except (APITimeoutError, APIConnectionError) as exc:
             if attempt >= max_retries:
                 raise exc
-            print(f"Attempt {attempt + 1} failed with network/timeout error: {type(exc).__name__}")
+            print(
+                f"Attempt {attempt + 1} failed with network/timeout error: {type(exc).__name__}",
+                flush=True,
+            )
             sleep_with_backoff(attempt)
         except RateLimitError as exc:
             if attempt >= max_retries:
                 raise exc
-            print(f"Attempt {attempt + 1} failed with 429 rate limit: {exc}")
+            print(f"Attempt {attempt + 1} failed with 429 rate limit: {exc}", flush=True)
             sleep_with_backoff(attempt)
         except (InternalServerError, APIStatusError) as exc:
             status_code = getattr(exc, "status_code", None)
@@ -98,7 +102,10 @@ def create_completion_with_retry(client: OpenAI, max_retries: int = MAX_RETRIES)
                 raise exc
             if attempt >= max_retries:
                 raise exc
-            print(f"Attempt {attempt + 1} failed with server error: status={status_code}")
+            print(
+                f"Attempt {attempt + 1} failed with server error: status={status_code}",
+                flush=True,
+            )
             sleep_with_backoff(attempt)
 
     raise RuntimeError("Unexpected retry exit.")
@@ -106,7 +113,17 @@ def create_completion_with_retry(client: OpenAI, max_retries: int = MAX_RETRIES)
 
 def main() -> None:
     client = build_client()
-    response = create_completion_with_retry(client)
+    try:
+        response = create_completion_with_retry(client)
+    except (AuthenticationError, BadRequestError):
+        raise SystemExit(1)
+    except (APITimeoutError, APIConnectionError) as exc:
+        print(f"Request failed after retries: {type(exc).__name__}: {exc}")
+        raise SystemExit(1)
+    except APIStatusError as exc:
+        print(f"Request failed after retries: HTTP {exc.status_code}: {exc}")
+        raise SystemExit(1)
+
     message = response.choices[0].message
 
     print("Success:")

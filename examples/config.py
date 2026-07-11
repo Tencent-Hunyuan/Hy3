@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -11,6 +12,10 @@ from openai import OpenAI
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env")
+
+# Hy3 responses may contain Unicode characters that Windows' GBK console cannot print.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 PROVIDER = os.getenv("API_PROVIDER", "hy3").strip().lower()
 if PROVIDER not in {"hy3", "hunyuan"}:
