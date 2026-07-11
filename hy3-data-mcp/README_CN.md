@@ -16,6 +16,26 @@
 
 ---
 
+## 🎯 犀牛鸟 2026 任务提交
+
+本仓库是 [Tencent RhinoBird 2026 issue #3](https://github.com/Tencent-Hunyuan/Hy3/issues/3) 的参赛作品。
+
+| 任务要求 | 本项目如何满足 |
+|---|---|
+| 基于 Hy3 的 MCP Server | ✅ 使用 TypeScript MCP SDK 实现 stdio 服务端，分析与 Plan 工具均调用 Hy3 API 完成核心推理。 |
+| 至少 3 个 tool | ✅ 暴露 11 个工具，包括 `hy3_extract_document`、`hy3_analyze`、`hy3_render_chart`、`hy3_plan_dashboard` 等。 |
+| 外部数据源/工具 | ✅ 读取本地 CSV/JSON/XLSX/PDF/DOCX/TXT 文件，并使用 ECharts 渲染图表；无需额外 Web 服务。 |
+| 本地 stdio 模式 | ✅ 以本地 stdio MCP 服务器方式运行。 |
+| 不硬编码 API Key | ✅ API Key 仅通过 `HY3_API_KEY` 环境变量传入，代码中无任何硬编码。 |
+| 在 2+ 个 MCP 客户端验证 | ✅ 已通过 `hdm init` 在 CodeBuddy / WorkBuddy、Cursor、Cline、Roo Code、Continue、Codex CLI、Claude Code、OpenCode 等客户端中验证可用。 |
+| 一键安装包 | ✅ 以 `releases/hy3-data-mcp-0.3.10.tgz` 形式分发，执行 `npm install -g ./releases/hy3-data-mcp-0.3.10.tgz` 即可安装。 |
+| 完整 README | ✅ 本 README 与 `README.md` 提供了安装、配置与使用示例。 |
+| Demo 视频/GIF | ✅ 见下方的演示 GIF 与截图画廊。 |
+
+**选题方向：** **数据分析（读取 CSV/JSON + Hy3 分析 + 图表描述）** —— 通过自然语言提示，将结构化数据转化为洞察、报告和可出版级的可视化结果。
+
+---
+
 ## 为什么选择 Hy3 数据分析 MCP？
 
 - **对话即可视化** —— 在 MCP 客户端里一句话就能生成图表、词云、知识图谱或数据大屏。
@@ -814,7 +834,7 @@ npm run test:coverage   # 生成覆盖率报告
 npm run test:real       # 需要配置 HY3_API_KEY
 ```
 
-测试套件包含 **168 条单元、集成和冒烟测试**，覆盖文档解析、工具函数、主题系统、CLI 配置、数据大屏渲染、客户端初始化、流式 LLM 输出、异步任务执行、全部可视化工具、图表渲染和 MCP Server 握手。
+测试套件包含 **174 条单元、集成和冒烟测试**，覆盖文档解析、工具函数、主题系统、CLI 配置、数据大屏渲染、客户端初始化、流式 LLM 输出、异步任务执行、全部可视化工具、图表渲染和 MCP Server 握手。
 
 使用 [MCP Inspector](https://github.com/modelcontextprotocol/inspector) 调试：
 

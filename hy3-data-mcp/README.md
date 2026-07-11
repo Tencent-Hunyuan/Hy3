@@ -16,6 +16,26 @@ Built for the **2026 Tencent RhinoBird Open Source Talent Program** issue: [Buil
 
 ---
 
+## 🎯 Rhinobird 2026 Submission
+
+This repository is a submission for the [Tencent RhinoBird 2026 issue #3](https://github.com/Tencent-Hunyuan/Hy3/issues/3).
+
+| Requirement | How this project meets it |
+|---|---|
+| MCP server powered by Hy3 | ✅ Implements a stdio MCP server using the TypeScript SDK; all analysis/planning tools call the Hy3 API. |
+| At least 3 tools | ✅ Exposes 11 tools, including `hy3_extract_document`, `hy3_analyze`, `hy3_render_chart`, `hy3_plan_dashboard`, etc. |
+| External data sources/tools | ✅ Reads local CSV/JSON/XLSX/PDF/DOCX/TXT files and renders charts with ECharts; no extra web services required. |
+| Local stdio mode | ✅ Runs as a local stdio MCP server. |
+| No hard-coded API key | ✅ API key is read from `HY3_API_KEY` environment variable only. |
+| Verified in 2+ MCP clients | ✅ Tested with CodeBuddy / WorkBuddy, Cursor, Cline, Roo Code, Continue, Codex CLI, Claude Code, and OpenCode via the `hdm init` installer. |
+| One-click installable package | ✅ Distributed as `releases/hy3-data-mcp-0.3.10.tgz`; install with `npm install -g ./releases/hy3-data-mcp-0.3.10.tgz`. |
+| README with install/config/examples | ✅ This README and `README_CN.md` provide installation, configuration, and usage examples. |
+| Demo video/GIF | ✅ See the demo GIF and screenshot gallery below. |
+
+**Selected scenario:** **Data analysis** — reading CSV/JSON/Excel + Hy3 analysis + chart/report generation from natural-language prompts.
+
+---
+
 ## Why Hy3 Data MCP?
 
 - **No-code visualization for AI chats** — Your MCP client can now generate charts and dashboards from a single prompt.
@@ -814,7 +834,7 @@ npm run test:coverage   # generate coverage report
 npm run test:real       # requires HY3_API_KEY
 ```
 
-The test suite contains **168 unit, integration, and smoke tests** covering documents, utilities, themes, CLI config, dashboard rendering, client setup, streaming LLM output, async task execution, all visualization tools, chart rendering, and the MCP server handshake.
+The test suite contains **174 unit, integration, and smoke tests** covering documents, utilities, themes, CLI config, dashboard rendering, client setup, streaming LLM output, async task execution, all visualization tools, chart rendering, and the MCP server handshake.
 
 Debug with the [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
 
