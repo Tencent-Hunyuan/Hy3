@@ -42,6 +42,7 @@
   - [SGLang](#sglang)
 - [Finetuning](#finetuning)
 - [Quantization](#quantization)
+- [Community Applications](#community-applications)
 - [License](#license)
 - [Contact Us](#contact-us)
 
@@ -208,6 +209,26 @@ Hy3 provides a complete model finetuning pipeline. For detailed documentation, p
 ## Quantization
 
 We provide [AngelSlim](https://github.com/tencent/AngelSlim), a more accessible, comprehensive, and efficient toolkit for large model compression. AngelSlim supports a comprehensive suite of compression tools for large-scale multimodal models, including common quantization algorithms, low-bit quantization, and speculative sampling.
+
+## Community Applications
+
+### HyShell
+
+[HyShell](https://github.com/YWliu040120/hyshell) is a safety-first Linux terminal agent powered by the Hy3 API.
+
+Users describe terminal tasks in natural language. Hy3 handles intent understanding, command generation, multi-step planning, execution-result analysis, and failure diagnosis. The local HyShell application handles environment awareness, risk classification, user confirmation, controlled command execution, secret sanitization, and audit logging.
+
+Key features:
+
+- `hy ask`: generate command suggestions without execution.
+- `hy run`: generate, review, confirm, and execute a command.
+- `hy explain`: explain complex shell commands.
+- `hy fix`: diagnose failed commands and suggest corrections.
+- `hy plan`: run a plan-execute-observe-fix workflow.
+- OpenAI-compatible Tencent Hy3 API integration.
+- Static safety rules, secret sanitization, confirmation, and JSONL audit logs.
+
+Repository: https://github.com/YWliu040120/hyshell
 
 ## License
 
