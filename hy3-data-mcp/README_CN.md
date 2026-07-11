@@ -26,6 +26,22 @@
 
 ---
 
+## ✨ 亮点功能 —— 本分支的差异化特性
+
+除了标准的 MCP 数据可视化流程，本分支还针对实际使用场景做了大量增强：
+
+- **自定义输出文件名** —— 所有渲染/报告类工具都支持 `output_filename`，让生成的文件拥有有意义的名称，而不是随机时间戳。
+- **图表下方展示源数据表** —— `hy3_render_chart(..., show_data_table: true)` 会在 HTML 页面底部附上原始数据表格，便于核对与分享。
+- **HTML 主题切换器** —— 单图表（`enable_theme_switcher`）和仪表盘（`enable_theme_switcher`）都支持在页面上实时切换主题。
+- **交互式 WebGL 3D** —— `bar3d`、`scatter3d`、`line3d` 在设置 `interactive_3d: true` 时，会通过 ECharts GL 渲染真正的 WebGL 场景，支持鼠标旋转、缩放。
+- **DOCX 表格提取** —— `hy3_extract_document` 开启 `extract_tables: true` 后，可同时从 PDF 和 DOCX 中抽取表格。
+- **统计图表类型** —— 原生支持 `violin`（小提琴图）和 `errorbar`（误差棒图），采用自定义 SVG 渲染。
+- **仪表盘 KPI 卡片** —— HTML 仪表盘默认在顶部展示总计 / 平均 / 最大 / 最小四张 KPI 卡片（`show_kpi`）。
+- **Plan → Render 流水线** —— Plan 工具生成的配置可直接被 Render 工具消费，并针对 `sunburst`/`treemap` 自动处理 `value_column` 回退。
+- **任务化 LLM 工具** —— 分析与 Plan 工具注册为 MCP Task，支持进度上报，让长时间 Hy3 调用也能实时反馈给客户端。
+
+---
+
 ## 功能特性
 
 `hy3-data-mcp` 共提供 **11 个工具**，按三个阶段组织：**提取 & 分析**、**Plan（LLM 决策）**、**Render（纯渲染）**。

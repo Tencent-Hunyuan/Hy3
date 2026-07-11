@@ -26,6 +26,22 @@ Built for the **2026 Tencent RhinoBird Open Source Talent Program** issue: [Buil
 
 ---
 
+## ✨ Highlights — What Makes This Fork Stand Out
+
+Beyond the standard MCP charting workflow, this fork adds a set of practical, user-facing enhancements:
+
+- **Custom output filenames** — All render and report tools accept `output_filename`, so generated files can have meaningful names instead of random timestamps.
+- **Source data table under charts** — `hy3_render_chart(..., show_data_table: true)` appends the raw data table to the HTML output for easy reference.
+- **HTML theme switcher** — Switch themes interactively for single charts (`enable_theme_switcher`) and dashboards (`enable_theme_switcher`) without re-rendering.
+- **Interactive WebGL 3D** — `bar3d`, `scatter3d`, and `line3d` can render as real WebGL scenes via ECharts GL when `interactive_3d: true` is set.
+- **DOCX table extraction** — `hy3_extract_document` extracts tables from both PDF and DOCX files when `extract_tables: true`.
+- **Statistical charts** — Native `violin` and `errorbar` chart types are rendered directly as SVG, no ECharts built-in required.
+- **Dashboard KPI cards** — HTML dashboards automatically show Total / Average / Max / Min cards at the top (`show_kpi`).
+- **Plan → Render pipeline** — Plan tools produce config that render tools consume directly, with automatic `value_column` fallback for `sunburst`/`treemap`.
+- **Task-capable LLM tools** — Analyze and Plan tools are registered as MCP tasks with progress reporting, so long-running Hy3 calls stream updates back to the client.
+
+---
+
 ## Features
 
 `hy3-data-mcp` exposes **11 tools** split into three phases: **Extract & Analyze**, **Plan** (LLM decisions), and **Render** (deterministic output).
