@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { renderDashboardHtml, renderDashboardPng, type ChartType } from "../viz/echarts.js";
-import { buildThemeOverrides, DataTable, loadDataTable, parseInlineData, resolveLanguage, writeOutputFile } from "../utils.js";
+import { buildThemeOverrides, DataTable, loadDataTable, parseInlineData, resolveLanguage, resolveOutputFilename, writeOutputFile } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
 
@@ -97,6 +97,12 @@ export const renderDashboardDefinition = {
         description: "Whether to render a KPI summary row at the top of the dashboard (HTML only).",
         default: true,
       },
+      enable_theme_switcher: {
+        type: "boolean",
+        description: "Whether to add a theme switcher dropdown to the dashboard (HTML only).",
+        default: false,
+      },
+      output_filename: { type: "string", description: "Optional custom output file name (without extension)." },
     },
     required: ["design"],
   },
@@ -138,6 +144,8 @@ export const renderDashboardSchema = z.object({
   layout: z.enum(["grid", "rows", "columns", "hero", "compact"]).optional(),
   language: z.enum(["zh", "en", "auto"]).default("auto"),
   show_kpi: z.boolean().default(true),
+  enable_theme_switcher: z.boolean().default(false),
+  output_filename: z.string().optional(),
 });
 
 export async function runRenderDashboard(
@@ -162,6 +170,8 @@ export async function runRenderDashboard(
     layout,
     language,
     show_kpi,
+    enable_theme_switcher,
+    output_filename,
   } = renderDashboardSchema.parse(args);
 
   if ((!file_paths || file_paths.length === 0) && !data_file_path && (!data || data.trim().length === 0)) {
@@ -224,6 +234,7 @@ export async function runRenderDashboard(
   }>;
 
   const safeTitle = resolvedTitle.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "_");
+  const defaultName = `dashboard_${safeTitle}_${Date.now()}`;
   const formatLabel = output_format === "png" ? "PNG" : "HTML";
 
   await onProgress?.(60, 100);
@@ -238,7 +249,7 @@ export async function runRenderDashboard(
       themeOverrides,
       resolvedLayout
     );
-    outputPath = await writeOutputFile(`dashboard_${safeTitle}_${Date.now()}.png`, buffer);
+    outputPath = await writeOutputFile(resolveOutputFilename(output_filename, defaultName, "png"), buffer);
   } else {
     const html = renderDashboardHtml(
       chartInputs,
@@ -248,9 +259,10 @@ export async function runRenderDashboard(
       themeOverrides,
       resolvedLayout,
       show_kpi,
-      resolvedLanguage
+      resolvedLanguage,
+      enable_theme_switcher
     );
-    outputPath = await writeOutputFile(`dashboard_${safeTitle}_${Date.now()}.html`, html);
+    outputPath = await writeOutputFile(resolveOutputFilename(output_filename, defaultName, "html"), html);
   }
 
   await onProgress?.(100, 100);

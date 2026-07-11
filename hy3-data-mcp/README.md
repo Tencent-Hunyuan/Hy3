@@ -34,7 +34,7 @@ Built for the **2026 Tencent RhinoBird Open Source Talent Program** issue: [Buil
 
 | Tool | What it does | Output |
 | --- | --- | --- |
-| `hy3_extract_document` | Extract raw text/tables from PDF, DOCX, TXT, CSV, JSON, and XLSX files. No LLM. Adds `extract_tables` and `return_data`. | `json` |
+| `hy3_extract_document` | Extract raw text/tables from PDF, DOCX, TXT, CSV, JSON, and XLSX files. No LLM. Adds `extract_tables` (PDF + DOCX) and `return_data`. | `json` |
 | `hy3_analyze` | General analysis that replaces the old `hy3_analyze_text` + `hy3_data_insight`. Supports `text` / `data` / `file_path`. | `text` / `html` / `json` |
 | `hy3_analyze_report` | One-stop analysis report with Hy3-written insights and embedded charts. Rich params for charts, size, and theme. | `html` / `markdown` |
 
@@ -51,8 +51,8 @@ Built for the **2026 Tencent RhinoBird Open Source Talent Program** issue: [Buil
 
 | Tool | What it does |
 | --- | --- |
-| `hy3_render_chart` | Render a single chart from explicit data + config. Adds `mark_point`, `mark_line`, `data_zoom`, `x_name`, and more. |
-| `hy3_render_dashboard` | Render a dashboard design into an interactive HTML page or PNG composite. |
+| `hy3_render_chart` | Render a single chart from explicit data + config. Adds `mark_point`, `mark_line`, `data_zoom`, `x_name`, `output_filename`, `show_data_table`, `enable_theme_switcher`, `interactive_3d`, and more. |
+| `hy3_render_dashboard` | Render a dashboard design into an interactive HTML page or PNG composite. Adds `show_kpi`, `enable_theme_switcher`, `output_filename`. |
 | `hy3_render_wordcloud` | Render a word cloud from explicit words or raw text. |
 | `hy3_render_knowledge_graph` | Render a knowledge graph from explicit nodes and links. |
 

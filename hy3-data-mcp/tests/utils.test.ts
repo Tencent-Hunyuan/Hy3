@@ -12,6 +12,7 @@ import {
   loadOutputDir,
   writeOutputFile,
   selectTextColumn,
+  resolveOutputFilename,
 } from "../src/utils.js";
 
 describe("parseData", () => {
@@ -173,6 +174,24 @@ describe("writeOutputFile", () => {
     expect(filePath).toBe(join(tempDir, "charts", "test.svg"));
     const content = await (await import("fs/promises")).readFile(filePath, "utf-8");
     expect(content).toBe("<svg></svg>");
+  });
+});
+
+describe("resolveOutputFilename", () => {
+  it("uses provided name and extension", () => {
+    expect(resolveOutputFilename("my-chart", "default", "svg")).toBe("my-chart.svg");
+  });
+
+  it("strips matching extension from provided name", () => {
+    expect(resolveOutputFilename("my-chart.svg", "default", "svg")).toBe("my-chart.svg");
+  });
+
+  it("sanitizes unsafe characters", () => {
+    expect(resolveOutputFilename("a/b:c?d", "default", "png")).toBe("a_b_c_d.png");
+  });
+
+  it("falls back to default when name is empty", () => {
+    expect(resolveOutputFilename("", "default_123", "html")).toBe("default_123.html");
   });
 });
 

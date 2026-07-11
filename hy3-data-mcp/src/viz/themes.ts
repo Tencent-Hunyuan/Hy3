@@ -236,6 +236,34 @@ export function getTheme(
   return merged;
 }
 
+export function echartsThemeObject(theme: Theme): EChartsOption {
+  const axisOption = {
+    axisLine: { lineStyle: { color: theme.axisColor } },
+    axisTick: { lineStyle: { color: theme.axisColor } },
+    axisLabel: { color: theme.textColor, fontFamily: theme.fontFamily },
+    splitLine: { lineStyle: { color: theme.splitLineColor } },
+    nameTextStyle: { color: theme.textColor, fontFamily: theme.fontFamily },
+  };
+  const tooltipBackground = isDarkColor(theme.backgroundColor)
+    ? "rgba(30,30,30,0.9)"
+    : "rgba(255,255,255,0.95)";
+  const tooltipText = isDarkColor(theme.backgroundColor) ? "#eeeeee" : "#333333";
+  return {
+    backgroundColor: theme.backgroundColor,
+    color: theme.palette,
+    textStyle: { color: theme.textColor, fontFamily: theme.fontFamily },
+    title: { textStyle: { color: theme.textColor, fontFamily: theme.fontFamily } },
+    legend: { textStyle: { color: theme.textColor, fontFamily: theme.fontFamily } },
+    tooltip: {
+      backgroundColor: tooltipBackground,
+      borderColor: theme.splitLineColor,
+      textStyle: { color: tooltipText, fontFamily: theme.fontFamily },
+    },
+    xAxis: axisOption,
+    yAxis: axisOption,
+  };
+}
+
 export function applyTheme(option: EChartsOption, theme: Theme): EChartsOption {
   const merged: EChartsOption = {
     ...option,

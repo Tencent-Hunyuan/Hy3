@@ -4,6 +4,7 @@ import {
   askHy3,
   loadInputData,
   resolveLanguage,
+  resolveOutputFilename,
   sampleText,
   tableSummary,
   writeOutputFile,
@@ -38,6 +39,7 @@ export const analyzeDefinition = {
         description: "Language of the output. 'auto' detects from input.",
         default: "auto",
       },
+      output_filename: { type: "string", description: "Optional custom output file name (without extension)." },
     },
     required: [],
   },
@@ -51,6 +53,7 @@ export const analyzeSchema = z.object({
   question: z.string().default("Summarize and extract key insights"),
   output_format: z.enum(["text", "json", "html"]).default("text"),
   language: z.enum(["zh", "en", "auto"]).default("auto"),
+  output_filename: z.string().optional(),
 });
 
 export async function runAnalyze(
@@ -60,7 +63,7 @@ export async function runAnalyze(
   signal?: AbortSignal,
   onOutput?: (chunk: string) => void
 ): Promise<{ content: Array<{ type: "text"; text: string }> }> {
-  const { text, data, data_file_path, file_path, question, output_format, language } =
+  const { text, data, data_file_path, file_path, question, output_format, language, output_filename } =
     analyzeSchema.parse(args);
 
   const hasText = text && text.trim().length > 0;
@@ -134,7 +137,10 @@ export async function runAnalyze(
   </div>
 </body>
 </html>`;
-    const outputPath = await writeOutputFile(`analyze_${Date.now()}.html`, html);
+    const outputPath = await writeOutputFile(
+      resolveOutputFilename(output_filename, `analyze_${Date.now()}`, "html"),
+      html
+    );
     await onProgress?.(100, 100);
     return {
       content: [

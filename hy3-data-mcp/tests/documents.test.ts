@@ -5,6 +5,7 @@ import { dirname } from "path";
 import * as XLSX from "xlsx";
 import {
   detectDocumentType,
+  extractTablesFromDocx,
   extractTablesFromPdf,
   extractTextFromDocument,
   parseXlsx,
@@ -54,6 +55,18 @@ describe("extractTextFromDocument", () => {
 describe("extractTablesFromPdf", () => {
   it("extracts the quarterly performance table from report.pdf", async () => {
     const tables = await extractTablesFromPdf(join(sampleDir, "report.pdf"));
+    expect(tables.length).toBeGreaterThanOrEqual(1);
+    const table = tables[0];
+    expect(table.columns).toEqual(["Quarter", "Revenue ($)", "Units Sold"]);
+    expect(table.rows).toHaveLength(4);
+    expect(table.rows[0]).toMatchObject({ Quarter: "Q1", "Revenue ($)": "120,000", "Units Sold": "3,400" });
+    expect(table.rows[3]).toMatchObject({ Quarter: "Q4", "Revenue ($)": "152,000", "Units Sold": "4,100" });
+  });
+});
+
+describe("extractTablesFromDocx", () => {
+  it("extracts the quarterly performance table from report.docx", async () => {
+    const tables = await extractTablesFromDocx(join(sampleDir, "report.docx"));
     expect(tables.length).toBeGreaterThanOrEqual(1);
     const table = tables[0];
     expect(table.columns).toEqual(["Quarter", "Revenue ($)", "Units Sold"]);

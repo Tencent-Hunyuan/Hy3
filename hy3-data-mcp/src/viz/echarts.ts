@@ -1,7 +1,7 @@
 import * as echarts from "echarts";
-import { is3dChartType, render3dSvg } from "./3d.js";
+import { is3dChartType, render3dSvg, render3dWebGlHtml } from "./3d.js";
 import { svgToPng } from "./png.js";
-import { applyTheme, getTheme } from "./themes.js";
+import { applyTheme, echartsThemeObject, getTheme, themes } from "./themes.js";
 import type { Theme } from "./themes.js";
 import type { DataTable } from "../utils.js";
 export type { DataTable } from "../utils.js";
@@ -37,7 +37,10 @@ export type ChartType =
   | "area_bar"
   | "dual_axis"
   | "stacked_area"
-  | "grouped_line";
+  | "grouped_line"
+  // statistical charts rendered as custom SVG
+  | "violin"
+  | "errorbar";
 
 export interface ChartConfig {
   x_column: string;
@@ -54,6 +57,8 @@ export interface ChartConfig {
   group_column?: string;
   size_column?: string;
   z_column?: string;
+  lower_column?: string;
+  upper_column?: string;
   theme?: string;
   font_family?: string;
   background_color?: string;
@@ -76,6 +81,9 @@ export interface ChartConfig {
   mark_line?: boolean;
   data_zoom?: boolean;
   overrides?: string;
+  show_data_table?: boolean;
+  enable_theme_switcher?: boolean;
+  interactive_3d?: boolean;
 }
 
 function themeOverridesFromConfig(config: ChartConfig): Partial<Omit<Theme, "name">> {
@@ -113,6 +121,15 @@ export function renderChartSvg(
 ): string {
   if (is3dChartType(chartType)) {
     return render3dSvg(chartType, table, config);
+  }
+
+  if (chartType === "violin" || chartType === "errorbar") {
+    const theme = getTheme(config.theme, config.font_family, themeOverridesFromConfig(config));
+    const width = config.width ?? 800;
+    const height = config.height ?? 500;
+    return chartType === "violin"
+      ? violinSvg(table, config, theme, width, height)
+      : errorbarSvg(table, config, theme, width, height);
   }
 
   const width = config.width ?? 800;
@@ -156,30 +173,63 @@ export function renderChartHtml(
   const height = config.height ?? 500;
 
   if (is3dChartType(chartType)) {
-    const svg = render3dSvg(chartType, table, config);
     const theme = getTheme(config.theme, config.font_family, themeOverridesFromConfig(config));
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(config.title)}</title>
-  <style>
-    body { margin: 0; padding: 24px; background: ${theme.backgroundColor}; color: ${theme.textColor}; font-family: ${theme.fontFamily}; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-    .container { background: ${theme.name === "dark" ? "#1f1f1f" : theme.name === "premium" ? "#0F172A" : theme.backgroundColor}; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-  </style>
-</head>
-<body>
-  <div class="container">
-    ${svg}
-  </div>
-</body>
-</html>`;
+    if (config.interactive_3d) {
+      return render3dWebGlHtml(chartType as any, table, config);
+    }
+    const svg = render3dSvg(chartType, table, config);
+    return wrapStaticSvgHtml(svg, config.title, theme);
   }
 
-  const option = buildEChartsOption(chartType, table, config);
+  if (chartType === "violin" || chartType === "errorbar") {
+    const theme = getTheme(config.theme, config.font_family, themeOverridesFromConfig(config));
+    const width = config.width ?? 800;
+    const height = config.height ?? 500;
+    const svg =
+      chartType === "violin"
+        ? violinSvg(table, config, theme, width, height)
+        : errorbarSvg(table, config, theme, width, height);
+    return wrapStaticSvgHtml(svg, config.title, theme);
+  }
+
+  const option = buildEChartsOptionForHtml(chartType, table, config);
   const theme = getTheme(config.theme, config.font_family, themeOverridesFromConfig(config));
   const containerBg = theme.name === "dark" ? "#1f1f1f" : theme.name === "premium" ? "#0F172A" : theme.backgroundColor;
+  const themeObjects = Object.fromEntries(
+    Object.entries(themes).map(([name, t]) => [name, echartsThemeObject(t)])
+  );
+  const switcher = config.enable_theme_switcher
+    ? `<div style="text-align:right;margin-bottom:8px">
+      <label style="font-size:13px;color:${theme.textColor}">Theme
+        <select id="themeSwitcher" style="margin-left:6px;padding:4px 8px;border-radius:6px;border:1px solid ${theme.axisColor};background:${containerBg};color:${theme.textColor}">
+          ${Object.keys(themes)
+            .map((n) => `<option value="${n}"${n === theme.name ? " selected" : ""}>${n}</option>`)
+            .join("")}
+        </select>
+      </label>
+    </div>`
+    : "";
+  const switcherScript = config.enable_theme_switcher
+    ? `
+    const themeObjects = ${JSON.stringify(themeObjects)};
+    Object.entries(themeObjects).forEach(([name, t]) => echarts.registerTheme(name, t));
+    const switcher = document.getElementById('themeSwitcher');
+    switcher.addEventListener('change', (e) => {
+      const name = e.target.value;
+      const t = themeObjects[name];
+      window.__hy3Chart.dispose();
+      window.__hy3Chart = echarts.init(document.getElementById('chart'), name);
+      window.__hy3Chart.setOption(option);
+      document.body.style.background = t.backgroundColor;
+      document.body.style.color = t.textStyle.color;
+      const container = document.querySelector('.container');
+      container.style.background = name === 'dark' ? '#1f1f1f' : name === 'premium' ? '#0F172A' : t.backgroundColor;
+      container.style.color = t.textStyle.color;
+      switcher.style.background = container.style.background;
+      switcher.style.color = t.textStyle.color;
+    });`
+    : "";
+  const initTheme = config.enable_theme_switcher ? theme.name : null;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -195,14 +245,18 @@ export function renderChartHtml(
 </head>
 <body>
   <div class="container">
+    ${switcher}
     <div id="chart"></div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
   <script>
-    const chart = echarts.init(document.getElementById('chart'));
-    chart.setOption(${JSON.stringify(option)});
-    window.addEventListener('resize', () => chart.resize());
+    const option = ${JSON.stringify(option)};
+    window.__hy3Chart = echarts.init(document.getElementById('chart')${initTheme ? `, '${initTheme}'` : ""});
+    window.__hy3Chart.setOption(option);
+    window.addEventListener('resize', () => window.__hy3Chart.resize());
+    ${switcherScript}
   </script>
+  ${config.show_data_table ? renderDataTableHtml(table, theme) : ""}
 </body>
 </html>`;
 }
@@ -333,7 +387,8 @@ export function renderDashboardHtml(
   overrides?: Partial<Omit<Theme, "name">>,
   layout: DashboardLayout = "grid",
   showKpi = true,
-  language: "zh" | "en" = "en"
+  language: "zh" | "en" = "en",
+  enableThemeSwitcher = false
 ): string {
   const theme = getTheme(themeName, fontFamily, overrides);
   const cardBg = theme.name === "dark" ? "#1f1f1f" : theme.name === "premium" ? "#0F172A" : "#ffffff";
@@ -359,7 +414,10 @@ export function renderDashboardHtml(
     if (is3dChartType(c.chartType)) {
       return { title: c.config.title, svg: renderChartSvg(c.chartType, c.table, config) };
     }
-    return { title: c.config.title, option: buildEChartsOption(c.chartType, c.table, config) };
+    const option = enableThemeSwitcher
+      ? buildEChartsOptionForHtml(c.chartType, c.table, config)
+      : buildEChartsOption(c.chartType, c.table, config);
+    return { title: c.config.title, option };
   });
 
   const kpiCards = showKpi ? buildKpiCards(charts, theme, cardBg, language) : "";
@@ -374,18 +432,63 @@ export function renderDashboardHtml(
     })
     .join("\n");
 
-  const initScript = chartItems
-    .map((c, i) =>
-      "option" in c
-        ? `
+  const themeObjects = Object.fromEntries(
+    Object.entries(themes).map(([name, t]) => [name, echartsThemeObject(t)])
+  );
+  const initTheme = enableThemeSwitcher ? theme.name : null;
+  const chartRefs = chartItems
+    .map((c, i) => ("option" in c ? { id: `chart-${i}`, option: c.option } : null))
+    .filter(Boolean) as Array<{ id: string; option: any }>;
+
+  const initScript = chartRefs
+    .map(
+      (ref) => `
     (function() {
-      const chart = echarts.init(document.getElementById('chart-${i}'));
-      chart.setOption(${JSON.stringify(c.option)});
+      const chart = echarts.init(document.getElementById('${ref.id}')${initTheme ? `, '${initTheme}'` : ""});
+      chart.setOption(${JSON.stringify(ref.option)});
+      window.__hy3Charts = window.__hy3Charts || [];
+      window.__hy3Charts.push({ id: '${ref.id}', option: ${JSON.stringify(ref.option)} });
       window.addEventListener('resize', () => chart.resize());
     })();`
-        : ""
     )
     .join("\n");
+
+  const switcherHtml = enableThemeSwitcher
+    ? `<div style="text-align:right;margin-bottom:16px">
+      <label style="font-size:14px;color:${theme.textColor}">Theme
+        <select id="dashboardThemeSwitcher" style="margin-left:8px;padding:6px 10px;border-radius:6px;border:1px solid ${theme.axisColor};background:${cardBg};color:${theme.textColor}">
+          ${Object.keys(themes)
+            .map((n) => `<option value="${n}"${n === theme.name ? " selected" : ""}>${n}</option>`)
+            .join("")}
+        </select>
+      </label>
+    </div>`
+    : "";
+
+  const switcherScript = enableThemeSwitcher
+    ? `
+    const themeObjects = ${JSON.stringify(themeObjects)};
+    Object.entries(themeObjects).forEach(([name, t]) => echarts.registerTheme(name, t));
+    const picker = (name) => name === 'dark' ? '#1f1f1f' : name === 'premium' ? '#0F172A' : '#ffffff';
+    document.getElementById('dashboardThemeSwitcher').addEventListener('change', (e) => {
+      const name = e.target.value;
+      const t = themeObjects[name];
+      window.__hy3Charts.forEach((ref) => {
+        echarts.dispose(document.getElementById(ref.id));
+        const newChart = echarts.init(document.getElementById(ref.id), name);
+        newChart.setOption(ref.option);
+      });
+      document.body.style.background = t.backgroundColor;
+      document.body.style.color = t.textStyle.color;
+      document.querySelectorAll('.chart-box, .kpi-card').forEach((el) => {
+        el.style.background = picker(name);
+        el.style.color = t.textStyle.color;
+      });
+      e.target.style.background = picker(name);
+      e.target.style.color = t.textStyle.color;
+    });`
+    : "";
+
 
   let gridStyle = "";
   if (isRows) {
@@ -422,11 +525,12 @@ export function renderDashboardHtml(
 <body>
   <div class="container">
     <h1>${escapeHtml(title)}</h1>
+    ${switcherHtml}
     ${kpiCards}
     <div class="grid">${chartDivs}</div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-  <script>${initScript}</script>
+  <script>${initScript}${switcherScript}</script>
 </body>
 </html>`;
 }
@@ -682,6 +786,22 @@ function buildEChartsOption(
     }
   }
   return themed;
+}
+
+function buildEChartsOptionForHtml(
+  chartType: ChartType,
+  table: DataTable,
+  config: ChartConfig
+): echarts.EChartsOption {
+  let option = buildEChartsOptionRaw(chartType, table, config);
+  option = applyChartConfigOverrides(option, config);
+  if (config.overrides) {
+    const parsed = parseOverrides(config.overrides);
+    if (parsed) {
+      option = deepMerge(option, parsed) as echarts.EChartsOption;
+    }
+  }
+  return option;
 }
 
 function parseOverrides(overrides: string): unknown {
@@ -1416,6 +1536,315 @@ function applyPremiumStyling(option: echarts.EChartsOption, theme: Theme): void 
         break;
     }
   });
+}
+
+function renderDataTableHtml(table: DataTable, theme: Theme): string {
+  const rows = table.rows.slice(0, 100);
+  const header = table.columns
+    .map((col) => `<th style="padding:8px 12px;border-bottom:2px solid ${theme.axisColor};text-align:left;background:${theme.name === "dark" || theme.name === "premium" ? "#2a2a2a" : "#f6f7f9"}">${escapeHtml(col)}</th>`)
+    .join("");
+  const body = rows
+    .map(
+      (row) =>
+        `<tr>${table.columns
+          .map((col) => `<td style="padding:6px 12px;border-bottom:1px solid ${theme.splitLineColor || "#e5e7eb"}">${escapeHtml(String(row[col] ?? ""))}</td>`)
+          .join("")}</tr>`
+    )
+    .join("");
+  const caption =
+    table.rows.length > 100
+      ? `<p style="margin:8px 0 0;color:${theme.axisColor};font-size:12px">Showing first 100 of ${table.rows.length} rows.</p>`
+      : "";
+  return `
+  <div class="container" style="margin-top:16px">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;color:${theme.textColor}">
+      <thead><tr>${header}</tr></thead>
+      <tbody>${body}</tbody>
+    </table>
+    ${caption}
+  </div>`;
+}
+
+function wrapStaticSvgHtml(svg: string, title: string, theme: Theme): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(title)}</title>
+  <style>
+    body { margin: 0; padding: 24px; background: ${theme.backgroundColor}; color: ${theme.textColor}; font-family: ${theme.fontFamily}; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .container { background: ${theme.name === "dark" ? "#1f1f1f" : theme.name === "premium" ? "#0F172A" : theme.backgroundColor}; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    ${svg}
+  </div>
+</body>
+</html>`;
+}
+
+function violinSvg(
+  table: DataTable,
+  config: ChartConfig,
+  theme: Theme,
+  width: number,
+  height: number
+): string {
+  const margin = { top: 60, right: 40, bottom: 70, left: 70 };
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+  const xCol = config.x_column;
+  const yCol = config.y_column;
+
+  const groups = new Map<string, number[]>();
+  for (const row of table.rows) {
+    const cat = String(row[xCol] ?? "");
+    const val = toNumberStat(row[yCol]);
+    if (!groups.has(cat)) groups.set(cat, []);
+    groups.get(cat)!.push(val);
+  }
+  const categories = Array.from(groups.keys());
+  const slot = innerW / categories.length;
+  const maxHalfWidth = slot * 0.35;
+
+  const allValues = Array.from(groups.values()).flat();
+  const yNorm = normalizeStat(allValues);
+  const yToPx = (v: number) => margin.top + innerH - yNorm.scale(v) * innerH;
+
+  const shapes = categories
+    .map((cat, i) => {
+      const values = groups.get(cat)!;
+      const xCenter = margin.left + i * slot + slot / 2;
+      const color = theme.palette[i % theme.palette.length];
+      const { xs, densities } = kde(values, 50);
+      const maxDensity = Math.max(...densities, 1e-9);
+      const left: [number, number][] = [];
+      const right: [number, number][] = [];
+      for (let k = 0; k < xs.length; k++) {
+        const y = yToPx(xs[k]);
+        const half = (densities[k] / maxDensity) * maxHalfWidth;
+        left.push([xCenter - half, y]);
+        right.push([xCenter + half, y]);
+      }
+      const path =
+        "M " +
+        left.map((p) => p.join(",")).join(" L ") +
+        " L " +
+        right.reverse().map((p) => p.join(",")).join(" L ") +
+        " Z";
+      return `<path d="${path}" fill="${color}" fill-opacity="0.6" stroke="${color}" stroke-width="1.5" />`;
+    })
+    .join("\n");
+
+  return buildStatSvgWrapper(
+    width,
+    height,
+    margin,
+    innerW,
+    innerH,
+    config.title,
+    xCol,
+    yCol,
+    categories,
+    yNorm,
+    theme,
+    shapes
+  );
+}
+
+function errorbarSvg(
+  table: DataTable,
+  config: ChartConfig,
+  theme: Theme,
+  width: number,
+  height: number
+): string {
+  const margin = { top: 60, right: 40, bottom: 70, left: 70 };
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+  const xCol = config.x_column;
+  const yCol = config.y_column;
+  const lowerCol = config.lower_column!;
+  const upperCol = config.upper_column!;
+
+  const rows = table.rows;
+  const xIsNumeric = rows.every((r) => Number.isFinite(toNumberStat(r[xCol])));
+  let categories: string[] = [];
+  const xPos = (row: Record<string, string | number>, i: number): number => {
+    if (xIsNumeric) {
+      const vals = rows.map((r) => toNumberStat(r[xCol]));
+      const min = Math.min(...vals);
+      const max = Math.max(...vals);
+      const range = max - min || 1;
+      return margin.left + ((toNumberStat(row[xCol]) - min) / range) * innerW;
+    }
+    if (categories.length === 0) categories = rows.map((r) => String(r[xCol]));
+    const slot = innerW / rows.length;
+    return margin.left + i * slot + slot / 2;
+  };
+
+  const yVals = rows.flatMap((r) => [
+    toNumberStat(r[yCol]),
+    toNumberStat(r[lowerCol]),
+    toNumberStat(r[upperCol]),
+  ]);
+  const yNorm = normalizeStat(yVals);
+  const yToPx = (v: number) => margin.top + innerH - yNorm.scale(v) * innerH;
+
+  const cap = 10;
+  const color = theme.palette[0];
+  const shapes = rows
+    .map((row, i) => {
+      const x = xPos(row, i);
+      const y = yToPx(toNumberStat(row[yCol]));
+      const lo = yToPx(toNumberStat(row[lowerCol]));
+      const hi = yToPx(toNumberStat(row[upperCol]));
+      return `
+        <line x1="${x}" y1="${lo}" x2="${x}" y2="${hi}" stroke="${color}" stroke-width="2" />
+        <line x1="${x - cap / 2}" y1="${lo}" x2="${x + cap / 2}" y2="${lo}" stroke="${color}" stroke-width="2" />
+        <line x1="${x - cap / 2}" y1="${hi}" x2="${x + cap / 2}" y2="${hi}" stroke="${color}" stroke-width="2" />
+        <circle cx="${x}" cy="${y}" r="4" fill="${color}" />
+      `;
+    })
+    .join("\n");
+
+  if (!xIsNumeric && categories.length === 0) {
+    categories = rows.map((r) => String(r[xCol]));
+  }
+
+  return buildStatSvgWrapper(
+    width,
+    height,
+    margin,
+    innerW,
+    innerH,
+    config.title,
+    xCol,
+    yCol,
+    xIsNumeric ? [] : categories,
+    yNorm,
+    theme,
+    shapes
+  );
+}
+
+function buildStatSvgWrapper(
+  width: number,
+  height: number,
+  margin: { top: number; right: number; bottom: number; left: number },
+  innerW: number,
+  innerH: number,
+  title: string,
+  xName: string,
+  yName: string,
+  categories: string[],
+  yNorm: { min: number; max: number; scale: (v: number) => number },
+  theme: Theme,
+  shapes: string
+): string {
+  const xAxisY = margin.top + innerH;
+  const xAxisLine = `<line x1="${margin.left}" y1="${xAxisY}" x2="${margin.left + innerW}" y2="${xAxisY}" stroke="${theme.axisColor}" stroke-width="1.5" />`;
+  const yAxisLine = `<line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${xAxisY}" stroke="${theme.axisColor}" stroke-width="1.5" />`;
+
+  const xLabels =
+    categories.length > 0
+      ? categories
+          .map((cat, i) => {
+            const slot = innerW / categories.length;
+            const x = margin.left + i * slot + slot / 2;
+            return `<text x="${x}" y="${xAxisY + 20}" font-family="${theme.fontFamily}" font-size="12" fill="${theme.textColor}" text-anchor="middle">${escapeHtml(cat)}</text>`;
+          })
+          .join("")
+      : "";
+
+  const yTicks = [0, 0.25, 0.5, 0.75, 1]
+    .map((t) => {
+      const val = yNorm.min + (yNorm.max - yNorm.min) * t;
+      const y = margin.top + innerH - t * innerH;
+      return `<text x="${margin.left - 10}" y="${y + 4}" font-family="${theme.fontFamily}" font-size="11" fill="${theme.textColor}" text-anchor="end">${val.toFixed(0)}</text>
+    <line x1="${margin.left}" y1="${y}" x2="${margin.left + innerW}" y2="${y}" stroke="${theme.splitLineColor}" stroke-width="0.5" />`;
+    })
+    .join("");
+
+  const titleText = `<text x="${width / 2}" y="32" font-family="${theme.fontFamily}" font-size="18" font-weight="bold" text-anchor="middle" fill="${theme.textColor}">${escapeHtml(title)}</text>`;
+  const xLabelText = `<text x="${margin.left + innerW / 2}" y="${height - 18}" font-family="${theme.fontFamily}" font-size="13" fill="${theme.textColor}" text-anchor="middle">${escapeHtml(xName)}</text>`;
+  const yLabelText = `<text transform="rotate(-90)" x="-${margin.top + innerH / 2}" y="18" font-family="${theme.fontFamily}" font-size="13" fill="${theme.textColor}" text-anchor="middle">${escapeHtml(yName)}</text>`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+    <rect width="100%" height="100%" fill="${theme.backgroundColor}" />
+    ${titleText}
+    ${xAxisLine}
+    ${yAxisLine}
+    ${yTicks}
+    ${shapes}
+    ${xLabels}
+    ${xLabelText}
+    ${yLabelText}
+  </svg>`;
+}
+
+function toNumberStat(value: unknown): number {
+  if (typeof value === "number") return value;
+  if (typeof value === "string" && value !== "") {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+  }
+  return 0;
+}
+
+function normalizeStat(values: number[], pad = 0.05) {
+  const finite = values.filter((v) => Number.isFinite(v));
+  let min = finite.length ? Math.min(...finite) : 0;
+  let max = finite.length ? Math.max(...finite) : 0;
+  if (min === max) {
+    min = min - 1;
+    max = max + 1;
+  }
+  const range = max - min;
+  return {
+    min,
+    max,
+    scale: (v: number) => pad + ((v - min) / range) * (1 - pad * 2),
+  };
+}
+
+function std(values: number[]): number {
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+  return Math.sqrt(variance);
+}
+
+function gaussianKernel(u: number): number {
+  return Math.exp(-0.5 * u * u) / Math.sqrt(2 * Math.PI);
+}
+
+function kde(values: number[], nPoints: number): { xs: number[]; densities: number[] } {
+  const sorted = [...values].sort((a, b) => a - b);
+  let min = sorted[0];
+  let max = sorted[sorted.length - 1];
+  let range = max - min;
+  if (range === 0) {
+    range = Math.max(Math.abs(min), 1);
+    min -= range * 0.2;
+    max += range * 0.2;
+    range = max - min;
+  }
+  const sd = std(values);
+  let h = 1.06 * sd * Math.pow(values.length, -1 / 5);
+  if (!Number.isFinite(h) || h === 0) h = range / 4;
+
+  const xs: number[] = [];
+  const densities: number[] = [];
+  for (let i = 0; i < nPoints; i++) {
+    const x = min + (i / (nPoints - 1)) * range;
+    xs.push(x);
+    let sum = 0;
+    for (const v of values) sum += gaussianKernel((x - v) / h);
+    densities.push(sum / (values.length * h));
+  }
+  return { xs, densities };
 }
 
 function escapeHtml(text: string): string {

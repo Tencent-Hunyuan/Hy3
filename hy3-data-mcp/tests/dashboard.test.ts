@@ -54,4 +54,20 @@ describe("renderDashboardHtml", () => {
     const html = renderDashboardHtml([chart], "No KPI Test", "nature", undefined, {}, "grid", false);
     expect(html).not.toContain('<div class="kpi-row">');
   });
+
+  it("adds a theme switcher when enabled", () => {
+    const html = renderDashboardHtml(
+      [chart],
+      "Theme Switcher Test",
+      "nature",
+      undefined,
+      {},
+      "grid",
+      true,
+      "en",
+      true
+    );
+    expect(html).toContain("dashboardThemeSwitcher");
+    expect(html).toContain("registerTheme");
+  });
 });

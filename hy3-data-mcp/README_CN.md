@@ -34,7 +34,7 @@
 
 | 工具 | 功能 | 输出 |
 | --- | --- | --- |
-| `hy3_extract_document` | 从 PDF、DOCX、TXT、CSV、JSON、XLSX 中提取原始文本/表格，不调用 LLM。新增 `extract_tables`、`return_data`。 | `json` |
+| `hy3_extract_document` | 从 PDF、DOCX、TXT、CSV、JSON、XLSX 中提取原始文本/表格，不调用 LLM。新增 `extract_tables`（支持 PDF + DOCX）、`return_data`。 | `json` |
 | `hy3_analyze` | 通用分析，合并了旧 `hy3_analyze_text` + `hy3_data_insight`。支持 `text` / `data` / `file_path`。 | `text` / `html` / `json` |
 | `hy3_analyze_report` | 一站式分析报告，含 Hy3 撰写的洞察与嵌入式图表。支持图表数、尺寸、主题等丰富参数。 | `html` / `markdown` |
 
@@ -51,8 +51,8 @@
 
 | 工具 | 功能 |
 | --- | --- |
-| `hy3_render_chart` | 渲染单图表。新增 `mark_point`、`mark_line`、`data_zoom`、`x_name` 等丰富配置。 |
-| `hy3_render_dashboard` | 渲染仪表盘大屏。 |
+| `hy3_render_chart` | 渲染单图表。新增 `mark_point`、`mark_line`、`data_zoom`、`x_name`、`output_filename`、`show_data_table`、`enable_theme_switcher`、`interactive_3d` 等丰富配置。 |
+| `hy3_render_dashboard` | 渲染仪表盘大屏。新增 `show_kpi`、`enable_theme_switcher`、`output_filename`。 |
 | `hy3_render_wordcloud` | 渲染词云。 |
 | `hy3_render_knowledge_graph` | 渲染知识图谱。 |
 

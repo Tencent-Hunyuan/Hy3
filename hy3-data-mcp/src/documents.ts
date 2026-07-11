@@ -1,7 +1,7 @@
 import { readFile } from "fs/promises";
 import * as XLSX from "xlsx";
 import PDFParser from "pdf2json";
-import mammoth from "mammoth";
+import * as mammoth from "mammoth";
 import { DataTable, maybeNumber } from "./utils.js";
 
 export type DocumentType = "txt" | "pdf" | "docx" | "xlsx" | "csv" | "json";
@@ -54,6 +54,57 @@ async function extractXlsxText(filePath: string): Promise<string> {
   const workbook = XLSX.read(buffer, { type: "buffer" });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
   return XLSX.utils.sheet_to_csv(sheet);
+}
+
+export async function extractTablesFromDocx(filePath: string): Promise<DataTable[]> {
+  const result = await (mammoth as any).convertToHtml({ path: filePath });
+  const html = result.value;
+  const tables: DataTable[] = [];
+
+  const tableRegex = /<table[^>]*>(.*?)<\/table>/gis;
+  const rowRegex = /<tr[^>]*>(.*?)<\/tr>/gis;
+  const cellRegex = /<t[dh][^>]*>(.*?)<\/t[dh]>/gis;
+
+  for (const tableMatch of html.matchAll(tableRegex)) {
+    const rows: string[][] = [];
+    for (const rowMatch of tableMatch[1].matchAll(rowRegex)) {
+      const cells: string[] = [];
+      for (const cellMatch of rowMatch[1].matchAll(cellRegex)) {
+        cells.push(stripHtmlTags(cellMatch[1]).trim());
+      }
+      if (cells.length > 0) rows.push(cells);
+    }
+    if (rows.length >= 2) {
+      const header = rows[0];
+      const body = rows.slice(1);
+      tables.push({
+        columns: header,
+        rows: body.map((row) => {
+          const record: Record<string, string | number> = {};
+          header.forEach((col, idx) => {
+            record[col] = maybeNumber(row[idx] ?? "");
+          });
+          return record;
+        }),
+        raw: JSON.stringify(body),
+      });
+    }
+  }
+
+  return tables;
+}
+
+function stripHtmlTags(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export async function extractTablesFromPdf(filePath: string): Promise<DataTable[]> {

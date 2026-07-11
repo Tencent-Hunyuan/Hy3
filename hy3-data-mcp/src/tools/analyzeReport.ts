@@ -9,6 +9,7 @@ import {
   loadDataTable,
   parseInlineData,
   resolveLanguage,
+  resolveOutputFilename,
   tableSummary,
   writeOutputFile,
 } from "../utils.js";
@@ -101,6 +102,7 @@ export const analyzeReportDefinition = {
         description: "Language of the report. 'auto' detects from the question or data.",
         default: "auto",
       },
+      output_filename: { type: "string", description: "Optional custom output file name (without extension)." },
     },
     required: [],
   },
@@ -137,6 +139,7 @@ export const analyzeReportSchema = z.object({
   palette: z.array(z.string()).optional(),
   primary_color: z.string().optional(),
   language: z.enum(["zh", "en", "auto"]).default("auto"),
+  output_filename: z.string().optional(),
 });
 
 interface ReportPlan {
@@ -265,6 +268,7 @@ export async function runAnalyzeReport(
     palette,
     primary_color,
     language,
+    output_filename,
   } = analyzeReportSchema.parse(args);
 
   const hasFilePaths = file_paths && file_paths.length > 0;
@@ -439,7 +443,8 @@ Requirements: at most ${max_charts} charts; each chart must only use columns tha
   const reportTheme = getTheme(theme, font_family, themeOverrides);
   const timestamp = Date.now();
   const fileExt = output_format === "markdown" ? "md" : "html";
-  const fileName = `data_report_${timestamp}.${fileExt}`;
+  const defaultName = `data_report_${timestamp}`;
+  const fileName = resolveOutputFilename(output_filename, defaultName, fileExt);
 
   const sourcePath = inputPaths.join(", ");
   let content: string;
@@ -450,6 +455,7 @@ Requirements: at most ${max_charts} charts; each chart must only use columns tha
   }
 
   const outputPath = await writeOutputFile(fileName, content);
+
   await onProgress?.(100, 100);
 
   const formatLabel = output_format === "markdown" ? "Markdown" : "HTML";

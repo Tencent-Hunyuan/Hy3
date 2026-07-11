@@ -3,7 +3,7 @@ import { extname } from "path";
 import { renderWordcloudSvg } from "../viz/wordcloud.js";
 import { svgToPng } from "../viz/png.js";
 import { getTheme } from "../viz/themes.js";
-import { buildThemeOverrides, loadDataTable, loadInputText, resolveLanguage, selectTextColumn, writeOutputFile } from "../utils.js";
+import { buildThemeOverrides, loadDataTable, loadInputText, resolveLanguage, resolveOutputFilename, selectTextColumn, writeOutputFile } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
 export const renderWordcloudDefinition = {
@@ -21,6 +21,7 @@ export const renderWordcloudDefinition = {
       file_path: { type: "string", description: "Path to a text file; keywords will be counted automatically." },
       max_words: { type: "number", description: "Maximum number of words.", default: 60 },
       output_format: { type: "string", enum: ["svg", "html", "png"], default: "svg" },
+      output_filename: { type: "string", description: "Optional custom output file name (without extension)." },
       width: { type: "number", default: 800 },
       height: { type: "number", default: 500 },
       theme: { type: "string", enum: ["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"], default: "nature" },
@@ -43,6 +44,7 @@ export const renderWordcloudSchema = z.object({
   file_path: z.string().optional(),
   max_words: z.number().int().min(5).max(200).default(60),
   output_format: z.enum(["svg", "html", "png"]).default("svg"),
+  output_filename: z.string().optional(),
   width: z.number().int().min(200).max(2000).default(800),
   height: z.number().int().min(200).max(2000).default(500),
   theme: z.enum(["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"]).default("nature"),
@@ -123,6 +125,7 @@ export async function runRenderWordcloud(
     split_line_color,
     palette,
     primary_color,
+    output_filename,
     language,
   } = renderWordcloudSchema.parse(args);
 
@@ -189,7 +192,8 @@ export async function runRenderWordcloud(
     fileExt = "svg";
   }
 
-  const outputPath = await writeOutputFile(`wordcloud_${Date.now()}.${fileExt}`, content);
+  const defaultName = `wordcloud_${Date.now()}`;
+  const outputPath = await writeOutputFile(resolveOutputFilename(output_filename, defaultName, fileExt), content);
 
   await onProgress?.(100, 100);
   const formatLabel = output_format === "html" ? "HTML" : output_format === "png" ? "PNG" : "SVG";

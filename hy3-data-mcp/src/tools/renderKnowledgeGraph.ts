@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { renderKnowledgeGraphHtml, renderKnowledgeGraphSvg } from "../viz/echarts.js";
 import { svgToPng } from "../viz/png.js";
-import { buildThemeOverrides, writeOutputFile } from "../utils.js";
+import { buildThemeOverrides, resolveOutputFilename, writeOutputFile } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
 export const renderKnowledgeGraphDefinition = {
@@ -21,6 +21,7 @@ export const renderKnowledgeGraphDefinition = {
       },
       title: { type: "string", default: "Knowledge Graph" },
       output_format: { type: "string", enum: ["svg", "html", "png"], default: "svg" },
+      output_filename: { type: "string", description: "Optional custom output file name (without extension)." },
       width: { type: "number", default: 900 },
       height: { type: "number", default: 600 },
       theme: { type: "string", enum: ["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"], default: "nature" },
@@ -41,6 +42,7 @@ export const renderKnowledgeGraphSchema = z.object({
   links: z.string().min(1),
   title: z.string().default("Knowledge Graph"),
   output_format: z.enum(["svg", "html", "png"]).default("svg"),
+  output_filename: z.string().optional(),
   width: z.number().int().min(200).max(2000).default(900),
   height: z.number().int().min(200).max(2000).default(600),
   theme: z.enum(["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"]).default("nature"),
@@ -72,6 +74,7 @@ export async function runRenderKnowledgeGraph(
     split_line_color,
     palette,
     primary_color,
+    output_filename,
   } = renderKnowledgeGraphSchema.parse(args);
 
   await onProgress?.(20, 100);
@@ -107,7 +110,8 @@ export async function runRenderKnowledgeGraph(
     fileExt = "svg";
   }
 
-  const outputPath = await writeOutputFile(`knowledge_graph_${Date.now()}.${fileExt}`, content);
+  const defaultName = `knowledge_graph_${Date.now()}`;
+  const outputPath = await writeOutputFile(resolveOutputFilename(output_filename, defaultName, fileExt), content);
 
   await onProgress?.(100, 100);
   const formatLabel = output_format === "html" ? "HTML" : output_format === "png" ? "PNG" : "SVG";

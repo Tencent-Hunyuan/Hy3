@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { detectDocumentType, extractTablesFromPdf, extractTextFromDocument } from "../documents.js";
+import { detectDocumentType, extractTablesFromDocx, extractTablesFromPdf, extractTextFromDocument } from "../documents.js";
 import { loadDataTable } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
@@ -68,9 +68,14 @@ export async function runExtractDocument(
 
   if (extract_tables) {
     if (documentType === "docx") {
-      // Table extraction from DOCX is not implemented; return empty with a note.
-      result.tables = [];
-      result.tables_note = "DOCX table extraction is not yet implemented. Tables will be returned as empty arrays.";
+      try {
+        const tables = await extractTablesFromDocx(file_path);
+        result.tables = tables.map((t) => ({ columns: t.columns, rows: t.rows }));
+        result.tables_note = tables.length > 0 ? undefined : "No tables detected in the DOCX.";
+      } catch {
+        result.tables = [];
+        result.tables_note = "DOCX table extraction failed. Tables will be returned as empty arrays.";
+      }
     } else if (documentType === "pdf") {
       try {
         const tables = await extractTablesFromPdf(file_path);

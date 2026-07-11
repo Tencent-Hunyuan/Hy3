@@ -322,9 +322,11 @@ function line3dSvg(
   const pathD = "M " + projected.map((p) => p.join(",")).join(" L ");
   const line = `<path d="${pathD}" fill="none" stroke="${theme.palette[0]}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />`;
 
-  const dots = projected
+  const dots = indexed
+    .map((p, i) => ({ p: project(p.x, p.y, p.z, ox, oy, scale), i, depth: p.x + p.y + p.z }))
+    .sort((a, b) => a.depth - b.depth)
     .map(
-      (p, i) =>
+      ({ p, i }) =>
         `<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="${theme.palette[i % theme.palette.length]}" stroke="${theme.backgroundColor}" stroke-width="1" />`
     )
     .join("\n");
@@ -379,4 +381,125 @@ export function render3dSvg(
         `<text x="${width / 2}" y="${height / 2}" font-family="${theme.fontFamily}" font-size="16" fill="${theme.textColor}" text-anchor="middle">Unsupported 3D chart type</text>`
       );
   }
+}
+
+export function render3dWebGlHtml(
+  chartType: Chart3DType,
+  table: DataTable,
+  config: ChartConfig
+): string {
+  const width = config.width ?? 800;
+  const height = config.height ?? 500;
+  const theme = getTheme(config.theme, config.font_family);
+  const title = config.title;
+  const xCol = config.x_column;
+  const yCol = config.y_column;
+  const zCol = config.z_column || config.value_column || config.y_column;
+
+  const axisStyle = {
+    nameTextStyle: { color: theme.textColor, fontFamily: theme.fontFamily },
+    axisLabel: { color: theme.textColor, fontFamily: theme.fontFamily },
+    axisLine: { lineStyle: { color: theme.axisColor } },
+    splitLine: { lineStyle: { color: theme.splitLineColor } },
+  };
+
+  const grid3D = {
+    boxWidth: chartType === "bar3d" ? 200 : 160,
+    boxDepth: chartType === "bar3d" ? 80 : 160,
+    boxHeight: 100,
+    viewControl: {
+      projection: "perspective",
+      autoRotate: false,
+      alpha: 20,
+      beta: 40,
+      minDistance: 150,
+      maxDistance: 600,
+    },
+    light: {
+      main: { intensity: 1.2, shadow: true },
+      ambient: { intensity: 0.3 },
+    },
+  };
+
+  let option: any;
+
+  if (chartType === "bar3d") {
+    const categories = table.rows.map((row) => String(row[xCol] ?? ""));
+    const data = table.rows.map((row, i) => [i, toNumber(row[yCol]), 0]);
+    option = {
+      backgroundColor: theme.backgroundColor,
+      color: theme.palette,
+      textStyle: { color: theme.textColor, fontFamily: theme.fontFamily },
+      title: {
+        text: title,
+        textStyle: { color: theme.textColor, fontFamily: theme.fontFamily },
+      },
+      tooltip: {},
+      xAxis3D: { type: "category", data: categories, name: xCol, ...axisStyle },
+      yAxis3D: { type: "value", name: yCol, ...axisStyle },
+      zAxis3D: { type: "category", data: [""], name: "", axisLabel: { show: false } },
+      grid3D,
+      series: [
+        {
+          type: "bar3D",
+          data,
+          shading: "lambert",
+          label: { show: false },
+          itemStyle: { opacity: 0.9 },
+        },
+      ],
+    };
+  } else {
+    const data = table.rows.map((row) => [
+      toNumber(row[xCol]),
+      toNumber(row[yCol]),
+      toNumber(row[zCol]),
+    ]);
+    const isScatter = chartType === "scatter3d";
+    option = {
+      backgroundColor: theme.backgroundColor,
+      color: theme.palette,
+      textStyle: { color: theme.textColor, fontFamily: theme.fontFamily },
+      title: {
+        text: title,
+        textStyle: { color: theme.textColor, fontFamily: theme.fontFamily },
+      },
+      tooltip: {},
+      xAxis3D: { type: "value", name: xCol, ...axisStyle },
+      yAxis3D: { type: "value", name: yCol, ...axisStyle },
+      zAxis3D: { type: "value", name: zCol, ...axisStyle },
+      grid3D,
+      series: [
+        isScatter
+          ? { type: "scatter3D", data, symbolSize: 12, itemStyle: { opacity: 0.85 } }
+          : { type: "line3D", data, lineStyle: { width: 4 } },
+      ],
+    };
+  }
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(title)}</title>
+  <style>
+    body { margin: 0; padding: 24px; background: ${theme.backgroundColor}; color: ${theme.textColor}; font-family: ${theme.fontFamily}; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .container { background: ${theme.name === "dark" ? "#1f1f1f" : theme.name === "premium" ? "#0F172A" : theme.backgroundColor}; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    #chart { width: ${width}px; height: ${height}px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="chart"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2/dist/echarts-gl.min.js"></script>
+  <script>
+    const chart = echarts.init(document.getElementById('chart'));
+    chart.setOption(${JSON.stringify(option)});
+    window.addEventListener('resize', () => chart.resize());
+  </script>
+</body>
+</html>`;
 }

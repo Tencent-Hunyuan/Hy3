@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { renderChartHtml, renderChartSvg, type ChartType } from "../viz/echarts.js";
 import { svgToPng } from "../viz/png.js";
-import { loadInputData, resolveLanguage, writeOutputFile } from "../utils.js";
+import { loadInputData, resolveLanguage, resolveOutputFilename, writeOutputFile } from "../utils.js";
 import type { ProgressReporter } from "./index.js";
 
 const SUPPORTED_CHART_TYPES: ChartType[] = [
@@ -34,6 +34,8 @@ const SUPPORTED_CHART_TYPES: ChartType[] = [
   "dual_axis",
   "stacked_area",
   "grouped_line",
+  "violin",
+  "errorbar",
 ];
 
 export const renderChartDefinition = {
@@ -61,9 +63,12 @@ export const renderChartDefinition = {
       group_column: { type: "string", description: "Optional grouping/stacking column." },
       size_column: { type: "string", description: "Optional bubble size column." },
       z_column: { type: "string", description: "Optional third dimension for 3D charts." },
+      lower_column: { type: "string", description: "Optional lower bound column for errorbar charts." },
+      upper_column: { type: "string", description: "Optional upper bound column for errorbar charts." },
       title: { type: "string", description: "Chart title." },
       subtitle: { type: "string", description: "Chart subtitle." },
       output_format: { type: "string", enum: ["svg", "html", "png"], default: "svg" },
+      output_filename: { type: "string", description: "Optional custom output file name (without extension)." },
       width: { type: "number", description: "Chart width.", default: 800 },
       height: { type: "number", description: "Chart height.", default: 500 },
       theme: { type: "string", enum: ["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"], default: "nature" },
@@ -88,6 +93,9 @@ export const renderChartDefinition = {
       mark_line: { type: "boolean" },
       data_zoom: { type: "boolean" },
       overrides: { type: "string", description: "JSON string merged into the generated ECharts option." },
+      show_data_table: { type: "boolean", description: "Whether to append the source data table below the chart (HTML only).", default: false },
+      enable_theme_switcher: { type: "boolean", description: "Whether to add a theme switcher dropdown to the HTML output.", default: false },
+      interactive_3d: { type: "boolean", description: "For 3D chart types, render an interactive WebGL scene (HTML output only).", default: false },
       language: { type: "string", enum: ["zh", "en", "auto"], default: "auto" },
     },
     required: ["chart_type", "x_column", "y_column"],
@@ -109,9 +117,12 @@ export const renderChartSchema = z.object({
   group_column: z.string().optional(),
   size_column: z.string().optional(),
   z_column: z.string().optional(),
+  lower_column: z.string().optional(),
+  upper_column: z.string().optional(),
   title: z.string().optional(),
   subtitle: z.string().optional(),
   output_format: z.enum(["svg", "html", "png"]).default("svg"),
+  output_filename: z.string().optional(),
   width: z.number().int().min(200).max(2000).default(800),
   height: z.number().int().min(200).max(2000).default(500),
   theme: z.enum(["light", "dark", "colorful", "minimal", "professional", "premium", "retro", "science", "nature"]).default("nature"),
@@ -136,6 +147,9 @@ export const renderChartSchema = z.object({
   mark_line: z.boolean().optional(),
   data_zoom: z.boolean().optional(),
   overrides: z.string().optional(),
+  show_data_table: z.boolean().optional(),
+  enable_theme_switcher: z.boolean().optional(),
+  interactive_3d: z.boolean().optional(),
   language: z.enum(["zh", "en", "auto"]).default("auto"),
 });
 
@@ -177,6 +191,10 @@ function validateChartColumns(
     case "line3d":
       if (!has(args.z_column)) required.push("z_column");
       break;
+    case "errorbar":
+      if (!has(args.lower_column)) required.push("lower_column");
+      if (!has(args.upper_column)) required.push("upper_column");
+      break;
     default:
       break;
   }
@@ -207,6 +225,8 @@ export async function runRenderChart(
     group_column,
     size_column,
     z_column,
+    lower_column,
+    upper_column,
     title,
     subtitle,
     output_format,
@@ -234,6 +254,10 @@ export async function runRenderChart(
     mark_line,
     data_zoom,
     overrides,
+    show_data_table,
+    enable_theme_switcher,
+    interactive_3d,
+    output_filename,
     language,
   } = renderChartSchema.parse(args);
 
@@ -268,6 +292,8 @@ export async function runRenderChart(
     group_column,
     size_column,
     z_column,
+    lower_column,
+    upper_column,
   } as z.infer<typeof renderChartSchema>);
 
   await onProgress?.(50, 100);
@@ -285,6 +311,8 @@ export async function runRenderChart(
     group_column,
     size_column,
     z_column,
+    lower_column,
+    upper_column,
     title: title || (resolvedLanguage === "zh" ? "数据图表" : "Data Chart"),
     subtitle,
     theme,
@@ -309,6 +337,9 @@ export async function runRenderChart(
     mark_line,
     data_zoom,
     overrides,
+    show_data_table,
+    enable_theme_switcher,
+    interactive_3d,
     width,
     height,
   };
@@ -330,7 +361,11 @@ export async function runRenderChart(
 
   await onProgress?.(80, 100);
   const safeTitle = config.title.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "_");
-  const outputPath = await writeOutputFile(`${safeTitle}_${Date.now()}.${ext}`, content);
+  const defaultName = `${safeTitle}_${Date.now()}`;
+  const outputPath = await writeOutputFile(
+    resolveOutputFilename(output_filename, defaultName, ext),
+    content
+  );
 
   await onProgress?.(100, 100);
   const formatLabel = output_format === "html" ? "HTML" : output_format === "png" ? "PNG" : "SVG";

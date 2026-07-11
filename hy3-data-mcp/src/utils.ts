@@ -236,6 +236,30 @@ export async function writeOutputFile(
   return filePath;
 }
 
+export function sanitizeFilename(name: string): string {
+  return name
+    .replace(/[\\/:*?"<>|]/g, "_")
+    .replace(/[^a-zA-Z0-9\u4e00-\u9fa5_.-]/g, "_");
+}
+
+export function resolveOutputFilename(
+  provided: string | undefined,
+  defaultName: string,
+  ext: string
+): string {
+  if (provided && provided.trim()) {
+    let name = provided.trim();
+    const suffix = `.${ext}`;
+    if (name.toLowerCase().endsWith(suffix.toLowerCase())) {
+      name = name.slice(0, -suffix.length);
+    }
+    name = sanitizeFilename(name);
+    if (!name) name = defaultName;
+    return `${name}.${ext}`;
+  }
+  return `${defaultName}.${ext}`;
+}
+
 export interface InputDataArgs {
   data?: string;
   data_file_path?: string;
