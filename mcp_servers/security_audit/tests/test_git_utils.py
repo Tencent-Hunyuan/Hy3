@@ -7,10 +7,12 @@ so these prove the module against git's actual behavior/output format.
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import pytest
 
+from hy3_security_mcp import git_utils
 from hy3_security_mcp.git_utils import GitError, read_diff, read_file_text
 from tests.conftest import run_git
 
@@ -87,6 +89,90 @@ class TestReadDiff:
             read_diff(str(git_repo), ref_range=f"--output={smuggled}")
 
         assert not smuggled.exists()
+
+
+class TestReadDiffNoCodeExecution:
+    """`review_diff`'s stated purpose is pointing at UNTRUSTED repos, so a
+    repo-local diff driver must never be honored: `git diff` supports
+    `diff.external` / textconv drivers configured in the repo's own
+    `.git/config`, which are arbitrary shell commands git runs during a diff.
+    read_diff must run with those disabled (--no-ext-diff/--no-textconv,
+    -c diff.external=, GIT_EXTERNAL_DIFF cleared) so no code runs (RCE)."""
+
+    def _dirty_repo(self, repo: Path) -> None:
+        (repo / "app.py").write_text("v1\n")
+        _commit_all(repo, "initial")
+        (repo / "app.py").write_text("v2\n")  # unstaged diff to trigger a driver
+
+    def test_repo_local_diff_external_driver_is_not_executed(self, git_repo: Path) -> None:
+        marker = git_repo / "pwned_by_diff_external"
+        self._dirty_repo(git_repo)
+        # A malicious untrusted repo sets diff.external to an arbitrary command.
+        run_git(["config", "diff.external", f"touch {marker}"], git_repo)
+
+        read_diff(str(git_repo))
+
+        assert not marker.exists(), "diff.external driver executed → RCE"
+
+    def test_git_external_diff_env_var_is_not_honored(
+        self, git_repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        marker = tmp_path / "pwned_by_env"
+        self._dirty_repo(git_repo)
+        # GIT_EXTERNAL_DIFF in the ambient env is the same RCE via inheritance.
+        monkeypatch.setenv("GIT_EXTERNAL_DIFF", f"touch {marker}")
+
+        read_diff(str(git_repo))
+
+        assert not marker.exists(), "GIT_EXTERNAL_DIFF honored → RCE"
+
+    def test_textconv_driver_is_not_executed(self, git_repo: Path) -> None:
+        marker = git_repo / "pwned_by_textconv"
+        self._dirty_repo(git_repo)
+        # A textconv driver is likewise an arbitrary command git runs per-file.
+        (git_repo / ".gitattributes").write_text("*.py diff=evil\n")
+        run_git(["config", "diff.evil.textconv", f"touch {marker} && cat"], git_repo)
+
+        read_diff(str(git_repo))
+
+        assert not marker.exists(), "textconv driver executed → RCE"
+
+    def test_repo_local_fsmonitor_hook_is_not_executed(self, git_repo: Path) -> None:
+        # core.fsmonitor set to a non-boolean value is a hook program git runs
+        # when it refreshes the index during `git diff` — arbitrary command RCE.
+        marker = git_repo / "pwned_by_fsmonitor"
+        self._dirty_repo(git_repo)
+        run_git(["config", "core.fsmonitor", f"touch {marker}; false"], git_repo)
+
+        read_diff(str(git_repo))
+
+        assert not marker.exists(), "core.fsmonitor hook executed → RCE"
+
+    def test_repo_local_filter_clean_is_not_executed(self, git_repo: Path) -> None:
+        # filter.<name>.clean is an arbitrary command git runs to normalize
+        # working-tree content into its index form; a working-tree diff of a
+        # path routed to the filter via .gitattributes executes it → RCE.
+        marker = git_repo / "pwned_by_filter_clean"
+        (git_repo / "data.txt").write_text("v1\n")
+        _commit_all(git_repo, "initial")
+        (git_repo / ".gitattributes").write_text("*.txt filter=evil\n")
+        run_git(["config", "filter.evil.clean", f"touch {marker}; cat"], git_repo)
+        (git_repo / "data.txt").write_text("v2\n")  # unstaged change triggers clean
+
+        read_diff(str(git_repo))
+
+        assert not marker.exists(), "filter.<name>.clean executed → RCE"
+
+    def test_timeout_expired_becomes_git_error(
+        self, git_repo: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        def _raise_timeout(*_args: object, **_kwargs: object) -> None:
+            raise subprocess.TimeoutExpired(cmd="git diff", timeout=0.01)
+
+        monkeypatch.setattr(git_utils.subprocess, "run", _raise_timeout)
+
+        with pytest.raises(GitError):
+            read_diff(str(git_repo), timeout=0.01)
 
 
 class TestReadFileText:

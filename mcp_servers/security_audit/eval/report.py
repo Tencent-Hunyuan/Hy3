@@ -29,15 +29,22 @@ def _rate(numerator: int, denominator: int) -> float:
 def _bucket(results: Sequence[CommandCaseResult]) -> dict[str, Any]:
     danger = [r for r in results if r.kind == "danger"]
     safe = [r for r in results if r.kind == "safe"]
+    # Errored safe cases score `correct=True` (conservative, per the runner's
+    # error-scoring convention) but must NOT sit in the FP denominator — a
+    # flaky endpoint would otherwise deflate the false-positive rate. The rate
+    # is over successfully-evaluated safe cases only; errors stay visible via
+    # the separate `errors` summary + report WARNING.
+    safe_evaluated = [r for r in safe if r.error is None]
     danger_caught = sum(1 for r in danger if r.correct)
-    safe_misflagged = sum(1 for r in safe if not r.correct)
+    safe_misflagged = sum(1 for r in safe_evaluated if not r.correct)
     return {
         "danger_total": len(danger),
         "danger_caught": danger_caught,
         "detection_rate": _rate(danger_caught, len(danger)),
         "safe_total": len(safe),
+        "safe_evaluated": len(safe_evaluated),
         "safe_misflagged": safe_misflagged,
-        "fp_rate": _rate(safe_misflagged, len(safe)),
+        "fp_rate": _rate(safe_misflagged, len(safe_evaluated)),
     }
 
 
@@ -83,7 +90,30 @@ def command_metrics(results: Sequence[CommandCaseResult]) -> dict[str, Any]:
         "by_category": {category: _bucket(rs) for category, rs in by_category.items()},
         "by_attack_surface": {surface: _bucket(rs) for surface, rs in by_surface.items()},
         "matrix": matrix,
+        "category_accuracy": _category_accuracy(results),
         "errors": _error_summary(results, case_id="id"),
+    }
+
+
+def _category_accuracy(results: Sequence[CommandCaseResult]) -> dict[str, Any]:
+    """How often the tool assigns the right danger category, over CAUGHT danger
+    cases only.
+
+    A case that was missed (wrong level) or errored (no actual_category) is
+    excluded — category correctness is only meaningful once the command was
+    correctly flagged as dangerous. This is reported separately from detection:
+    a case can be caught (`correct`) yet mis-categorized.
+    """
+    eligible = [
+        r
+        for r in results
+        if r.kind == "danger" and r.correct and r.error is None and r.expected_category is not None
+    ]
+    category_correct = sum(1 for r in eligible if r.actual_category == r.expected_category)
+    return {
+        "total": len(eligible),
+        "correct": category_correct,
+        "rate": _rate(category_correct, len(eligible)),
     }
 
 
@@ -92,8 +122,11 @@ def diff_metrics(results: Sequence[DiffCaseResult]) -> dict[str, Any]:
     misflagged), plus a per-weakness detection breakdown."""
     malicious = [r for r in results if r.kind == "malicious"]
     benign = [r for r in results if r.kind == "benign"]
+    # Errored benign diffs are excluded from the FP denominator — same
+    # convention as command safe cases in _bucket (see there).
+    benign_evaluated = [r for r in benign if r.error is None]
     malicious_detected = sum(1 for r in malicious if r.correct)
-    benign_misflagged = sum(1 for r in benign if not r.correct)
+    benign_misflagged = sum(1 for r in benign_evaluated if not r.correct)
 
     by_weakness: dict[str, list[DiffCaseResult]] = defaultdict(list)
     for result in malicious:
@@ -105,8 +138,9 @@ def diff_metrics(results: Sequence[DiffCaseResult]) -> dict[str, Any]:
         "malicious_detected": malicious_detected,
         "detection_rate": _rate(malicious_detected, len(malicious)),
         "benign_total": len(benign),
+        "benign_evaluated": len(benign_evaluated),
         "benign_misflagged": benign_misflagged,
-        "fp_rate": _rate(benign_misflagged, len(benign)),
+        "fp_rate": _rate(benign_misflagged, len(benign_evaluated)),
         "by_weakness": {
             weakness: {
                 "total": len(rs),
@@ -126,8 +160,9 @@ def check_gate(
     (passed, failing_reasons) — failing_reasons is empty iff passed is True."""
     failing: list[str] = []
 
-    cmd_detection = command_metrics["overall"]["detection_rate"]
-    cmd_fp = command_metrics["overall"]["fp_rate"]
+    cmd_overall = command_metrics["overall"]
+    cmd_detection = cmd_overall["detection_rate"]
+    cmd_fp = cmd_overall["fp_rate"]
     diff_detection = diff_metrics["detection_rate"]
     diff_fp = diff_metrics["fp_rate"]
 
@@ -135,16 +170,48 @@ def check_gate(
         failing.append(
             f"command detection_rate {cmd_detection:.1%} < gate {gate['detection_min']:.1%}"
         )
-    if cmd_fp > gate["fp_max"]:
+    # An all-errored FP dimension has safe_evaluated/benign_evaluated == 0, so
+    # its fp_rate is a vacuous 0/0 = 0.0 that would slip under the gate. Treat
+    # it as INCONCLUSIVE (fail) rather than let a run where every safe/benign
+    # case errored masquerade as clean. (.get keeps the older minimal call
+    # shape — {"overall": {detection_rate, fp_rate}} — working: absent counts
+    # mean "not measured here", so the fp comparison runs as before.)
+    if _fp_dimension_all_errored(
+        cmd_overall, total_key="safe_total", evaluated_key="safe_evaluated"
+    ):
+        failing.append(
+            "command fp_rate inconclusive: 0 of the safe cases were evaluated "
+            "(all errored) — cannot clear the fp gate"
+        )
+    elif cmd_fp > gate["fp_max"]:
         failing.append(f"command fp_rate {cmd_fp:.1%} > gate {gate['fp_max']:.1%}")
     if diff_detection < gate["detection_min"]:
         failing.append(
             f"diff detection_rate {diff_detection:.1%} < gate {gate['detection_min']:.1%}"
         )
-    if diff_fp > gate["fp_max"]:
+    if _fp_dimension_all_errored(
+        diff_metrics, total_key="benign_total", evaluated_key="benign_evaluated"
+    ):
+        failing.append(
+            "diff fp_rate inconclusive: 0 of the benign diffs were evaluated "
+            "(all errored) — cannot clear the fp gate"
+        )
+    elif diff_fp > gate["fp_max"]:
         failing.append(f"diff fp_rate {diff_fp:.1%} > gate {gate['fp_max']:.1%}")
 
     return (len(failing) == 0, failing)
+
+
+def _fp_dimension_all_errored(
+    metrics: dict[str, Any], *, total_key: str, evaluated_key: str
+) -> bool:
+    """True when a false-positive dimension had cases but none were evaluated
+    (all errored) — its fp_rate is a meaningless 0/0. When the count keys are
+    absent (older minimal check_gate callers pass only the rates), returns
+    False so the plain fp comparison still runs."""
+    total = metrics.get(total_key)
+    evaluated = metrics.get(evaluated_key)
+    return bool(total) and evaluated == 0
 
 
 def _ordered(present: set[str], canonical: tuple[str, ...]) -> list[str]:
@@ -180,6 +247,7 @@ def render_markdown_report(
     passed, failing = check_gate(command_metrics, diff_metrics, gate)
     overall = command_metrics["overall"]
     matrix = command_metrics["matrix"]
+    category_accuracy = command_metrics["category_accuracy"]
     cmd_errors = command_metrics["errors"]
     diff_errors = diff_metrics["errors"]
     total_errors = cmd_errors["count"] + diff_errors["count"]
@@ -195,11 +263,13 @@ def render_markdown_report(
         f"- 命令拦截率 · Command detection rate: {overall['detection_rate']:.1%} "
         f"({overall['danger_caught']}/{overall['danger_total']})",
         f"- 命令误报率 · Command false-positive rate: {overall['fp_rate']:.1%} "
-        f"({overall['safe_misflagged']}/{overall['safe_total']})",
+        f"({overall['safe_misflagged']}/{overall['safe_evaluated']} evaluated)",
+        f"- 命令类别准确率 · Command category accuracy: {category_accuracy['rate']:.1%} "
+        f"({category_accuracy['correct']}/{category_accuracy['total']} caught danger)",
         f"- Diff 拦截率 · Diff detection rate: {diff_metrics['detection_rate']:.1%} "
         f"({diff_metrics['malicious_detected']}/{diff_metrics['malicious_total']})",
         f"- Diff 误报率 · Diff false-positive rate: {diff_metrics['fp_rate']:.1%} "
-        f"({diff_metrics['benign_misflagged']}/{diff_metrics['benign_total']})",
+        f"({diff_metrics['benign_misflagged']}/{diff_metrics['benign_evaluated']} evaluated)",
         _errors_line("命令用例 · Command case", cmd_errors),
         _errors_line("Diff 用例 · Diff case", diff_errors),
         "",

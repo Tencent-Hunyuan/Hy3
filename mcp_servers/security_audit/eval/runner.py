@@ -15,6 +15,7 @@ import glob
 import json
 import logging
 import os
+import re
 from collections.abc import Sequence
 from typing import Literal
 
@@ -293,6 +294,128 @@ def _max_severity(findings: Sequence[SecurityFinding]) -> FindingSeverity | None
     return max((f.severity for f in findings), key=lambda s: _SEVERITY_RANK[s])
 
 
+def _normalize_weakness(weakness: str) -> str:
+    """Fold a weakness label for comparison: casefold + strip separators (ASCII
+    and fullwidth spaces, underscores, hyphens), so cosmetically-different-but-
+    equivalent labels (``missing_authz`` / ``missing authz`` / ``server-side``)
+    fold to one form."""
+    folded = weakness.strip().casefold()
+    for sep in (" ", "　", "_", "-", "－"):
+        folded = folded.replace(sep, "")
+    return folded
+
+
+def _strip_parens(weakness: str) -> str:
+    """Drop parenthetical asides (ASCII and fullwidth) from an already-normalized
+    label — e.g. ``xml外部实体注入(xxe)`` -> ``xml外部实体注入`` — so a corpus
+    alias that names only the outside part still matches."""
+    return re.sub(r"[(（][^)）]*[)）]", "", weakness)
+
+
+# Synonym/variant aliases keyed to the ACTUAL corpus weakness labels (enumerate
+# them from eval/cases/diffs/labels.json). A finding's label DETECTS a case's
+# weakness when, after normalization, the finding CONTAINS the corpus label or
+# any of its curated aliases here. Containment (not equality) gives free
+# 漏洞/攻击 suffix tolerance and prefix qualifiers (``命令注入漏洞``,
+# ``OS命令注入``); the alias lists add cross-language + Chinese-synonym
+# equivalents (穿越/遍历, missing_authz, English names). The lists are kept TIGHT
+# so a genuinely wrong class still misses: nothing here bridges 命令注入 and
+# SQL注入, weak-crypto and injection, etc. Keys/values are pre-normalization
+# (they are folded through _normalize_weakness at match time).
+_WEAKNESS_ALIASES: dict[str, tuple[str, ...]] = {
+    "命令注入": ("OS命令注入", "shell注入", "命令执行", "命令拼接", "command injection"),
+    "SQL注入": ("SQL injection", "SQL注入攻击", "sqli"),
+    "路径穿越": ("路径遍历", "目录穿越", "目录遍历", "path traversal", "directory traversal"),
+    "XXE": ("XML外部实体注入", "XML外部实体", "XML external entity", "XXE injection"),
+    "越权": (
+        "越权访问",
+        "未授权访问",
+        "权限绕过",
+        "权限校验",
+        "权限校验缺失",
+        "权限检查缺失",
+        "缺少权限校验",
+        "访问控制缺失",
+        "missing authz",
+        "missing permission check",
+        "missing authorization",
+        "broken access control",
+        "unauthorized access",
+        "authorization bypass",
+        "IDOR",
+    ),
+    "硬编码凭据": (
+        "硬编码密钥",
+        "硬编码密码",
+        "硬编码凭证",
+        "硬编码secret",
+        "hardcoded secret",
+        "hardcoded credential",
+        "hardcoded password",
+        "hardcoded key",
+    ),
+    "不安全临时文件": (
+        "不安全的临时文件",
+        "临时文件竞争",
+        "insecure temp file",
+        "insecure temporary file",
+        "insecure tempfile",
+    ),
+    "不安全反序列化": (
+        "不安全的反序列化",
+        "反序列化",
+        "unsafe deserialization",
+        "insecure deserialization",
+        "deserialization",
+    ),
+    "弱加密": (
+        "弱加密算法",
+        "弱哈希",
+        "弱哈希算法",
+        "不安全哈希",
+        "weak crypto",
+        "weak cryptography",
+        "weak hash",
+        "insecure hash",
+        "md5",
+        "weak cipher",
+    ),
+    "SSRF": (
+        "服务器端请求伪造",
+        "服务端请求伪造",
+        "服务器请求伪造",
+        "server side request forgery",
+    ),
+}
+
+# Normalized once at import: {normalized corpus label -> (normalized terms...)},
+# each term list including the corpus label itself as the first term.
+_WEAKNESS_TERMS: dict[str, tuple[str, ...]] = {
+    _normalize_weakness(label): (
+        _normalize_weakness(label),
+        *(_normalize_weakness(alias) for alias in aliases),
+    )
+    for label, aliases in _WEAKNESS_ALIASES.items()
+}
+
+
+def _weakness_matches(finding_weakness: str, corpus_weakness: str) -> bool:
+    """Whether a finding's weakness label detects the corpus case's weakness.
+
+    Tolerant of cosmetic/synonym/English/parenthetical variants but still
+    rejects a genuinely wrong class: the finding label (normalized, and with
+    parentheticals stripped) must CONTAIN the corpus label or one of its
+    curated aliases. Corpus labels without a curated alias entry fall back to
+    the label itself, so an unknown label still matches its own exact/suffix
+    forms.
+    """
+    key = _normalize_weakness(corpus_weakness)
+    terms = _WEAKNESS_TERMS.get(key, (key,))
+    normalized = _normalize_weakness(finding_weakness)
+    variants = {normalized, _strip_parens(normalized)}
+    return any(term and term in variant for term in terms for variant in variants)
+
+
 async def run_diff_eval(
     cases: Sequence[DiffCase], *, client: Hy3CompletionClient, concurrency: int = 4
 ) -> list[DiffCaseResult]:
@@ -338,12 +461,20 @@ async def run_diff_eval(
 
         if case.kind == "malicious":
             expected = case.expected_min_severity
-            if expected is None:  # guarded by DiffCase._kind_matches_fields at load time
+            if expected is None or case.weakness is None:
+                # guarded by DiffCase._kind_matches_fields at load time
                 raise EvalCorpusError(
-                    f"malicious diff case {case.name!r} missing expected_min_severity"
+                    f"malicious diff case {case.name!r} missing weakness/expected_min_severity"
                 )
-            detected = max_severity is not None and (
-                _SEVERITY_RANK[max_severity] >= _SEVERITY_RANK[expected]
+            # Detection requires BOTH: a finding at/above the expected severity
+            # AND that finding's weakness matching the labelled weakness.
+            # Severity alone is not enough — a HIGH finding for the wrong
+            # vulnerability has not detected THIS case's weakness.
+            expected_rank = _SEVERITY_RANK[expected]
+            detected = any(
+                _SEVERITY_RANK[f.severity] >= expected_rank
+                and _weakness_matches(f.weakness, case.weakness)
+                for f in report.findings
             )
             correct = detected
         else:

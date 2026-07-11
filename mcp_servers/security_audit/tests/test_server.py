@@ -522,6 +522,54 @@ class TestCallToolVulnIntel:
         payload = _content_to_dict(result)
         assert payload["advisories"][0]["vuln_id"] == "CVE-2023-12345"
 
+    async def test_one_failing_vuln_id_yields_partial_results_not_total_failure(self) -> None:
+        # A single bad/404 id must NOT sink the whole batch: valid advisories
+        # for the other ids must still be returned, with the failure surfaced
+        # in a per-id error list instead of turning the call into a tool error.
+        def handler(request: httpx.Request) -> httpx.Response:
+            if request.url.path == "/v1/vulns/CVE-2023-00001":
+                return httpx.Response(
+                    200,
+                    json={
+                        "id": "CVE-2023-00001",
+                        "summary": "Improper input validation",
+                        "aliases": [],
+                        "severity": [],
+                    },
+                )
+            return httpx.Response(404, text="not found")
+
+        fake_reply = json.dumps(
+            {
+                "advisories": [
+                    {
+                        "vuln_id": "CVE-2023-00001",
+                        "severity": "medium",
+                        "affected": "见漏洞详情",
+                        "exploitability": "需要特定前置条件",
+                        "remediation": "关注上游修复版本",
+                        "references": [],
+                    }
+                ],
+                "summary": "发现 1 处中危漏洞",
+                "overall_priority": "medium",
+            }
+        )
+        fake = FakeHy3Client(replies=[fake_reply])
+        server = build_server(fake, osv_client=_osv_client(handler))
+
+        async with create_connected_server_and_client_session(server._mcp_server) as session:
+            result = await session.call_tool(
+                "vuln_intel", {"vuln_ids": ["CVE-2023-00001", "CVE-DOES-NOT-EXIST"]}
+            )
+
+        assert result.isError is not True
+        payload = _content_to_dict(result)
+        assert len(payload["advisories"]) == 1
+        assert payload["advisories"][0]["vuln_id"] == "CVE-2023-00001"
+        errors = payload["query_errors"]
+        assert [e["id"] for e in errors] == ["CVE-DOES-NOT-EXIST"]
+
     async def test_neither_packages_nor_vuln_ids_is_a_tool_error(self) -> None:
         def handler(request: httpx.Request) -> httpx.Response:
             raise AssertionError("OSV.dev should not be called")

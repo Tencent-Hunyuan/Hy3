@@ -222,11 +222,34 @@ _ROOT_TARGET = (
     r")"
 )
 
-# rm targeting a catastrophic root. The flag cluster MUST contain `r`/`R`
-# (recursive): `rm -f <file>` is a single-file delete, not a recursive
-# catastrophe, so it is left to the LLM even under a system root.
+# rm targeting a catastrophic root. Detection is ORDER-INDEPENDENT: GNU rm
+# permutes options after operands, so `rm /etc -rf` recursively deletes /etc
+# exactly like `rm -rf /etc`, and an end-of-options `--` marker may sit between
+# the flag and the target (`rm -rf -- /`). Rather than a brittle
+# flag-then-target positional match, we require only that, within a single rm
+# command segment, BOTH a recursive flag AND a root/system target appear — in
+# any order, with any intervening tokens (including `--`).
+#
+# The flag cluster MUST express recursion: `rm -f <file>` is a single-file
+# delete, not a recursive catastrophe, so it stays SILENT even under a system
+# root. Recursion is signalled by a short flag containing `r`/`R` or the long
+# `--recursive`. The segment class excludes shell separators/redirects so the
+# two lookaheads can never straddle into a neighbouring command.
+_RM_RECURSIVE_FLAG = r"(?:-\w*r\w*|--recursive)"
+_RM_SEG = r"[^;&|\n<>()]*"
 _RM_RF_ROOT = re.compile(
-    _CMD_START + r"rm\s+(?:-\w+\s+)*-\w*r\w*(?:\s+-\w+)*\s+" + _ROOT_TARGET,
+    _CMD_START
+    + r"rm\b"
+    + r"(?="
+    + _RM_SEG
+    + r"\s"
+    + _RM_RECURSIVE_FLAG
+    + r"(?:\s|$))"
+    + r"(?="
+    + _RM_SEG
+    + r"\s"
+    + _ROOT_TARGET
+    + r")",
     re.IGNORECASE,
 )
 
@@ -251,7 +274,10 @@ _FAST_PATTERNS: tuple[_FastPattern, ...] = (
         "shred 覆写销毁文件,不可恢复",
     ),
     _FastPattern(
-        re.compile(_CMD_START + r"dd\b[^\n]*\bof=/dev/(?:sd|nvme|disk|hd)\w*", re.IGNORECASE),
+        re.compile(
+            _CMD_START + r"dd\b[^\n]*\bof=/dev/(?:sd|nvme|disk|hd|vd|xvd|mmcblk|loop|dm-)\w*",
+            re.IGNORECASE,
+        ),
         SecurityCategory.DESTRUCTIVE_FS,
         "dd 直接写裸块设备,将覆盖整块磁盘",
     ),
@@ -290,7 +316,7 @@ _FAST_PATTERNS: tuple[_FastPattern, ...] = (
         use_masked=True,
     ),
     _FastPattern(
-        re.compile(r">>?\s*(?:~|\$HOME)/\.ssh/authorized_keys\b", re.IGNORECASE),
+        re.compile(_WRITE_OP + r"(?:~|\$\{HOME\}|\$HOME)/\.ssh/authorized_keys\b", re.IGNORECASE),
         SecurityCategory.SSH_KEYS,
         "向 authorized_keys 写入公钥,等于开放免密登录后门",
         use_masked=True,

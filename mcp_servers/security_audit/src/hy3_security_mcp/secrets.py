@@ -18,7 +18,7 @@ from collections import Counter
 
 import pydantic
 
-from hy3_security_mcp.redaction import CREDENTIAL_PATTERNS, redact
+from hy3_security_mcp.redaction import CREDENTIAL_PATTERNS, _subtract, redact
 
 # Tokenization boundary for the entropy pass: base64/URL-safe-ish charset.
 # Assignment/separator chars ('=' and ':') are DELIBERATELY excluded so a
@@ -95,10 +95,6 @@ def _mask_spans(text: str, spans: list[tuple[int, int]]) -> str:
     return masked
 
 
-def _overlaps(a_start: int, a_end: int, b_start: int, b_end: int) -> bool:
-    return a_start < b_end and a_end > b_start
-
-
 def scan_text(
     text: str, *, min_entropy: float = 4.0, min_token_len: int = 20
 ) -> list[SecretCandidate]:
@@ -151,21 +147,25 @@ def scan_text(
             span_text = "\n".join(lines[start_line - 1 : end_line])
 
             # Any other high-entropy secret co-located in this span (but
-            # outside the credential shapes redact() will mask) must be
-            # masked here too, or it survives raw into the snippet.
+            # outside the credential shapes redact() will mask) must be masked
+            # here too, or it survives raw into the snippet. A qualifying
+            # entropy token can PARTIALLY overlap a credential span — e.g.
+            # `AKIA…/secret` tokenizes as one run because '/' is in the entropy
+            # charset — so we must not drop the whole token (that leaks its
+            # non-overlapping tail); instead subtract the credential spans and
+            # mask only the sub-ranges outside them, reusing redaction.py's
+            # interval-subtract helper.
             credential_spans = [
-                (cred_match.start(), cred_match.end())
-                for _, cred_pattern in CREDENTIAL_PATTERNS
+                (cred_match.start(), cred_match.end(), name)
+                for name, cred_pattern in CREDENTIAL_PATTERNS
                 for cred_match in cred_pattern.finditer(span_text)
             ]
             entropy_spans = [
-                (start, end)
+                sub
                 for start, end, _ in _qualifying_entropy_tokens(
                     span_text, min_entropy=min_entropy, min_token_len=min_token_len
                 )
-                if not any(
-                    _overlaps(start, end, c_start, c_end) for c_start, c_end in credential_spans
-                )
+                for sub in _subtract(start, end, credential_spans)
             ]
             masked_span = _mask_spans(span_text, entropy_spans)
 

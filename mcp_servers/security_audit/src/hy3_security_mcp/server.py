@@ -99,22 +99,54 @@ def _require_package_field(pkg: dict[str, Any], field: str) -> Any:
 
 async def _gather_package_vulns(
     osv_client: OSVClient, packages: list[dict[str, Any]]
-) -> list[OSVVulnerability]:
-    results = await asyncio.gather(
-        *(
-            osv_client.query_package(
-                _require_package_field(pkg, "name"),
-                _require_package_field(pkg, "ecosystem"),
-                pkg.get("version"),
-            )
-            for pkg in packages
+) -> tuple[list[OSVVulnerability], list[dict[str, str]]]:
+    """Query every package concurrently, tolerating per-package failures.
+
+    A 404/network error on one package must not discard the valid advisories
+    from the others (return_exceptions=True), so failures are collected into a
+    per-package error list instead of sinking the whole batch. A malformed
+    entry (missing name/ecosystem) still raises ValueError eagerly, before any
+    request is dispatched, so the caller gets a descriptive tool error.
+    """
+    coros = [
+        osv_client.query_package(
+            _require_package_field(pkg, "name"),
+            _require_package_field(pkg, "ecosystem"),
+            pkg.get("version"),
         )
+        for pkg in packages
+    ]
+    results = await asyncio.gather(*coros, return_exceptions=True)
+    vulns: list[OSVVulnerability] = []
+    errors: list[dict[str, str]] = []
+    for pkg, result in zip(packages, results, strict=True):
+        if isinstance(result, BaseException):
+            errors.append({"package": str(pkg.get("name")), "error": str(result)})
+        else:
+            vulns.extend(result)
+    return vulns, errors
+
+
+async def _gather_id_vulns(
+    osv_client: OSVClient, vuln_ids: list[str]
+) -> tuple[list[OSVVulnerability], list[dict[str, str]]]:
+    """Query every vuln id concurrently, tolerating per-id failures.
+
+    One unknown/404 id must not sink the batch (return_exceptions=True); the
+    failing id is recorded in a per-id error list and the valid ones are still
+    returned.
+    """
+    results = await asyncio.gather(
+        *(osv_client.get_vuln(vuln_id) for vuln_id in vuln_ids), return_exceptions=True
     )
-    return [vuln for vulns in results for vuln in vulns]
-
-
-async def _gather_id_vulns(osv_client: OSVClient, vuln_ids: list[str]) -> list[OSVVulnerability]:
-    return list(await asyncio.gather(*(osv_client.get_vuln(vuln_id) for vuln_id in vuln_ids)))
+    vulns: list[OSVVulnerability] = []
+    errors: list[dict[str, str]] = []
+    for vuln_id, result in zip(vuln_ids, results, strict=True):
+        if isinstance(result, BaseException):
+            errors.append({"id": vuln_id, "error": str(result)})
+        else:
+            vulns.append(result)
+    return vulns, errors
 
 
 def build_server(client: Hy3CompletionClient, *, osv_client: OSVClient | None = None) -> FastMCP:
@@ -168,7 +200,11 @@ def build_server(client: Hy3CompletionClient, *, osv_client: OSVClient | None = 
           detail(具体说明)、fix_suggestion(修复建议或 null)。
         - summary: 一句中文总结本次审查结论。
         """
-        diff_text = read_diff(repo_path, staged=staged, ref_range=ref_range)
+        # read_diff shells out to git synchronously; offload it so a slow/large
+        # repo (or the bounded git timeout) never blocks the event loop.
+        diff_text = await asyncio.to_thread(
+            read_diff, repo_path, staged=staged, ref_range=ref_range
+        )
         report = await review_diff_report(diff_text, client=client, focus=focus)
         return report.model_dump(mode="json")
 
@@ -248,7 +284,7 @@ def build_server(client: Hy3CompletionClient, *, osv_client: OSVClient | None = 
         if not packages and not vuln_ids:
             raise ValueError("at least one of packages/vuln_ids must be provided")
 
-        package_vulns, id_vulns = await asyncio.gather(
+        (package_vulns, package_errors), (id_vulns, id_errors) = await asyncio.gather(
             _gather_package_vulns(osv, packages or []),
             _gather_id_vulns(osv, vuln_ids or []),
         )
@@ -257,7 +293,11 @@ def build_server(client: Hy3CompletionClient, *, osv_client: OSVClient | None = 
         report = await synthesize_advisory(
             list(vulns_by_id.values()), client=client, context=context
         )
-        return report.model_dump(mode="json")
+        # A per-item OSV failure (e.g. a 404 on one id) must not sink the whole
+        # batch; surface it as query_errors alongside the partial advisories.
+        payload = report.model_dump(mode="json")
+        payload["query_errors"] = [*package_errors, *id_errors]
+        return payload
 
     return app
 

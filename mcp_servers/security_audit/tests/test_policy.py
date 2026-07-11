@@ -285,6 +285,69 @@ _PREFIX_STRIP_FALSE_POSITIVE_GUARDS = [
 ]
 
 
+# Fast-path FN fix: GNU long options in the rm flag run must not bypass the
+# recursive-root catastrophe detector. `--recursive` counts as recursion, and
+# `--no-preserve-root` is the ONLY form that actually wipes / on modern GNU.
+_RM_LONG_OPTION_CATASTROPHES = [
+    "rm -rf --no-preserve-root /",
+    "rm --no-preserve-root -rf /",
+    "rm --recursive --force /var/lib",
+    "rm --recursive /etc",
+    "rm -R --force /usr",
+]
+
+# Broadening rm long-option support must NOT hard-DENY recursive deletes of
+# safe/scoped targets — those still fall through to the LLM.
+_RM_LONG_OPTION_SAFE = [
+    "rm --recursive ./build",
+    "rm --recursive --force node_modules",
+    "rm -R --force ./dist",
+]
+
+# Fast-path FN fix (residual bypass): GNU rm permutes options AFTER operands, so
+# `rm /etc -rf` recursively deletes /etc exactly like `rm -rf /etc`; and an
+# end-of-options `--` marker may sit between the recursive flag and the root
+# target. Detection must catch a recursive rm at a root/system target regardless
+# of option/operand order and tolerate an intervening `--`.
+_RM_OPERAND_ORDER_CATASTROPHES = [
+    "rm /etc -rf",
+    "rm /var/lib --recursive",
+    "rm /usr -R -f",
+    "rm --force /etc --recursive",
+    "rm -rf -- /etc",
+    "rm -rf -- /",
+]
+
+# The order-independent detector must NOT hard-DENY recursive deletes of safe /
+# relative targets, non-recursive single-file deletes under a system root, or
+# quoted references — these stay SILENT (LLM decides, or plainly safe).
+_RM_OPERAND_ORDER_SAFE = [
+    "rm -rf ./build",
+    "rm -rf node_modules",
+    "rm --recursive ./build",
+    "rm ./foo -rf",
+    "rm -f /etc/foo",
+    'grep "rm -rf" README.md',
+]
+
+# Fast-path FN fix: dd of= to a raw disk device must cover the virt/cloud/SD
+# device names, not just sd/nvme/disk/hd.
+_DD_DISK_DEVICE_CATASTROPHES = [
+    "dd if=/dev/zero of=/dev/vda bs=1M",
+    "dd if=/dev/zero of=/dev/xvda",
+    "dd if=/dev/zero of=/dev/mmcblk0",
+    "dd if=/dev/zero of=/dev/loop0",
+    "dd if=/dev/zero of=/dev/dm-0",
+]
+
+# Fast-path FN fix: authorized_keys write must reuse _WRITE_OP (so `| tee`
+# counts) and recognise ${HOME} in the home alternation.
+_AUTHORIZED_KEYS_CATASTROPHES = [
+    "echo k | tee -a ~/.ssh/authorized_keys",
+    "echo k >> ${HOME}/.ssh/authorized_keys",
+]
+
+
 # Finding 9: each fast-path pattern maps to exactly one SecurityCategory.
 _COMMAND_TO_CATEGORY = [
     ("rm -rf /", SecurityCategory.DESTRUCTIVE_FS),
@@ -365,6 +428,52 @@ class TestEvaluateFast:
 
     def test_case_and_whitespace_tolerant(self) -> None:
         assert evaluate_fast("RM   -RF   /") is not None
+
+    @pytest.mark.parametrize("command", _RM_LONG_OPTION_CATASTROPHES)
+    def test_rm_long_option_catastrophe_denied(self, command: str) -> None:
+        verdict = evaluate_fast(command)
+
+        assert verdict is not None, f"expected DENY, got None for: {command}"
+        assert verdict.level == AuditLevel.DENY
+        assert verdict.category == SecurityCategory.DESTRUCTIVE_FS
+        assert verdict.source == "fast_path"
+
+    @pytest.mark.parametrize("command", _RM_LONG_OPTION_SAFE)
+    def test_rm_long_option_safe_target_falls_through(self, command: str) -> None:
+        assert evaluate_fast(command) is None, (
+            f"scoped/safe recursive delete should defer to LLM: {command}"
+        )
+
+    @pytest.mark.parametrize("command", _RM_OPERAND_ORDER_CATASTROPHES)
+    def test_rm_operand_order_catastrophe_denied(self, command: str) -> None:
+        verdict = evaluate_fast(command)
+
+        assert verdict is not None, f"expected DENY, got None for: {command}"
+        assert verdict.level == AuditLevel.DENY
+        assert verdict.category == SecurityCategory.DESTRUCTIVE_FS
+        assert verdict.source == "fast_path"
+
+    @pytest.mark.parametrize("command", _RM_OPERAND_ORDER_SAFE)
+    def test_rm_operand_order_safe_returns_none(self, command: str) -> None:
+        assert evaluate_fast(command) is None, f"false positive on safe/scoped rm: {command}"
+
+    @pytest.mark.parametrize("command", _DD_DISK_DEVICE_CATASTROPHES)
+    def test_dd_disk_device_catastrophe_denied(self, command: str) -> None:
+        verdict = evaluate_fast(command)
+
+        assert verdict is not None, f"expected DENY, got None for: {command}"
+        assert verdict.level == AuditLevel.DENY
+        assert verdict.category == SecurityCategory.DESTRUCTIVE_FS
+        assert verdict.source == "fast_path"
+
+    @pytest.mark.parametrize("command", _AUTHORIZED_KEYS_CATASTROPHES)
+    def test_authorized_keys_write_catastrophe_denied(self, command: str) -> None:
+        verdict = evaluate_fast(command)
+
+        assert verdict is not None, f"expected DENY, got None for: {command}"
+        assert verdict.level == AuditLevel.DENY
+        assert verdict.category == SecurityCategory.SSH_KEYS
+        assert verdict.source == "fast_path"
         assert evaluate_fast("MKFS.EXT4 /dev/sda1") is not None
 
     @pytest.mark.parametrize("command", _WRAPPED_CATASTROPHES)

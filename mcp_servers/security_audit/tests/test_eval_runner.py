@@ -345,7 +345,7 @@ class TestRunDiffEval:
             diff_text=diff_text,
         )
 
-    def _finding_reply(self, severity: str | None) -> str:
+    def _finding_reply(self, severity: str | None, weakness: str = "命令注入") -> str:
         findings = (
             []
             if severity is None
@@ -355,7 +355,7 @@ class TestRunDiffEval:
                     "title": "t",
                     "file": None,
                     "line": None,
-                    "weakness": "命令注入",
+                    "weakness": weakness,
                     "detail": "d",
                     "fix_suggestion": None,
                 }
@@ -390,6 +390,31 @@ class TestRunDiffEval:
 
         assert results[0].detected is False
         assert results[0].correct is False
+
+    async def test_high_finding_with_wrong_weakness_is_not_detected(self) -> None:
+        """Severity alone must not score a malicious diff as detected: a HIGH
+        finding whose weakness does not match the case's expected weakness is a
+        different vulnerability, so the case is NOT caught."""
+        case = self._make_diff_case(expected_min_severity=FindingSeverity.HIGH, weakness="命令注入")
+        fake = FakeHy3Client(replies=[self._finding_reply("high", weakness="SQL注入")])
+
+        results = await run_diff_eval([case], client=fake)
+
+        assert results[0].detected is False
+        assert results[0].correct is False
+        # severity was high enough — the miss is purely the weakness mismatch.
+        assert results[0].max_severity == FindingSeverity.HIGH
+
+    async def test_matching_weakness_with_whitespace_case_variation_is_detected(self) -> None:
+        """Weakness matching is normalized (whitespace/case-insensitive) so a
+        cosmetically-different-but-equivalent label still counts as detected."""
+        case = self._make_diff_case(expected_min_severity=FindingSeverity.HIGH, weakness="SSRF")
+        fake = FakeHy3Client(replies=[self._finding_reply("high", weakness=" ssrf ")])
+
+        results = await run_diff_eval([case], client=fake)
+
+        assert results[0].detected is True
+        assert results[0].correct is True
 
     async def test_malicious_diff_with_no_findings_is_not_detected(self) -> None:
         case = self._make_diff_case(expected_min_severity=FindingSeverity.HIGH)
@@ -490,6 +515,93 @@ class TestRunDiffEval:
         assert "boom" in results[0].error
         # benign case errored -> conservatively scored as no false positive,
         # but still visible via `error` (see run_diff_eval convention).
+        assert results[0].correct is True
+
+
+class TestWeaknessAliasMatching:
+    """The malicious-diff weakness match must tolerate cosmetic/synonym/English
+    variants of the corpus label (so a genuinely correct detection isn't scored
+    as a miss) while still REJECTING a genuinely wrong vulnerability class."""
+
+    def _case(self, weakness: str, sev: FindingSeverity = FindingSeverity.HIGH) -> DiffCase:
+        return DiffCase(
+            name="m.diff",
+            kind="malicious",
+            weakness=weakness,
+            expected_min_severity=sev,
+            diff_text="--- a\n+++ b\n",
+        )
+
+    def _reply(self, weakness: str, severity: str = "high") -> str:
+        return json.dumps(
+            {
+                "findings": [
+                    {
+                        "severity": severity,
+                        "title": "t",
+                        "file": None,
+                        "line": None,
+                        "weakness": weakness,
+                        "detail": "d",
+                        "fix_suggestion": None,
+                    }
+                ],
+                "summary": "s",
+            }
+        )
+
+    @pytest.mark.parametrize(
+        ("corpus", "finding"),
+        [
+            # 漏洞 suffix tolerance + 前缀限定
+            ("命令注入", "命令注入漏洞"),
+            ("命令注入", "OS命令注入"),
+            # 穿越/遍历 synonym
+            ("路径穿越", "路径遍历"),
+            # parenthetical + English-in-parens
+            ("XXE", "XML外部实体注入(XXE)"),
+            # 越权 vs 越权访问 (and the internal missing_authz label)
+            ("越权", "越权访问"),
+            ("越权", "missing_authz"),
+            # real live-model label for missing_authz_01.diff (was a false miss)
+            ("越权", "权限校验缺失"),
+            # English equivalents
+            ("SQL注入", "SQL Injection"),
+            ("硬编码凭据", "硬编码密钥"),
+            ("不安全反序列化", "不安全的反序列化"),
+            ("不安全反序列化", "unsafe deserialization"),
+            ("弱加密", "MD5弱哈希"),
+            ("SSRF", "server-side request forgery"),
+        ],
+    )
+    async def test_alias_variant_is_detected(self, corpus: str, finding: str) -> None:
+        results = await run_diff_eval(
+            [self._case(corpus)], client=FakeHy3Client(replies=[self._reply(finding)])
+        )
+        assert results[0].detected is True
+        assert results[0].correct is True
+
+    @pytest.mark.parametrize(
+        ("corpus", "finding"),
+        [
+            ("SQL注入", "命令注入"),
+            ("命令注入", "SQL注入"),
+            ("路径穿越", "SQL注入"),
+            ("弱加密", "命令注入"),
+        ],
+    )
+    async def test_wrong_class_is_rejected(self, corpus: str, finding: str) -> None:
+        results = await run_diff_eval(
+            [self._case(corpus)], client=FakeHy3Client(replies=[self._reply(finding)])
+        )
+        assert results[0].detected is False
+        assert results[0].correct is False
+
+    async def test_exact_right_class_right_severity_still_detects(self) -> None:
+        results = await run_diff_eval(
+            [self._case("命令注入")], client=FakeHy3Client(replies=[self._reply("命令注入")])
+        )
+        assert results[0].detected is True
         assert results[0].correct is True
 
 

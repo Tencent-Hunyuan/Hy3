@@ -181,6 +181,133 @@ class TestCommandMetrics:
 
         assert metrics["errors"] == {"count": 0, "ids": []}
 
+    def test_category_accuracy_counts_mismatch_over_caught_danger(self) -> None:
+        """A caught danger case whose actual_category differs from its
+        expected_category is a category miss — surfaced separately from the
+        deny/confirm detection outcome (which stays `correct`)."""
+        results = [
+            _cmd_result(
+                "d1",
+                "danger",
+                SecurityCategory.SENSITIVE_FILE,
+                "direct",
+                AuditLevel.CONFIRM,
+                AuditLevel.CONFIRM,
+                True,
+                expected_category=SecurityCategory.SENSITIVE_FILE,
+                actual_category=SecurityCategory.SENSITIVE_FILE,
+            ),
+            _cmd_result(
+                "d2",
+                "danger",
+                SecurityCategory.SENSITIVE_FILE,
+                "direct",
+                AuditLevel.CONFIRM,
+                AuditLevel.CONFIRM,
+                True,
+                expected_category=SecurityCategory.SENSITIVE_FILE,
+                actual_category=SecurityCategory.DESTRUCTIVE_FS,  # caught, wrong category
+            ),
+        ]
+
+        metrics = command_metrics(results)
+
+        assert metrics["category_accuracy"]["total"] == 2
+        assert metrics["category_accuracy"]["correct"] == 1
+        assert metrics["category_accuracy"]["rate"] == pytest.approx(0.5)
+
+    def test_category_accuracy_ignores_uncaught_and_errored_danger(self) -> None:
+        """Only caught danger cases with a known actual_category are eligible —
+        a missed case (wrong level) and an errored case (no actual_category)
+        are excluded from the category-accuracy denominator."""
+        results = [
+            _cmd_result(
+                "hit",
+                "danger",
+                SecurityCategory.SENSITIVE_FILE,
+                "direct",
+                AuditLevel.CONFIRM,
+                AuditLevel.CONFIRM,
+                True,
+                expected_category=SecurityCategory.SENSITIVE_FILE,
+                actual_category=SecurityCategory.SENSITIVE_FILE,
+            ),
+            _cmd_result(
+                "missed",
+                "danger",
+                SecurityCategory.SENSITIVE_FILE,
+                "direct",
+                AuditLevel.CONFIRM,
+                AuditLevel.ALLOW,
+                False,
+                expected_category=SecurityCategory.SENSITIVE_FILE,
+                actual_category=None,
+            ),
+            _cmd_result(
+                "errored",
+                "danger",
+                SecurityCategory.SENSITIVE_FILE,
+                "direct",
+                AuditLevel.CONFIRM,
+                None,
+                False,
+                source="error",
+                error="RuntimeError: boom",
+                expected_category=SecurityCategory.SENSITIVE_FILE,
+                actual_category=None,
+            ),
+        ]
+
+        metrics = command_metrics(results)
+
+        assert metrics["category_accuracy"]["total"] == 1
+        assert metrics["category_accuracy"]["correct"] == 1
+        assert metrics["category_accuracy"]["rate"] == pytest.approx(1.0)
+
+    def test_errored_safe_case_is_excluded_from_fp_denominator(self) -> None:
+        """An errored safe case scores `correct=True` (conservative), but must
+        NOT sit in the FP denominator — the rate is over successfully-evaluated
+        safe cases only, so a flaky endpoint cannot deflate the FP rate."""
+        results = [
+            _cmd_result(
+                "s_ok",
+                "safe",
+                SecurityCategory.SENSITIVE_FILE,
+                "direct",
+                AuditLevel.ALLOW,
+                AuditLevel.ALLOW,
+                True,
+            ),
+            _cmd_result(
+                "s_fp",
+                "safe",
+                SecurityCategory.SENSITIVE_FILE,
+                "direct",
+                AuditLevel.ALLOW,
+                AuditLevel.CONFIRM,
+                False,
+            ),
+            _cmd_result(
+                "s_err",
+                "safe",
+                SecurityCategory.SENSITIVE_FILE,
+                "direct",
+                AuditLevel.ALLOW,
+                None,
+                True,
+                source="error",
+                error="RuntimeError: boom",
+            ),
+        ]
+
+        metrics = command_metrics(results)
+
+        assert metrics["overall"]["safe_total"] == 3
+        assert metrics["overall"]["safe_evaluated"] == 2
+        assert metrics["overall"]["safe_misflagged"] == 1
+        # 1 false positive over 2 successfully-evaluated safe cases, not 3.
+        assert metrics["overall"]["fp_rate"] == pytest.approx(0.5)
+
     def test_errors_summary_lists_errored_case_ids(self) -> None:
         results = [
             _cmd_result(
@@ -268,6 +395,23 @@ class TestDiffMetrics:
         assert metrics["by_weakness"]["命令注入"]["detection_rate"] == pytest.approx(1.0)
         assert metrics["by_weakness"]["SQL注入"]["detection_rate"] == pytest.approx(0.0)
 
+    def test_errored_benign_case_is_excluded_from_fp_denominator(self) -> None:
+        """Same convention as command safe cases: an errored benign diff scores
+        `correct=True` but is excluded from the FP denominator (rate over
+        successfully-evaluated benign diffs only)."""
+        results = [
+            _diff_result("b_ok.diff", "benign", True),
+            _diff_result("b_fp.diff", "benign", False, max_severity=FindingSeverity.MEDIUM),
+            _diff_result("b_err.diff", "benign", True, error="RuntimeError: boom"),
+        ]
+
+        metrics = diff_metrics(results)
+
+        assert metrics["benign_total"] == 3
+        assert metrics["benign_evaluated"] == 2
+        assert metrics["benign_misflagged"] == 1
+        assert metrics["fp_rate"] == pytest.approx(0.5)
+
     def test_empty_results_do_not_divide_by_zero(self) -> None:
         metrics = diff_metrics([])
 
@@ -319,6 +463,51 @@ class TestCheckGate:
         assert any("detection_rate" in reason for reason in failing)
         assert any("fp_rate" in reason for reason in failing)
 
+    def test_all_safe_errored_makes_command_fp_inconclusive_not_pass(self) -> None:
+        """When every safe command case errored (safe_evaluated == 0), fp_rate is
+        a meaningless 0/0 = 0.0 — the gate must treat it as inconclusive/FAIL,
+        never PASS on the vacuous rate."""
+        cmd_metrics = {
+            "overall": {
+                "detection_rate": 1.0,
+                "fp_rate": 0.0,
+                "safe_total": 5,
+                "safe_evaluated": 0,
+            }
+        }
+        dif_metrics = {
+            "detection_rate": 0.9,
+            "fp_rate": 0.05,
+            "benign_total": 3,
+            "benign_evaluated": 3,
+        }
+
+        passed, failing = check_gate(cmd_metrics, dif_metrics, GATE)
+
+        assert passed is False
+        assert any("inconclusive" in reason for reason in failing)
+
+    def test_all_benign_errored_makes_diff_fp_inconclusive_not_pass(self) -> None:
+        cmd_metrics = {
+            "overall": {
+                "detection_rate": 1.0,
+                "fp_rate": 0.0,
+                "safe_total": 5,
+                "safe_evaluated": 5,
+            }
+        }
+        dif_metrics = {
+            "detection_rate": 0.9,
+            "fp_rate": 0.0,
+            "benign_total": 3,
+            "benign_evaluated": 0,
+        }
+
+        passed, failing = check_gate(cmd_metrics, dif_metrics, GATE)
+
+        assert passed is False
+        assert any("inconclusive" in reason for reason in failing)
+
     def test_exactly_at_threshold_passes(self) -> None:
         gate = {"detection_min": 0.80, "fp_max": 0.15}
         cmd_metrics = {"overall": {"detection_rate": 0.80, "fp_rate": 0.15}}
@@ -338,11 +527,13 @@ class TestRenderMarkdownReport:
                 "danger_caught": 2,
                 "detection_rate": 1.0,
                 "safe_total": 1,
+                "safe_evaluated": 1,
                 "safe_misflagged": 0,
                 "fp_rate": 0.0,
             },
             "by_category": {},
             "by_attack_surface": {},
+            "category_accuracy": {"total": 2, "correct": 2, "rate": 1.0},
             "matrix": {
                 "destructive_fs": {"direct": {"total": 2, "caught": 2, "detection_rate": 1.0}},
             },
@@ -353,6 +544,7 @@ class TestRenderMarkdownReport:
             "malicious_detected": 1,
             "detection_rate": 1.0,
             "benign_total": 1,
+            "benign_evaluated": 1,
             "benign_misflagged": 0,
             "fp_rate": 0.0,
             "by_weakness": {"命令注入": {"total": 1, "detected": 1, "detection_rate": 1.0}},
@@ -375,11 +567,13 @@ class TestRenderMarkdownReport:
                 "danger_caught": 0,
                 "detection_rate": 0.0,
                 "safe_total": 1,
+                "safe_evaluated": 1,
                 "safe_misflagged": 1,
                 "fp_rate": 1.0,
             },
             "by_category": {},
             "by_attack_surface": {},
+            "category_accuracy": {"total": 2, "correct": 2, "rate": 1.0},
             "matrix": {},
             "errors": {"count": 0, "ids": []},
         }
@@ -388,6 +582,7 @@ class TestRenderMarkdownReport:
             "malicious_detected": 0,
             "detection_rate": 0.0,
             "benign_total": 1,
+            "benign_evaluated": 1,
             "benign_misflagged": 1,
             "fp_rate": 1.0,
             "by_weakness": {},
@@ -405,11 +600,13 @@ class TestRenderMarkdownReport:
                 "danger_caught": 2,
                 "detection_rate": 1.0,
                 "safe_total": 1,
+                "safe_evaluated": 1,
                 "safe_misflagged": 0,
                 "fp_rate": 0.0,
             },
             "by_category": {},
             "by_attack_surface": {},
+            "category_accuracy": {"total": 2, "correct": 2, "rate": 1.0},
             "matrix": {
                 "destructive_fs": {"direct": {"total": 2, "caught": 2, "detection_rate": 1.0}},
             },
@@ -420,6 +617,7 @@ class TestRenderMarkdownReport:
             "malicious_detected": 1,
             "detection_rate": 1.0,
             "benign_total": 1,
+            "benign_evaluated": 1,
             "benign_misflagged": 0,
             "fp_rate": 0.0,
             "by_weakness": {"命令注入": {"total": 1, "detected": 1, "detection_rate": 1.0}},

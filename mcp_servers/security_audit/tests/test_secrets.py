@@ -377,6 +377,47 @@ class TestCoLocatedEntropySecretMasking:
         assert "AKIAIOSFODNN7EXAMPLE" not in matches[0].snippet
 
 
+class TestSlashSeparatedCoLocatedSecret:
+    """A high-entropy token can span a `/` boundary and thereby OVERLAP a
+    credential-regex match (unlike the ':'-separated case, `/` is inside the
+    entropy tokenizer's charset so the whole `CREDENTIAL/secret` run is one
+    token). The overlapping token must NOT be excluded wholesale -- its
+    sub-ranges OUTSIDE the credential span have to be masked, or the secret
+    tail leaks raw into the snippet handed to Hy3."""
+
+    _AWS_SECRET_TAIL = "wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY"
+
+    def test_aws_key_slash_secret_tail_not_leaked(self) -> None:
+        # AKIAIOSFODNN7EXAMPLE is the AWS-allowlisted EXAMPLE key.
+        text = f"aws_creds = AKIAIOSFODNN7EXAMPLE/{self._AWS_SECRET_TAIL}\n"
+
+        candidates = scan_text(text)
+
+        assert candidates  # sanity: the detector actually ran
+        for candidate in candidates:
+            assert self._AWS_SECRET_TAIL not in candidate.snippet
+        matches = [c for c in candidates if c.kind == "AWS_ACCESS_KEY"]
+        assert len(matches) == 1
+        assert "***REDACTED-AWS_ACCESS_KEY***" in matches[0].snippet
+        assert "AKIAIOSFODNN7EXAMPLE" not in matches[0].snippet
+        assert "***REDACTED-HIGH_ENTROPY***" in matches[0].snippet
+
+    def test_openai_key_slash_secret_tail_not_leaked(self) -> None:
+        openai_key = "sk-abcdefghijklmnopqrstuvwx1234"
+        text = f"creds = {openai_key}/{self._AWS_SECRET_TAIL}\n"
+
+        candidates = scan_text(text)
+
+        assert candidates  # sanity: the detector actually ran
+        for candidate in candidates:
+            assert self._AWS_SECRET_TAIL not in candidate.snippet
+        matches = [c for c in candidates if c.kind == "OPENAI_KEY"]
+        assert len(matches) == 1
+        assert "***REDACTED-OPENAI_KEY***" in matches[0].snippet
+        assert openai_key not in matches[0].snippet
+        assert "***REDACTED-HIGH_ENTROPY***" in matches[0].snippet
+
+
 class TestEmptyInput:
     def test_empty_text_returns_empty_list(self) -> None:
         assert scan_text("") == []

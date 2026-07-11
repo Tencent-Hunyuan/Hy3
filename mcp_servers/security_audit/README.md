@@ -258,7 +258,7 @@ The four tools split across two `reasoning_effort` tiers by task nature, rather 
 
 The evaluation corpus is another core differentiator versus "ship a prompt with no eval" competitors: a broad, realistic, adversarial test set (see [`eval/cases/README.md`](eval/cases/README.md)) plus an independent runner and a detection/false-positive report.
 
-语料规模 / Corpus size：**86 条命令用例**（7 个危险类别 × 3 种攻击面 `direct`/`prompt_injection`/`indirect_inducement`，58 danger + 28 safe）+ **22 个 diff 夹具**（11 malicious + 11 benign）。
+语料规模 / Corpus size：**88 条命令用例**（7 个危险类别 × 3 种攻击面 `direct`/`prompt_injection`/`indirect_inducement`，58 danger + 30 safe——含注入话术包装的 benign 命令，检验"别被吓到而过度拦截"）+ **22 个 diff 夹具**（11 malicious + 11 benign）。
 
 运行 / Run:
 
@@ -280,18 +280,22 @@ Needs a live `HY3_API_KEY` (it calls Hy3 for real, through the full `audit_comma
 
 门禁阈值 / Gate thresholds(来自 PR #124 holdout 目标 / from PR #124's holdout targets)：命令/diff 的 `detection_min = 80%`、`fp_max = 15%`，四项任一不达标即 FAIL（exit code 1）。
 
-**实测结果 / Measured results**（`tencent/hy3:free` via OpenRouter，`HY3_MAX_TOKENS=8192`，2026-07；完整报告见 [`eval/report.md`](eval/report.md)）：
+**实测结果 / Measured results**（`tencent/hy3:free` via OpenRouter，`HY3_MAX_TOKENS=8192`，2026-07，**k=3 独立采样**；完整报告见 [`eval/report.md`](eval/report.md)）：
 
-| 指标 · Metric | 结果 · Result | 门禁 · Gate |
+| 指标 · Metric | 结果 · Result（k=3） | 门禁 · Gate |
 |---|---|---|
-| 命令拦截率 · Command detection | **91.4%** (53/58) | ≥80% ✅ |
-| 命令误报率 · Command false-positive | **0.0%** (0/28) | ≤15% ✅ |
-| Diff 拦截率 · Diff detection | **100%** (11/11) | ≥80% ✅ |
-| Diff 误报率 · Diff false-positive | **0.0%** (0/11) | ≤15% ✅ |
+| 命令拦截率 · Command detection | **91.4%** (53/58) · 三次一致 | ≥80% ✅ |
+| 命令误报率 · Command false-positive | **3.3%** 中位（区间 0–6.7%，0–2/30） | ≤15% ✅ |
+| 命令类别准确率 · Command category accuracy | **94.3%** (50/53) | — |
+| Diff 拦截率 · Diff detection | **81.8%** (9/11) · 三次一致 | ≥80% ✅ |
+| Diff 误报率 · Diff false-positive | **0.0%** (0/11) · 三次一致 | ≤15% ✅ |
+| 危险漏放 · Dangerous leak (danger→allow) | **0%** · 三次全 0 | =0 ✅ |
 
-命令检出 91.4% + 误报 0%：漏检集中在 persistence / ssh_keys / sudoers 的少数间接诱导用例（矩阵如实呈现，见 `eval/report.md`），零误报意味着确定性快路径 + 策略 prompt 对安全对照集不过度拦截。**门禁 PASS。**
+评分是**弱点感知**且**诚实分母**的：diff 检出要求发现的弱点类别与标注类别匹配（不只是 severity 达标——同义/变体标签经别名归一），误报率只在成功评估的用例上计（errored 用例不稀释）；另设"命令类别准确率"独立核验 7 类分类而非只看拦截。命令检出 91.4%、类别准确率 94.3%；diff 检出 81.8%，2 处漏检是模型把 XXE 误判成 SSRF、把不安全临时文件标成泛化的"危险默认配置"（如实保留，不调阈值凑分）。**门禁 PASS。**
 
-Command detection 91.4% with 0% false positives: the misses concentrate in a few indirect-inducement cases under persistence / ssh_keys / sudoers (shown honestly in the matrix); zero false positives means the deterministic fast-path + policy prompt do not over-block the safe control set. **Gate PASS.**
+Scoring is **weakness-aware** with an **honest denominator**: a diff detection requires the finding's weakness class to match the labelled one (not just meeting the severity bar — synonym/variant labels are alias-normalised), and the false-positive rate is computed only over successfully-evaluated cases (errored cases never dilute it); a separate "command category accuracy" independently checks the 7-way classification rather than detection alone. Command detection 91.4% / category accuracy 94.3%; diff detection 81.8% — the 2 misses are the model calling XXE "SSRF" and labelling an insecure tempfile as a generic "dangerous default config" (kept honestly, no threshold-tuning to inflate). **Gate PASS.**
+
+> 采样注意 / Sampling：`tencent/hy3:free` 免费端点有运行间随机性,故取 **k=3 独立采样**。命令检出(91.4%)、diff 检出(81.8%)、diff 误报(0%)、**危险漏放(0%)** 三次完全一致;仅命令误报在 0–6.7%(0–2/30)间抖动,表内取中位并标区间。**门禁 3/3 PASS。**
 
 > 复现注意 / Reproducibility：Hy3 是推理模型，在 OpenRouter `:free` 端点上 `no_think` 开关不一定被下游模板采纳，推理可能占满 token → 空内容报错。评测/生产均建议 `HY3_MAX_TOKENS` ≥ 4096（默认已提高）。
 
