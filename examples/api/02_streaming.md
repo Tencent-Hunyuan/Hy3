@@ -52,9 +52,24 @@ From the repository root:
 python examples/api/02_streaming.py
 ```
 
-The command uses the configured API. The following values come from deterministic accumulator fixtures.
+The command uses the configured API. The first block records a live run; the second remains an offline accumulator fixture for fragmented-stream behavior.
 
 ## Example output
+
+**Verified live observation**
+
+```text
+Backend: OpenRouter
+Model requested: tencent/hy3:free
+Model resolved: not exposed by this script's stream snapshot
+Observed on: 2026-07-11
+
+content: a two-sentence explanation of what an API is
+reasoning: ""
+finish_reason: stop
+usage.total_tokens: 77
+tool_calls: []
+```
 
 **Deterministic offline example**
 
@@ -71,7 +86,7 @@ The fixture deliberately sends an initial empty chunk, interleaves call index 1 
 
 ## Limitations
 
-- The output above is synthetic test data, not a live model response.
+- The live content description is a summary rather than an exact-output assertion. The deterministic block is synthetic test data.
 - `stream_options.include_usage` requests usage but cannot force an unsupported backend to provide it.
 - The accumulator reads the first choice only.
 - The script prints content live but waits until the stream ends to print reasoning, usage, and reconstructed tool calls.

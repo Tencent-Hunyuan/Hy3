@@ -70,7 +70,24 @@ python examples/api/06_error_handling_retry.py
 
 ## 示例输出
 
-**确定性离线示例**
+**已验证的实时观测**
+
+```text
+后端：OpenRouter
+请求模型：tencent/hy3:free
+解析模型：tencent/hy3-20260706:free
+观测日期：2026-07-11
+
+Retry 2/4 in 0.00s after APIConnectionError
+Retry 3/4 in 0.25s after APIConnectionError
+Retry 4/4 in 1.73s after APIConnectionError
+content：关于可靠 API client 的一句话
+usage.total_tokens：49
+```
+
+这只是一次实时瞬时恢复观测，不承诺精确的失败序列和 jitter 延迟能够复现。
+
+**确定性离线模拟**
 
 ```text
 Retry 2/4 in 0.00s after RateLimitError
@@ -81,11 +98,12 @@ Retry 2/4 in 0.00s after APIConnectionError
 connection: recovered
 ```
 
-`--simulate` 模式为每个场景注入一个错误，禁用真实 sleep，使用确定性 jitter，然后返回 `recovered`。
+确定性 `--simulate` 模式为每个场景注入一个错误，禁用真实 sleep，使用确定性 jitter，然后返回 `recovered`。
 
 ## 限制与注意事项
 
 - 只解析有限的数值型 Retry-After 秒数；HTTP-date 会回退到 jitter。
+- 上述实时 connection-error 序列是观测证据，不是脚本的固定输出。
 - Retry-After 不受 `max_delay` 限制；生产策略可按需要再设置上限。
 - 默认随机源适合 jitter，不适合密码学。
 - 该策略是同步的，会阻塞当前线程。

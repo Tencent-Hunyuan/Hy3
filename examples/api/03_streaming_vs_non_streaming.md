@@ -61,9 +61,25 @@ python examples/api/03_streaming_vs_non_streaming.py
 python examples/api/03_streaming_vs_non_streaming.py --warmup
 ```
 
-These commands use the configured API and live clock. The next block uses injected test clocks.
+These commands use the configured API and live clock. The first block is one live observation without warmup; the second uses injected test clocks.
 
 ## Example output
+
+**Verified live observation (one observation, not a benchmark)**
+
+```text
+Backend: OpenRouter
+Model requested: tencent/hy3:free
+Model resolved: not exposed by this timing script
+Observed on: 2026-07-11
+
+Non-streaming total: 4.465s
+Streaming first output: 1.306s
+Streaming first content: 1.306s
+Streaming total: 3.175s
+```
+
+These numbers are one transient observation, not a benchmark or a claim that streaming is always faster.
 
 **Deterministic offline example**
 
@@ -78,7 +94,7 @@ The non-streaming and streaming numbers come from deterministic unit-test clocks
 
 ## Limitations
 
-- Do not compare the fixture values as if they came from production hardware.
+- Do not generalize from either the single live observation or the fixture values as if they were a benchmark.
 - A fair live comparison needs repeated trials, controlled load, the same backend, and the same prompt/sampling settings.
 - `first_output_seconds` and `first_content_seconds` are `None` when no reasoning/content delta appears; the CLI prints `unavailable`.
 - The example does not validate semantic equivalence between the two answers.

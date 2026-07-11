@@ -61,9 +61,25 @@ python examples/api/03_streaming_vs_non_streaming.py
 python examples/api/03_streaming_vs_non_streaming.py --warmup
 ```
 
-这些命令使用已配置 API 和实时 clock。下方内容使用注入的测试 clock。
+这些命令使用已配置 API 和实时 clock。第一个区块是未启用 warmup 的一次实时观测；第二个区块使用注入的测试 clock。
 
 ## 示例输出
+
+**已验证的实时观测（单次观测，不是 benchmark）**
+
+```text
+后端：OpenRouter
+请求模型：tencent/hy3:free
+解析模型：该计时脚本未提供
+观测日期：2026-07-11
+
+非流式总耗时：4.465s
+流式首次输出：1.306s
+流式首次可见 content：1.306s
+流式总耗时：3.175s
+```
+
+这些数值只是一次瞬时观测，不是 benchmark，也不表示流式始终更快。
 
 **确定性离线示例**
 
@@ -78,7 +94,7 @@ Streaming total: 1.000s
 
 ## 限制与注意事项
 
-- 不要把 fixture 数值当成生产硬件基准。
+- 不要把单次实时观测或 fixture 数值泛化为 benchmark。
 - 公平的实时比较需要重复试验、受控负载、相同后端以及相同 prompt/采样设置。
 - 没有 reasoning/content delta 时，`first_output_seconds` 或 `first_content_seconds` 为 `None`，CLI 会打印 `unavailable`。
 - 示例不验证两次回答在语义上等价。

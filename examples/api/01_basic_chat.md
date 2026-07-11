@@ -61,29 +61,31 @@ From the repository root:
 python examples/api/01_basic_chat.py
 ```
 
-This command uses the configured API. The block below is from deterministic unit-test fixtures, not a live model call.
+This command uses the configured API. The observation below was captured from a live run; wording and token usage can vary between runs.
 
 ## Example output
 
-**Deterministic offline example**
+**Verified live observation**
 
 ```text
+Backend: OpenRouter
+Model requested: tencent/hy3:free
+Model resolved: tencent/hy3-20260706:free
+Observed on: 2026-07-11
+
 Single-turn response:
-content: I am Hy3.
-reasoning: brief plan
-finish_reason: stop
-usage.total_tokens: 5
+content: a brief self-introduction
+reasoning: unavailable
+usage.total_tokens: 71
 
 Multi-turn response:
-content: I can help with APIs.
-reasoning: ""
-finish_reason: stop
-usage.total_tokens: 5
+content: a list of task types the assistant can help with
+usage.total_tokens: 226
 ```
 
 ## Limitations
 
-- The deterministic text above is fake test data; live wording and token usage vary.
+- The content descriptions above are safe summaries of one live run, not exact-output assertions. Live wording and token usage vary.
 - The example assumes the completion contains at least one choice. The shared normalizer raises when choices are missing.
 - It does not stream, execute tools, or preserve reasoning fields in the second-turn assistant history.
 - The script creates a client for a short-lived CLI and relies on process exit for cleanup.

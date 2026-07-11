@@ -70,7 +70,24 @@ python examples/api/06_error_handling_retry.py
 
 ## Example output
 
-**Deterministic offline example**
+**Verified live observation**
+
+```text
+Backend: OpenRouter
+Model requested: tencent/hy3:free
+Model resolved: tencent/hy3-20260706:free
+Observed on: 2026-07-11
+
+Retry 2/4 in 0.00s after APIConnectionError
+Retry 3/4 in 0.25s after APIConnectionError
+Retry 4/4 in 1.73s after APIConnectionError
+content: one sentence about reliable API clients
+usage.total_tokens: 49
+```
+
+This is one transient live recovery observation. The exact failure sequence and jitter delays are not promised to recur.
+
+**Deterministic offline simulation**
 
 ```text
 Retry 2/4 in 0.00s after RateLimitError
@@ -81,11 +98,12 @@ Retry 2/4 in 0.00s after APIConnectionError
 connection: recovered
 ```
 
-The simulation injects one error per scenario, disables actual sleeping, uses deterministic jitter, and then returns `recovered`.
+The deterministic simulation injects one error per scenario, disables actual sleeping, uses deterministic jitter, and then returns `recovered`.
 
 ## Limitations
 
 - Only finite numeric Retry-After seconds are parsed; HTTP-date values fall back to jitter.
+- The live connection-error sequence above is observational evidence, not fixed script output.
 - A Retry-After value is not capped by `max_delay`; decide whether your production policy needs an additional upper bound.
 - The default random source is suitable for jitter, not cryptography.
 - The policy is synchronous and sleeps the current thread.

@@ -61,9 +61,31 @@ From the repository root:
 python examples/api/05_reasoning_mode.py
 ```
 
-The command uses the configured backend. The next block uses deterministic fake completions and injected clocks.
+The command uses the configured backend. The first block records a live comparison; the second uses deterministic fake completions and injected clocks.
 
 ## Example output
+
+**Verified live observation**
+
+```text
+Backend: OpenRouter
+Model requested: tencent/hy3:free
+Model resolved: not retained by this script's ModeResult
+Observed on: 2026-07-11
+
+no_think:
+  content: 60 km/h
+  reasoning: unavailable
+  usage.total_tokens: 121
+
+high:
+  content: 60 km/h
+  reasoning: present as 1 reasoning_details item
+  usage.reasoning_tokens: 39
+  usage.total_tokens: 127
+```
+
+The observation reports only reasoning availability and counts; it intentionally does not reproduce internal reasoning text.
 
 **Deterministic offline example**
 
@@ -87,7 +109,7 @@ The times above come from injected unit-test clocks. They are not live latency m
 
 ## Limitations
 
-- The fixture does not prove that one mode is faster or more accurate.
+- The live observation and fixture do not prove that one mode is faster or more accurate.
 - Reasoning fields are optional and backend dependent; absent reasoning is not an error.
 - The comparison covers only `no_think` and `high`, not `low`.
 - Do not expose model reasoning without reviewing provider behavior and your product's policy.

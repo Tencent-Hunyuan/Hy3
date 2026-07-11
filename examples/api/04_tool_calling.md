@@ -80,9 +80,23 @@ From the repository root:
 python examples/api/04_tool_calling.py
 ```
 
-This uses the configured API. The following multi-call assistant turn is deterministic unit-test data; the Python loop executes call 1 and then call 2.
+This uses the configured API. The first block records a completed live tool loop. The following multi-call assistant turn remains deterministic unit-test data; the Python loop executes call 1 and then call 2.
 
 ## Example output
+
+**Verified live observation**
+
+```text
+Backend: OpenRouter
+Model requested: tencent/hy3:free
+Model resolved: tencent/hy3-20260706:free
+Observed on: 2026-07-11
+
+final assistant content: Shenzhen is currently rainy with a temperature of 29°C.
+usage.total_tokens: 306
+```
+
+The successful final answer confirms that the model-to-tool-to-model loop completed. The weather value came from the script's fixed `DEMO_WEATHER` table; it was not real current weather.
 
 **Deterministic offline example**
 
@@ -97,7 +111,7 @@ final assistant content: Done.
 
 ## Limitations
 
-- Weather values are demo data and must not be presented as current conditions.
+- Weather values, including the live run's final wording, originate from `DEMO_WEATHER` and must not be treated as current conditions.
 - Only `get_weather` is allowed; unknown names return `unknown_tool`.
 - The loop does not use `eval`; arguments must be a JSON string decoding to an object.
 - A tool error is sent back to the model as a tool result so the model can recover, but recovery is not guaranteed.

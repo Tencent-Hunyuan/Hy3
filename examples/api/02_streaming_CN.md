@@ -52,9 +52,24 @@
 python examples/api/02_streaming.py
 ```
 
-命令使用已配置 API。以下值来自确定性的 accumulator fixture。
+命令使用已配置 API。第一个区块记录一次实时运行；第二个区块仍是用于说明流式分片行为的离线 accumulator fixture。
 
 ## 示例输出
+
+**已验证的实时观测**
+
+```text
+后端：OpenRouter
+请求模型：tencent/hy3:free
+解析模型：该脚本的流式快照未提供
+观测日期：2026-07-11
+
+content：用两句话解释 API
+reasoning：""
+finish_reason：stop
+usage.total_tokens：77
+tool_calls：[]
+```
 
 **确定性离线示例**
 
@@ -71,7 +86,7 @@ tool_calls[1]: call_time / get_time / {"timezone":"Asia/Hong_Kong"}
 
 ## 限制与注意事项
 
-- 上述输出是合成测试数据，不是实时模型响应。
+- 实时 content 描述是摘要，不是精确输出断言；确定性区块是合成测试数据。
 - `stream_options.include_usage` 只能请求 usage，无法强制不支持的后端返回。
 - accumulator 只读取第一个 choice。
 - 脚本实时打印 content，但 reasoning、usage 和重组后的工具调用要等流结束后才输出。
