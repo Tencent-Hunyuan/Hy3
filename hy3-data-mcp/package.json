@@ -23,6 +23,7 @@
     "test:real": "node scripts/test-real.mjs",
     "demo:gif": "node scripts/generate-demo-gif.mjs",
     "demo:screenshots": "node scripts/generate-demo-screenshots.mjs",
+    "pack:release": "node scripts/pack-release.mjs",
     "test:watch": "vitest",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "prepare": "npm run build"
