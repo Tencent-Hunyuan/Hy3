@@ -13,5 +13,3 @@ hy3-data-output/
 __pycache__/
 *.pyc
 
-# Large media files that should not be committed
-assets/demo.mp4
