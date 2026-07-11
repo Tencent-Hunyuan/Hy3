@@ -111,6 +111,8 @@ Model usefulness is not fully captured by benchmarks. Based on extensive product
 
 ## Quickstart
 
+> To use Hy3 with OpenRouter, Aider, Cline, Continue, or Roo Code, see the [AI product integration guides](docs/integrations/README.md) and companion showcase.
+
 Deploy Hy3 with [vLLM](#vllm) or [SGLang](#sglang) first, then call the OpenAI-compatible API:
 
 ```python
