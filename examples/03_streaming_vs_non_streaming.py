@@ -8,8 +8,11 @@
 4. 两种模式的 response 解析方式
 
 运行方式：
-    pip install openai
+    pip install -r examples/requirements.txt
+    Copy-Item .env.example .env
     python examples/03_streaming_vs_non_streaming.py
+
+配置：编辑仓库根目录的 .env，设置 API_PROVIDER=hy3 或 API_PROVIDER=hunyuan。
 
 示例输出：
     Non-streaming total time: 8.42s
@@ -19,15 +22,12 @@
 
 from __future__ import annotations
 
-import os
 import time
 
 from openai import OpenAI
 
 
-BASE_URL = os.getenv("HY3_BASE_URL", "http://127.0.0.1:8000/v1")
-API_KEY = os.getenv("HY3_API_KEY", "EMPTY")
-MODEL = os.getenv("HY3_MODEL", "hy3")
+from config import MODEL, build_client, reasoning_extra_body
 PROMPT = "请写一段 200 字左右的说明，介绍 Hy3 在聊天、代码和工具调用场景中的典型用法。"
 
 
@@ -39,7 +39,7 @@ def run_non_streaming(client: OpenAI) -> tuple[str, float]:
         temperature=0.7,
         top_p=1.0,
         max_tokens=512,
-        extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
+        extra_body=reasoning_extra_body("no_think"),
     )
     total_time = time.perf_counter() - start
     return response.choices[0].message.content or "", total_time
@@ -57,7 +57,7 @@ def run_streaming(client: OpenAI) -> tuple[str, float | None, float]:
         top_p=1.0,
         max_tokens=512,
         stream=True,
-        extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
+        extra_body=reasoning_extra_body("no_think"),
     )
 
     for chunk in response:
@@ -74,7 +74,7 @@ def run_streaming(client: OpenAI) -> tuple[str, float | None, float]:
 
 
 def main() -> None:
-    client = OpenAI(base_url=BASE_URL, api_key=API_KEY)
+    client = build_client()
 
     non_stream_text, non_stream_total = run_non_streaming(client)
     stream_text, first_token_latency, stream_total = run_streaming(client)

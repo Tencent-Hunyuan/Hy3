@@ -2,6 +2,36 @@
 
 这份文档面向第一次接入 Hy3 的开发者，目标是让你在几分钟内完成一次可运行的 API 调用，并知道常见参数和排障方法。
 
+## 0. 使用 `.env` 配置 examples
+
+仓库里的 Python examples 使用 OpenAI SDK，并通过 `.env` 统一配置后端。首次运行时：
+
+```powershell
+cd Hy3
+python -m pip install -r examples/requirements.txt
+Copy-Item .env.example .env
+```
+
+默认 `API_PROVIDER=hy3`，连接本地 Hy3。若要直接测试腾讯混元 OpenAI-compatible API，请在 `.env` 中修改：
+
+```dotenv
+API_PROVIDER=hunyuan
+HUNYUAN_BASE_URL=https://api.hunyuan.cloud.tencent.com/v1
+HUNYUAN_API_KEY=替换为你在腾讯云控制台创建的 API key
+HUNYUAN_MODEL=hunyuan-turbos-latest
+```
+
+混元 API key 需要在[腾讯云混元控制台](https://console.cloud.tencent.com/hunyuan)创建；不要把真实 key 提交到 Git。混元官方文档说明生文接口默认并发为 5，实际限额和计费以控制台为准，详见[混元 OpenAI 兼容接口文档](https://cloud.tencent.com/document/product/1729/111007)。
+
+运行任意示例：
+
+```powershell
+python examples/01_basic_chat.py
+python examples/02_streaming.py
+```
+
+如果你使用 macOS/Linux，可将 `Copy-Item .env.example .env` 换成 `cp .env.example .env`。
+
 ## 1. 基础信息
 
 Hy3 暴露的是 OpenAI-compatible Chat Completions 接口。按照当前仓库 README 的示例，最常见的本地部署参数如下：

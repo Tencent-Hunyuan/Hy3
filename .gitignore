@@ -1,4 +1,7 @@
 .cache/
+.env
+.env.*
+!.env.example
 .huggingface/
 .modelscope/
 .ms*

@@ -7,8 +7,12 @@
 3. 如果服务端返回 reasoning_content，则打印；如果没有，则明确说明
 
 运行方式：
-    pip install openai
+    pip install -r examples/requirements.txt
+    Copy-Item .env.example .env
     python examples/05_reasoning_mode.py
+
+配置：编辑仓库根目录的 .env，设置 API_PROVIDER=hy3 或 API_PROVIDER=hunyuan。
+注意：reasoning_effort 是 Hy3 的专用开关；混元模式会完成相同请求对比，但不发送该字段。
 
 示例输出：
     [no_think] elapsed=3.20s chars=182
@@ -18,15 +22,14 @@
 
 from __future__ import annotations
 
-import os
 import time
 
 from openai import OpenAI
 
 
-BASE_URL = os.getenv("HY3_BASE_URL", "http://127.0.0.1:8000/v1")
-API_KEY = os.getenv("HY3_API_KEY", "EMPTY")
-MODEL = os.getenv("HY3_MODEL", "hy3")
+from config import MODEL, PROVIDER, build_client, reasoning_extra_body
+
+
 PROMPT = "请设计一个 Python 函数，用于合并两个有序数组，并解释时间复杂度与边界情况。"
 
 
@@ -38,11 +41,7 @@ def run_case(client: OpenAI, reasoning_effort: str) -> None:
         temperature=0.2,
         top_p=1.0,
         max_tokens=768,
-        extra_body={
-            "chat_template_kwargs": {
-                "reasoning_effort": reasoning_effort,
-            }
-        },
+        extra_body=reasoning_extra_body(reasoning_effort),
     )
     elapsed = time.perf_counter() - start
 
@@ -62,7 +61,9 @@ def run_case(client: OpenAI, reasoning_effort: str) -> None:
 
 
 def main() -> None:
-    client = OpenAI(base_url=BASE_URL, api_key=API_KEY)
+    if PROVIDER != "hy3":
+        print("Note: reasoning_effort is a Hy3-specific switch; Hunyuan runs both calls without it.")
+    client = build_client()
     run_case(client, "no_think")
     run_case(client, "high")
 

@@ -8,8 +8,11 @@
 4. 成功后完整 response 解析
 
 运行方式：
-    pip install openai
+    pip install -r examples/requirements.txt
+    Copy-Item .env.example .env
     python examples/06_error_handling_retry.py
+
+配置：编辑仓库根目录的 .env，设置 API_PROVIDER=hy3 或 API_PROVIDER=hunyuan。
 
 示例输出：
     Attempt 1 failed with timeout, retrying in 1.0s...
@@ -20,7 +23,6 @@
 
 from __future__ import annotations
 
-import os
 import time
 
 from openai import (
@@ -35,18 +37,27 @@ from openai import (
 )
 
 
-BASE_URL = os.getenv("HY3_BASE_URL", "http://127.0.0.1:8000/v1")
-API_KEY = os.getenv("HY3_API_KEY", "EMPTY")
-MODEL = os.getenv("HY3_MODEL", "hy3")
+from config import (
+    MAX_RETRIES,
+    MODEL,
+    RETRY_BASE_DELAY_SECONDS,
+    RETRY_MAX_DELAY_SECONDS,
+    build_client,
+    reasoning_extra_body,
+)
 
 
-def sleep_with_backoff(attempt: int, base_delay: float = 1.0, max_delay: float = 8.0) -> None:
+def sleep_with_backoff(
+    attempt: int,
+    base_delay: float = RETRY_BASE_DELAY_SECONDS,
+    max_delay: float = RETRY_MAX_DELAY_SECONDS,
+) -> None:
     sleep_time = min(base_delay * (2 ** attempt), max_delay)
     print(f"Retrying in {sleep_time:.1f}s...")
     time.sleep(sleep_time)
 
 
-def create_completion_with_retry(client: OpenAI, max_retries: int = 4):
+def create_completion_with_retry(client: OpenAI, max_retries: int = MAX_RETRIES):
     for attempt in range(max_retries + 1):
         try:
             return client.chat.completions.create(
@@ -61,10 +72,10 @@ def create_completion_with_retry(client: OpenAI, max_retries: int = 4):
                 top_p=1.0,
                 max_tokens=256,
                 timeout=30,
-                extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
+                extra_body=reasoning_extra_body("no_think"),
             )
         except AuthenticationError as exc:
-            print("401 AuthenticationError: 请检查 HY3_API_KEY 或服务端鉴权配置。")
+            print("401 AuthenticationError: 请检查当前 provider 的 API key 或服务端鉴权配置。")
             raise exc
         except BadRequestError as exc:
             print("400 BadRequestError: 请检查 model、messages、tools、reasoning_effort 等参数。")
@@ -94,7 +105,7 @@ def create_completion_with_retry(client: OpenAI, max_retries: int = 4):
 
 
 def main() -> None:
-    client = OpenAI(base_url=BASE_URL, api_key=API_KEY)
+    client = build_client()
     response = create_completion_with_retry(client)
     message = response.choices[0].message
 

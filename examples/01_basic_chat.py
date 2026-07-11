@@ -7,13 +7,11 @@
 3. 完整请求与完整 response 解析
 
 运行方式：
-    pip install openai
+    pip install -r examples/requirements.txt
+    Copy-Item .env.example .env
     python examples/01_basic_chat.py
 
-环境变量：
-    HY3_BASE_URL  默认 http://127.0.0.1:8000/v1
-    HY3_API_KEY   默认 EMPTY
-    HY3_MODEL     默认 hy3
+配置：编辑仓库根目录的 .env，设置 API_PROVIDER=hy3 或 API_PROVIDER=hunyuan。
 
 示例输出：
     === Single-turn chat ===
@@ -29,19 +27,11 @@
 
 from __future__ import annotations
 
-import os
 from typing import Iterable
 
 from openai import OpenAI
 
-
-BASE_URL = os.getenv("HY3_BASE_URL", "http://127.0.0.1:8000/v1")
-API_KEY = os.getenv("HY3_API_KEY", "EMPTY")
-MODEL = os.getenv("HY3_MODEL", "hy3")
-
-
-def build_client() -> OpenAI:
-    return OpenAI(base_url=BASE_URL, api_key=API_KEY)
+from config import MODEL, build_client, reasoning_extra_body
 
 
 def print_usage(usage: object) -> None:
@@ -75,7 +65,7 @@ def run_single_turn(client: OpenAI) -> None:
         temperature=0.9,
         top_p=1.0,
         max_tokens=512,
-        extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
+        extra_body=reasoning_extra_body("no_think"),
     )
 
     message = response.choices[0].message
@@ -101,7 +91,7 @@ def run_multi_turn(client: OpenAI) -> None:
         temperature=0.6,
         top_p=1.0,
         max_tokens=512,
-        extra_body={"chat_template_kwargs": {"reasoning_effort": "low"}},
+        extra_body=reasoning_extra_body("low"),
     )
 
     message = response.choices[0].message

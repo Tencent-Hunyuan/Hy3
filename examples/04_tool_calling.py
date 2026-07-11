@@ -8,8 +8,11 @@
 4. 多轮工具循环直到得到最终回答
 
 运行方式：
-    pip install openai
+    pip install -r examples/requirements.txt
+    Copy-Item .env.example .env
     python examples/04_tool_calling.py
+
+配置：编辑仓库根目录的 .env，设置 API_PROVIDER=hy3 或 API_PROVIDER=hunyuan。
 
 示例输出：
     Tool requested: get_weather({"city": "Shanghai"})
@@ -21,15 +24,9 @@
 from __future__ import annotations
 
 import json
-import os
 from typing import Any
 
-from openai import OpenAI
-
-
-BASE_URL = os.getenv("HY3_BASE_URL", "http://127.0.0.1:8000/v1")
-API_KEY = os.getenv("HY3_API_KEY", "EMPTY")
-MODEL = os.getenv("HY3_MODEL", "hy3")
+from config import MODEL, build_client, reasoning_extra_body
 
 
 def get_weather(city: str) -> dict[str, str]:
@@ -86,7 +83,7 @@ def execute_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> None:
-    client = OpenAI(base_url=BASE_URL, api_key=API_KEY)
+    client = build_client()
 
     messages: list[dict[str, Any]] = [
         {
@@ -103,7 +100,7 @@ def main() -> None:
             temperature=0.2,
             top_p=1.0,
             max_tokens=512,
-            extra_body={"chat_template_kwargs": {"reasoning_effort": "low"}},
+            extra_body=reasoning_extra_body("low"),
         )
 
         message = response.choices[0].message
