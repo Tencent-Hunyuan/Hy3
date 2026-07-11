@@ -62,21 +62,6 @@
 
 ---
 
-## 🧠 混元 Hy3 在哪些环节参与？
-
-Hy3 数据分析 MCP 被刻意拆分为 **LLM 驱动** 和 **确定性** 两个阶段，这样你能清楚知道何时调用了混元大模型，何时只是服务端在纯渲染。
-
-| 阶段 | 工具 | 是否调用 Hy3 | Hy3 扮演的角色 |
-| --- | --- | --- | --- |
-| **提取** | `hy3_extract_document` | ❌ 否 | 纯文件解析（PDF、DOCX、XLSX、CSV、JSON、TXT）。不调用模型，无 API 费用。 |
-| **Plan** | `hy3_plan_chart`、`hy3_plan_dashboard`、`hy3_plan_wordcloud`、`hy3_plan_knowledge_graph` | ✅ 是 | 查看数据/文本，决定图表类型、坐标轴、字段、标题、主题、仪表盘布局、关键词、实体与关系。 |
-| **分析** | `hy3_analyze`、`hy3_analyze_report` | ✅ 是 | 阅读内容，撰写洞察、结论与报告正文，并推荐最能讲故事的图表。 |
-| **渲染** | `hy3_render_chart`、`hy3_render_dashboard`、`hy3_render_wordcloud`、`hy3_render_knowledge_graph` | ❌ 否 | 根据显式配置确定性渲染。快速、可复现、不调用模型。 |
-
-一句话概括：**Hy3 负责思考，服务端负责画图。** Plan 与分析工具注册为 MCP Task，支持可选的进度流式上报，因此长时间的模型调用不会阻塞客户端。
-
----
-
 ## 功能特性
 
 `hy3-data-mcp` 共提供 **11 个工具**，按三个阶段组织：**提取 & 分析**、**Plan（LLM 决策）**、**Render（纯渲染）**。
