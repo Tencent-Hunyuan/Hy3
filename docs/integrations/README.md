@@ -111,10 +111,10 @@ The showcase is separate from this Hy3 repository and uses:
 
 Project links:
 
-- Repository: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief
-- Demo video: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief/blob/main/docs/assets/hy3-spec-to-diff-demo.mp4
-- Streaming screenshot: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief/blob/main/docs/assets/hy3-spec-to-diff-terminal.png
-- Rendered report screenshot: https://github.com/Small-fish-QAQ/hy3-tokenhub-dev-brief/blob/main/docs/assets/hy3-spec-to-diff-report.png
+- Repository: https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer
+- Demo video: https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/assets/hy3-spec-to-diff-demo.mp4
+- Streaming screenshot: https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/assets/hy3-spec-to-diff-terminal.png
+- Rendered report screenshot: https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/assets/hy3-spec-to-diff-report.png
 
 Run the bundled sample:
 
