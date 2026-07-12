@@ -36,6 +36,7 @@
 - [Benchmark Appendix](#benchmark-appendix)
 - [News](#news)
 - [Model Links](#model-links)
+- [Integrations](#integrations)
 - [Quickstart](#quickstart)
 - [Deployment](#deployment)
   - [vLLM](#vllm)
@@ -108,6 +109,10 @@ Model usefulness is not fully captured by benchmarks. Based on extensive product
 |:---|:---|:---:|:---:|:---:|:---:|
 | Hy3 | Instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3) | [Model](https://cnb.cool/ai-models/tencent/Hy3) |
 | Hy3-FP8 | FP8 quantized instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3-FP8) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3-FP8) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3-FP8) | [Model](https://cnb.cool/ai-models/tencent/Hy3-FP8) |
+
+## Integrations
+
+Connect Hy3 to Cline, Continue, Aider, Dify, and Codex CLI through Tencent TokenHub. See the bilingual [integration guides](docs/integrations/README.md) for verified configuration and evidence.
 
 ## Quickstart
 
