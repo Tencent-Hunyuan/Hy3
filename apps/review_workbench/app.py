@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+from pathlib import Path
 from time import perf_counter
 from urllib.parse import urlparse
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from openai import APITimeoutError
 
 from hy3_code_review_mcp.config import Hy3Settings, load_default_dotenv
@@ -30,6 +33,9 @@ app = FastAPI(
     description="Review code changes and generate test plans with Hy3.",
     version="0.1.0",
 )
+
+STATIC_DIR = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 def _settings() -> Hy3Settings:
@@ -68,6 +74,11 @@ def _upstream_error(exc: Exception) -> HTTPException:
         status_code=502,
         detail="Hy3 request failed. Check the endpoint and try again.",
     )
+
+
+@app.get("/", include_in_schema=False)
+def index() -> FileResponse:
+    return FileResponse(STATIC_DIR / "index.html")
 
 
 @app.get("/api/status", response_model=StatusResponse)

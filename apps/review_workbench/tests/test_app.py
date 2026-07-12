@@ -101,3 +101,24 @@ def test_examples_support_both_demo_flows():
     ]
     assert {item["mode"] for item in examples} == {"review", "tests"}
     assert all(item["diff_text"].startswith("diff --git") for item in examples)
+
+
+def test_root_serves_workbench_without_secrets(monkeypatch):
+    monkeypatch.setenv("HY3_API_KEY", "never-render-this")
+
+    response = client().get("/")
+
+    assert response.status_code == 200
+    assert "Hy3 Review Workbench" in response.text
+    assert 'id="diff-input"' in response.text
+    assert 'id="run-button"' in response.text
+    assert "never-render-this" not in response.text
+
+
+def test_static_assets_are_served():
+    test_client = client()
+
+    assert test_client.get("/static/styles.css").status_code == 200
+    script = test_client.get("/static/app.js")
+    assert script.status_code == 200
+    assert "submitAnalysis" in script.text
