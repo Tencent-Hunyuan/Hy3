@@ -107,7 +107,8 @@ def read_file(
         f"{line_number}: {lines[line_number - 1]}"
         for line_number in range(start_line, bounded_end + 1)
     ]
-    return ToolResult(True, bounded("\n".join(selected) or "File is empty."))
+    body = "\n".join(selected) or "File is empty."
+    return ToolResult(True, bounded(f"File: {path}\n{body}"))
 
 
 def safe_environment() -> dict[str, str]:
