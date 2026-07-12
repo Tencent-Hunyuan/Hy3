@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import json
 from pathlib import Path
+from contextlib import contextmanager, suppress
 
 import pytest
 from fastapi.testclient import TestClient
@@ -14,7 +16,7 @@ class FakeAgentClient:
     def __init__(self):
         self.calls = []
 
-    def complete(self, messages, tools=None):
+    async def complete(self, messages, tools=None, timeout_seconds=None):
         self.calls.append({"messages": messages, "tools": tools})
         return AgentMessage(
             "## Root cause\nThe retry budget is off by one.\n\n"
@@ -23,6 +25,11 @@ class FakeAgentClient:
             "## Verification\nRun pytest.",
             (),
         )
+
+
+class BlockingAgentClient:
+    async def complete(self, messages, tools=None, timeout_seconds=None):
+        await asyncio.Event().wait()
 
 
 @pytest.fixture(autouse=True)
@@ -142,6 +149,9 @@ def test_static_assets_are_served():
 
 def test_readme_documents_submission_requirements():
     readme = Path("apps/incident_agent/README.md").read_text(encoding="utf-8")
+    requirements = Path("apps/incident_agent/requirements.txt").read_text(
+        encoding="utf-8"
+    )
     required = [
         "Hy3's role",
         "Trusted code warning",
@@ -152,3 +162,39 @@ def test_readme_documents_submission_requirements():
     ]
 
     assert all(item in readme for item in required)
+    assert "pip install -e ./mcp_servers/code_review" in readme
+    assert "../../mcp_servers/code_review" not in requirements
+
+
+def test_canceling_stream_cleans_temporary_workspace(tmp_path, monkeypatch):
+    from apps.incident_agent import app as app_module
+    from apps.incident_agent.workspace import incident_workspace
+
+    roots = []
+
+    @contextmanager
+    def tracking_workspace(files):
+        with incident_workspace(files) as root:
+            roots.append(root)
+            yield root
+
+    monkeypatch.setattr(app_module, "incident_workspace", tracking_workspace)
+
+    async def cancel_stream():
+        stream = app_module.event_stream(
+            "Inspect",
+            [("service.py", b"value = 1\n")],
+            BlockingAgentClient(),
+        )
+        assert json.loads(await anext(stream))["type"] == "started"
+        pending = asyncio.create_task(anext(stream))
+        await asyncio.sleep(0)
+        pending.cancel()
+        with suppress(asyncio.CancelledError):
+            await pending
+        await stream.aclose()
+
+    asyncio.run(cancel_stream())
+
+    assert roots
+    assert not roots[0].exists()

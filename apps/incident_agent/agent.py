@@ -3,12 +3,13 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterator, Protocol
+from time import monotonic
+from typing import Any, AsyncIterator, Protocol
 from urllib.parse import urlparse
 
 from hy3_code_review_mcp.config import Hy3Settings, load_default_dotenv
 
-from .tools import TOOL_DEFINITIONS, ToolResult, execute_tool, list_files
+from .tools import TOOL_DEFINITIONS, ToolResult, execute_tool_async, list_files
 
 
 SYSTEM_PROMPT = """You are Hy3 acting as a senior incident investigator.
@@ -23,6 +24,10 @@ Your final report must be concise Markdown with these sections:
 """
 
 MAX_EMPTY_RESPONSE_RETRIES = 2
+MAX_INVESTIGATION_SECONDS = 90
+MAX_MODEL_CALL_SECONDS = 30
+MAX_TOOL_CALLS = 12
+MAX_TOOL_SECONDS = 20
 EMPTY_RESPONSE_NUDGE = (
     "Your previous response was empty. Return at least one tool call or a complete "
     "final incident report grounded in the available evidence."
@@ -43,10 +48,11 @@ class AgentMessage:
 
 
 class AgentChatClient(Protocol):
-    def complete(
+    async def complete(
         self,
         messages: list[dict[str, Any]],
         tools: list[dict[str, Any]] | None = None,
+        timeout_seconds: float | None = None,
     ) -> AgentMessage:
         ...
 
@@ -55,15 +61,20 @@ class AgentConfigurationError(RuntimeError):
     pass
 
 
+class InvestigationDeadlineError(TimeoutError):
+    pass
+
+
 class OpenAIHy3AgentClient:
     def __init__(self, settings: Hy3Settings, sdk_client: Any | None = None):
         self.settings = settings
         if sdk_client is None:
-            from openai import OpenAI
+            from openai import AsyncOpenAI
 
-            sdk_client = OpenAI(
+            sdk_client = AsyncOpenAI(
                 base_url=settings.base_url,
                 api_key=settings.api_key,
+                timeout=MAX_MODEL_CALL_SECONDS,
             )
         self.sdk_client = sdk_client
 
@@ -76,10 +87,11 @@ class OpenAIHy3AgentClient:
             return {"reasoning": {"effort": mapped}}
         return {"chat_template_kwargs": {"reasoning_effort": effort}}
 
-    def complete(
+    async def complete(
         self,
         messages: list[dict[str, Any]],
         tools: list[dict[str, Any]] | None = None,
+        timeout_seconds: float | None = None,
     ) -> AgentMessage:
         arguments: dict[str, Any] = {
             "model": self.settings.model,
@@ -92,8 +104,10 @@ class OpenAIHy3AgentClient:
         if tools is not None:
             arguments["tools"] = tools
             arguments["tool_choice"] = "auto"
+        if timeout_seconds is not None:
+            arguments["timeout"] = max(0.1, timeout_seconds)
 
-        response = self.sdk_client.chat.completions.create(**arguments)
+        response = await self.sdk_client.chat.completions.create(**arguments)
         message = response.choices[0].message
         tool_calls = tuple(
             AgentToolCall(
@@ -153,14 +167,26 @@ def _parse_arguments(raw_arguments: str) -> tuple[dict[str, Any] | None, ToolRes
     return arguments, None
 
 
-def _complete_with_empty_retry(
+def _remaining_seconds(deadline: float, maximum: float) -> float:
+    remaining = deadline - monotonic()
+    if remaining <= 0:
+        raise InvestigationDeadlineError
+    return min(maximum, remaining)
+
+
+async def _complete_with_empty_retry(
     client: AgentChatClient,
     messages: list[dict[str, Any]],
     tools: list[dict[str, Any]] | None,
+    deadline: float,
 ) -> AgentMessage:
     message = AgentMessage(None, ())
     for attempt in range(MAX_EMPTY_RESPONSE_RETRIES + 1):
-        message = client.complete(messages, tools)
+        message = await client.complete(
+            messages,
+            tools,
+            timeout_seconds=_remaining_seconds(deadline, MAX_MODEL_CALL_SECONDS),
+        )
         if message.tool_calls or (message.content or "").strip():
             return message
         if attempt < MAX_EMPTY_RESPONSE_RETRIES:
@@ -168,12 +194,14 @@ def _complete_with_empty_retry(
     return message
 
 
-def investigate(
+async def investigate(
     task: str,
     root: Path,
     client: AgentChatClient,
     max_rounds: int = 8,
-) -> Iterator[dict[str, Any]]:
+    max_tool_calls: int = MAX_TOOL_CALLS,
+    max_seconds: float = MAX_INVESTIGATION_SECONDS,
+) -> AsyncIterator[dict[str, Any]]:
     manifest = list_files(root).content
     messages: list[dict[str, Any]] = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -186,12 +214,25 @@ def investigate(
             ),
         },
     ]
-    yield {"type": "started", "max_rounds": max_rounds}
+    deadline = monotonic() + max_seconds
+    yield {
+        "type": "started",
+        "max_rounds": max_rounds,
+        "max_tool_calls": max_tool_calls,
+        "max_seconds": max_seconds,
+    }
     plan_emitted = False
+    tool_call_count = 0
+    tool_limit_reached = False
 
     try:
         for round_number in range(1, max_rounds + 1):
-            message = _complete_with_empty_retry(client, messages, TOOL_DEFINITIONS)
+            message = await _complete_with_empty_retry(
+                client,
+                messages,
+                TOOL_DEFINITIONS,
+                deadline,
+            )
             messages.append(_assistant_payload(message))
 
             if not message.tool_calls:
@@ -212,6 +253,7 @@ def investigate(
                 plan_emitted = True
 
             for call in message.tool_calls:
+                tool_call_count += 1
                 arguments, parse_error = _parse_arguments(call.arguments)
                 display_arguments: Any = arguments if arguments is not None else call.arguments
                 yield {
@@ -222,7 +264,24 @@ def investigate(
                     "arguments": display_arguments,
                 }
 
-                result = parse_error or execute_tool(root, call.name, arguments or {})
+                if tool_call_count > max_tool_calls:
+                    tool_limit_reached = True
+                    result = ToolResult(
+                        False,
+                        f"Investigation tool call limit reached ({max_tool_calls}).",
+                    )
+                elif parse_error:
+                    result = parse_error
+                else:
+                    result = await execute_tool_async(
+                        root,
+                        call.name,
+                        arguments or {},
+                        timeout_seconds=_remaining_seconds(
+                            deadline,
+                            MAX_TOOL_SECONDS,
+                        ),
+                    )
                 yield {
                     "type": "tool_result",
                     "round": round_number,
@@ -242,16 +301,24 @@ def investigate(
                     }
                 )
 
+            if tool_limit_reached:
+                break
+
         messages.append(
             {
                 "role": "user",
                 "content": (
-                    "Tool round limit reached. Synthesize the available evidence now. "
+                    "Investigation limit reached. Synthesize the available evidence now. "
                     "Do not request more tools and do not invent missing evidence."
                 ),
             }
         )
-        final_message = _complete_with_empty_retry(client, messages, None)
+        final_message = await _complete_with_empty_retry(
+            client,
+            messages,
+            None,
+            deadline,
+        )
         report = (final_message.content or "").strip()
         if report:
             yield {"type": "report", "content": report}
@@ -262,6 +329,12 @@ def investigate(
                 "message": "Hy3 returned an empty investigation report.",
             }
             yield {"type": "done", "status": "error"}
+    except InvestigationDeadlineError:
+        yield {
+            "type": "error",
+            "message": f"Investigation exceeded the {max_seconds:g}-second deadline.",
+        }
+        yield {"type": "done", "status": "error"}
     except Exception:
         yield {
             "type": "error",

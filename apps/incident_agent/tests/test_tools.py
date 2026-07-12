@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import asyncio
 import subprocess
+from time import monotonic
 
 from apps.incident_agent import tools
 from apps.incident_agent.tools import (
     execute_tool,
+    async_run_checks,
     list_files,
     read_file,
     run_checks,
@@ -95,3 +98,38 @@ def test_tool_output_is_truncated(tmp_path):
 
     assert len(result.content) <= 12_100
     assert result.content.endswith("...[output truncated]")
+
+
+def test_workspace_tools_ignore_symlinks_to_external_files(tmp_path):
+    root = tmp_path / "workspace"
+    root.mkdir()
+    (root / "valid.py").write_text("value = 1\n", encoding="utf-8")
+    outside_log = tmp_path / "outside.log"
+    outside_log.write_text("OUTSIDE_WORKSPACE_MARKER\n", encoding="utf-8")
+    outside_python = tmp_path / "outside.py"
+    outside_python.write_text("this is invalid python !!!\n", encoding="utf-8")
+    (root / "linked.log").symlink_to(outside_log)
+    (root / "linked.py").symlink_to(outside_python)
+
+    assert "linked" not in list_files(root).content
+    assert "OUTSIDE_WORKSPACE_MARKER" not in search_files(
+        root,
+        "OUTSIDE_WORKSPACE_MARKER",
+    ).content
+    assert run_checks(root, "py_compile").ok
+
+
+def test_async_check_timeout_terminates_promptly(tmp_path):
+    (tmp_path / "test_slow.py").write_text(
+        "import time\n\ndef test_slow():\n    time.sleep(5)\n",
+        encoding="utf-8",
+    )
+    started = monotonic()
+
+    result = asyncio.run(
+        async_run_checks(tmp_path, "pytest", timeout_seconds=0.1)
+    )
+
+    assert not result.ok
+    assert "timed out" in result.content.lower()
+    assert monotonic() - started < 2

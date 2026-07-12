@@ -4,6 +4,7 @@ const state = {
   mode: "review",
   examples: [],
   lastResult: "",
+  inFlight: false,
 };
 
 const elements = {
@@ -236,12 +237,14 @@ function setLoading(isLoading) {
 }
 
 async function submitAnalysis() {
+  if (state.inFlight) return;
   const diff = elements.diffInput.value.trim();
   if (!diff) {
     showError("Paste a diff or load an example first.");
     return;
   }
 
+  state.inFlight = true;
   setLoading(true);
   try {
     const isReview = state.mode === "review";
@@ -257,6 +260,7 @@ async function submitAnalysis() {
   } catch (error) {
     showError(error.message || "The request failed. Try again.");
   } finally {
+    state.inFlight = false;
     setLoading(false);
   }
 }
@@ -268,7 +272,12 @@ async function copyResult() {
     elements.copyButton.textContent = "Copied";
     window.setTimeout(() => { elements.copyButton.textContent = "Copy"; }, 1200);
   } catch (error) {
-    showError("Clipboard access was denied.");
+    elements.copyButton.textContent = "Copy failed";
+    elements.copyButton.title = "Clipboard access was denied";
+    window.setTimeout(() => {
+      elements.copyButton.textContent = "Copy";
+      elements.copyButton.title = "Copy analysis";
+    }, 1600);
   }
 }
 
@@ -280,7 +289,10 @@ elements.diffInput.addEventListener("input", updateCount);
 elements.runButton.addEventListener("click", submitAnalysis);
 elements.copyButton.addEventListener("click", copyResult);
 document.addEventListener("keydown", (event) => {
-  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") submitAnalysis();
+  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+    event.preventDefault();
+    submitAnalysis();
+  }
 });
 
 document.addEventListener("DOMContentLoaded", async () => {

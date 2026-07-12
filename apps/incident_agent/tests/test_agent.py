@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from copy import deepcopy
 
 from apps.incident_agent.agent import (
@@ -14,17 +15,26 @@ class FakeAgentClient:
         self.responses = list(responses)
         self.calls = []
 
-    def complete(self, messages, tools=None):
+    async def complete(self, messages, tools=None, timeout_seconds=None):
         self.calls.append(
             {
                 "messages": deepcopy(messages),
                 "tools": deepcopy(tools),
+                "timeout_seconds": timeout_seconds,
             }
         )
         response = self.responses.pop(0)
         if isinstance(response, Exception):
             raise response
         return response
+
+
+async def collect_events(*args, **kwargs):
+    return [event async for event in investigate(*args, **kwargs)]
+
+
+def run_investigation(*args, **kwargs):
+    return asyncio.run(collect_events(*args, **kwargs))
 
 
 def test_investigation_runs_multi_round_tools_and_reports(tmp_path):
@@ -52,7 +62,7 @@ def test_investigation_runs_multi_round_tools_and_reports(tmp_path):
         ]
     )
 
-    events = list(investigate("Find the fault", tmp_path, client))
+    events = run_investigation("Find the fault", tmp_path, client)
 
     assert [event["type"] for event in events] == [
         "started",
@@ -80,7 +90,7 @@ def test_malformed_tool_json_becomes_failed_observation(tmp_path):
         ]
     )
 
-    events = list(investigate("Inspect", tmp_path, client))
+    events = run_investigation("Inspect", tmp_path, client)
 
     result = next(event for event in events if event["type"] == "tool_result")
     assert result["ok"] is False
@@ -98,7 +108,7 @@ def test_round_limit_forces_final_synthesis(tmp_path):
         ]
     )
 
-    events = list(investigate("Inspect", tmp_path, client, max_rounds=1))
+    events = run_investigation("Inspect", tmp_path, client, max_rounds=1)
 
     assert any(event["type"] == "report" for event in events)
     assert client.calls[-1]["tools"] is None
@@ -108,7 +118,7 @@ def test_round_limit_forces_final_synthesis(tmp_path):
 def test_upstream_failure_is_sanitized(tmp_path):
     client = FakeAgentClient([RuntimeError("secret provider response")])
 
-    events = list(investigate("Inspect", tmp_path, client))
+    events = run_investigation("Inspect", tmp_path, client)
 
     error = next(event for event in events if event["type"] == "error")
     assert error["message"] == "Hy3 investigation failed. Check the API and retry."
@@ -124,8 +134,54 @@ def test_empty_hy3_response_is_retried_before_error(tmp_path):
         ]
     )
 
-    events = list(investigate("Inspect", tmp_path, client))
+    events = run_investigation("Inspect", tmp_path, client)
 
     assert len(client.calls) == 2
     assert any(event["type"] == "report" for event in events)
     assert not any(event["type"] == "error" for event in events)
+
+
+def test_tool_call_limit_stops_execution_and_forces_report(tmp_path):
+    client = FakeAgentClient(
+        [
+            AgentMessage(
+                "Inspect the workspace.",
+                (
+                    AgentToolCall("call-1", "list_files", "{}"),
+                    AgentToolCall("call-2", "list_files", "{}"),
+                ),
+            ),
+            AgentMessage("## Root cause\nThe evidence is sufficient.", ()),
+        ]
+    )
+
+    events = run_investigation(
+        "Inspect",
+        tmp_path,
+        client,
+        max_tool_calls=1,
+    )
+
+    results = [event for event in events if event["type"] == "tool_result"]
+    assert results[0]["ok"] is True
+    assert results[1]["ok"] is False
+    assert "tool call limit" in results[1]["content"].lower()
+    assert client.calls[-1]["tools"] is None
+    assert "investigation limit reached" in (
+        client.calls[-1]["messages"][-1]["content"].lower()
+    )
+    assert any(event["type"] == "report" for event in events)
+
+
+def test_model_call_receives_remaining_investigation_deadline(tmp_path):
+    client = FakeAgentClient([AgentMessage("## Root cause\nDone.", ())])
+
+    events = run_investigation(
+        "Inspect",
+        tmp_path,
+        client,
+        max_seconds=0.5,
+    )
+
+    assert any(event["type"] == "report" for event in events)
+    assert 0 < client.calls[0]["timeout_seconds"] <= 0.5

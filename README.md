@@ -141,13 +141,13 @@ See the [Deployment](#deployment) section below for how to start the API server.
 
 ## Hy3 Review Workbench
 
-The repository includes an interactive Web application that uses the Hy3 API to review pasted code diffs and generate focused test plans. It ships with two repeatable demo flows and reuses the existing code-review MCP implementation.
+The repository includes an interactive Web application that uses the Hy3 API to review pasted code diffs and generate focused test plans. It ships with two repeatable demo flows, bounded Hy3 requests with empty-response recovery, and reuse of the existing code-review MCP implementation.
 
 See [apps/review_workbench/README.md](apps/review_workbench/README.md) for setup, architecture, demo scripts, and the CodeBuddy collaboration record.
 
 ## Hy3 Incident Agent
 
-The repository also includes a multi-tool engineering incident Agent. Hy3 plans the investigation, selects bounded file and check tools, consumes their evidence, and streams a grounded root-cause report to an interactive Web UI.
+The repository also includes a multi-tool engineering incident Agent. Hy3 plans the investigation, selects workspace-confined file and check tools, consumes their evidence, and streams a grounded root-cause report to an interactive Web UI. Investigations have fixed model, tool, and total-time limits and support server-side cancellation cleanup.
 
 See [apps/incident_agent/README.md](apps/incident_agent/README.md) for setup, tool boundaries, safety notes, and both built-in demos.
 

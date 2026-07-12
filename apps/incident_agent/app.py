@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Iterator, Sequence
+from collections.abc import AsyncIterator, Sequence
 from pathlib import Path
 from typing import Annotated
 from urllib.parse import urlparse
@@ -74,13 +74,13 @@ def demos() -> list[DemoResponse]:
     ]
 
 
-def event_stream(
+async def event_stream(
     task: str,
     raw_files: Sequence[tuple[str, bytes]],
     client: AgentChatClient,
-) -> Iterator[str]:
+) -> AsyncIterator[str]:
     with incident_workspace(raw_files) as root:
-        for event in investigate(task, root, client):
+        async for event in investigate(task, root, client):
             yield json.dumps(event, ensure_ascii=False) + "\n"
 
 

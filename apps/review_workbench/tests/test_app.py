@@ -163,10 +163,17 @@ def test_static_assets_are_served():
     script = test_client.get("/static/app.js")
     assert script.status_code == 200
     assert "submitAnalysis" in script.text
+    assert "inFlight" in script.text
+    assert "if (state.inFlight) return;" in script.text
+    assert 'showError("Clipboard access was denied.")' not in script.text
+    assert 'elements.copyButton.textContent = "Copy failed"' in script.text
 
 
 def test_app_readme_documents_required_submission_details():
     readme = Path("apps/review_workbench/README.md").read_text(encoding="utf-8")
+    requirements = Path("apps/review_workbench/requirements.txt").read_text(
+        encoding="utf-8"
+    )
     required = [
         "Hy3's role",
         "Demo 1",
@@ -176,3 +183,5 @@ def test_app_readme_documents_required_submission_details():
     ]
 
     assert all(item in readme for item in required)
+    assert "pip install -e ./mcp_servers/code_review" in readme
+    assert "../../mcp_servers/code_review" not in requirements

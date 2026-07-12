@@ -138,13 +138,13 @@ print(response.choices[0].message.content)
 
 ## Hy3 代码评审工作台
 
-仓库内提供一个可交互 Web 应用，通过 Hy3 API 对粘贴的代码 diff 进行风险审查或生成测试计划。应用内置两条可重复演示流程，并复用已有代码评审 MCP 的客户端与提示词。
+仓库内提供一个可交互 Web 应用，通过 Hy3 API 对粘贴的代码 diff 进行风险审查或生成测试计划。应用内置两条可重复演示流程，使用有界 Hy3 请求与空响应恢复，并复用已有代码评审 MCP 的客户端与提示词。
 
 安装、架构、Demo 录制脚本及 CodeBuddy 协作记录见 [apps/review_workbench/README.md](apps/review_workbench/README.md)。
 
 ## Hy3 故障排查 Agent
 
-仓库还提供一个面向工程故障的多工具 Agent。Hy3 负责制定调查计划、选择受限的文件与检查工具、理解工具证据，并把有依据的根因报告流式输出到交互式 Web 页面。
+仓库还提供一个面向工程故障的多工具 Agent。Hy3 负责制定调查计划、选择限定在临时工作区内的文件与检查工具、理解工具证据，并把有依据的根因报告流式输出到交互式 Web 页面。单次调查具有模型调用、工具数量和总时长限制，并支持取消后的服务端清理。
 
 安装方式、工具边界、安全说明和两条内置 Demo 见 [apps/incident_agent/README.md](apps/incident_agent/README.md)。
 

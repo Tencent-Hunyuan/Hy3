@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import os
+import signal
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -36,9 +38,24 @@ def _safe_path(root: Path, relative_path: str) -> Path:
     return resolved
 
 
+def _workspace_files(root: Path, pattern: str = "*") -> list[Path]:
+    resolved_root = root.resolve()
+    files = []
+    for path in root.rglob(pattern):
+        if path.is_symlink():
+            continue
+        try:
+            resolved = path.resolve(strict=True)
+        except OSError:
+            continue
+        if resolved.is_relative_to(resolved_root) and resolved.is_file():
+            files.append(path)
+    return sorted(files)
+
+
 def list_files(root: Path) -> ToolResult:
     lines = []
-    for path in sorted(item for item in root.rglob("*") if item.is_file()):
+    for path in _workspace_files(root):
         relative = path.relative_to(root)
         lines.append(f"{relative.as_posix()} ({path.stat().st_size} bytes)")
     return ToolResult(True, bounded("\n".join(lines) or "No files found."))
@@ -60,7 +77,7 @@ def search_files(
 
     matches: list[str] = []
     needle = query.casefold()
-    for path in sorted(item for item in root.rglob("*") if item.is_file()):
+    for path in _workspace_files(root):
         if normalized_extensions and path.suffix.lower() not in normalized_extensions:
             continue
         try:
@@ -120,18 +137,32 @@ def safe_environment() -> dict[str, str]:
     }
 
 
-def run_checks(root: Path, check: str) -> ToolResult:
+def _check_command(root: Path, check: str) -> list[str] | ToolResult:
     if check == "pytest":
-        command = [sys.executable, "-m", "pytest", "-q"]
-    elif check == "py_compile":
-        python_files = sorted(
-            path.relative_to(root).as_posix() for path in root.rglob("*.py")
-        )
+        return [sys.executable, "-m", "pytest", "-q"]
+    if check == "py_compile":
+        python_files = [
+            path.relative_to(root).as_posix()
+            for path in _workspace_files(root, "*.py")
+        ]
         if not python_files:
             return ToolResult(False, "No Python files were provided.")
-        command = [sys.executable, "-m", "py_compile", *python_files]
-    else:
-        return ToolResult(False, f"Unsupported check: {check}")
+        return [sys.executable, "-m", "py_compile", *python_files]
+    return ToolResult(False, f"Unsupported check: {check}")
+
+
+def _completed_result(returncode: int, stdout: str, stderr: str) -> ToolResult:
+    output = "\n".join(part.strip() for part in (stdout, stderr) if part.strip())
+    return ToolResult(
+        returncode == 0,
+        bounded(output or "Check completed with no output."),
+    )
+
+
+def run_checks(root: Path, check: str) -> ToolResult:
+    command = _check_command(root, check)
+    if isinstance(command, ToolResult):
+        return command
 
     try:
         completed = subprocess.run(
@@ -148,12 +179,69 @@ def run_checks(root: Path, check: str) -> ToolResult:
     except OSError:
         return ToolResult(False, "Check could not be started.")
 
-    output = "\n".join(
-        part.strip() for part in (completed.stdout, completed.stderr) if part.strip()
+    return _completed_result(
+        completed.returncode,
+        completed.stdout,
+        completed.stderr,
     )
-    return ToolResult(
-        completed.returncode == 0,
-        bounded(output or "Check completed with no output."),
+
+
+async def _terminate_process_tree(process: asyncio.subprocess.Process) -> None:
+    if process.returncode is not None:
+        return
+    try:
+        if os.name == "posix":
+            os.killpg(process.pid, signal.SIGKILL)
+        else:
+            process.kill()
+    except ProcessLookupError:
+        pass
+    await process.wait()
+
+
+async def async_run_checks(
+    root: Path,
+    check: str,
+    timeout_seconds: float = 20,
+) -> ToolResult:
+    command = _check_command(root, check)
+    if isinstance(command, ToolResult):
+        return command
+
+    process_options: dict[str, Any] = {}
+    if os.name == "posix":
+        process_options["start_new_session"] = True
+    try:
+        process = await asyncio.create_subprocess_exec(
+            *command,
+            cwd=root,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            env=safe_environment(),
+            **process_options,
+        )
+    except OSError:
+        return ToolResult(False, "Check could not be started.")
+
+    try:
+        stdout_bytes, stderr_bytes = await asyncio.wait_for(
+            process.communicate(),
+            timeout=timeout_seconds,
+        )
+    except TimeoutError:
+        await _terminate_process_tree(process)
+        return ToolResult(
+            False,
+            f"Check timed out after {timeout_seconds:g} seconds.",
+        )
+    except asyncio.CancelledError:
+        await _terminate_process_tree(process)
+        raise
+
+    return _completed_result(
+        process.returncode or 0,
+        stdout_bytes.decode("utf-8", errors="replace"),
+        stderr_bytes.decode("utf-8", errors="replace"),
     )
 
 
@@ -203,6 +291,22 @@ def execute_tool(
         return ToolResult(False, f"Unknown tool: {name}")
     except (TypeError, ValueError) as exc:
         return ToolResult(False, f"Invalid arguments for {name}: {exc}")
+
+
+async def execute_tool_async(
+    root: Path,
+    name: str,
+    arguments: dict[str, Any],
+    timeout_seconds: float = 20,
+) -> ToolResult:
+    if name != "run_checks":
+        return execute_tool(root, name, arguments)
+    if not isinstance(arguments, dict):
+        return ToolResult(False, "Invalid arguments for run_checks: arguments must be an object")
+    check = arguments.get("check")
+    if not isinstance(check, str):
+        return ToolResult(False, "Invalid arguments for run_checks: check must be a string")
+    return await async_run_checks(root, check, timeout_seconds)
 
 
 TOOL_DEFINITIONS = [

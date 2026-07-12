@@ -25,7 +25,7 @@ Browser <- NDJSON trace <- Hy3 grounded report
 | `read_file` | Reads at most 300 numbered lines from one relative path |
 | `run_checks` | Runs only `pytest` or `py_compile`, with a 20-second timeout |
 
-Each observation is limited to 12,000 characters. Paths must remain inside the per-request temporary workspace. Commands use fixed argument arrays and never pass through a shell.
+Each observation is limited to 12,000 characters. Paths must remain inside the per-request temporary workspace; symbolic links are ignored. Commands use fixed argument arrays and never pass through a shell. A complete investigation is limited to 90 seconds, eight model rounds, and 12 tool calls. Individual Hy3 calls are limited to 30 seconds.
 
 ## Trusted code warning
 
@@ -38,6 +38,7 @@ Python 3.10+ and a Hy3-compatible endpoint are required.
 ```bash
 python -m venv .venv
 source .venv/bin/activate
+pip install -e ./mcp_servers/code_review
 pip install -r apps/incident_agent/requirements.txt
 cp .env.example .env
 ```
@@ -81,7 +82,9 @@ Both flows are designed to fit in one recording under two minutes.
 - Up to 512 KiB per file and 2 MiB total.
 - Supported types: `.py`, `.txt`, `.log`, `.json`, `.yaml`, `.yml`, `.toml`, `.md`.
 - Up to 8 Hy3 tool rounds.
-- Temporary evidence is removed when the stream ends or is canceled.
+- Up to 12 tool calls and 90 seconds per investigation.
+- Hy3 calls are limited to 30 seconds; checks are limited to 20 seconds.
+- Canceling the browser request cancels active async work and removes temporary evidence.
 
 ## Tests
 

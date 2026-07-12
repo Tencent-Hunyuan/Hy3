@@ -185,4 +185,5 @@ python -m py_compile mcp_servers/code_review/src/hy3_code_review_mcp/*.py
 - The server only reads local git data for the `repo_path` explicitly passed by the MCP client.
 - Diffs are truncated by `max_chars` before being sent to Hy3.
 - API keys are read from environment variables or `.env`; they are not logged or returned by tools.
+- Hy3 requests use a 30-second timeout and retry empty provider responses up to two times.
 - stdio MCP servers must not write logs to stdout. This server does not print during normal operation.

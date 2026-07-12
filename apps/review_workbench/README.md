@@ -24,6 +24,7 @@ Python 3.10+ and a Hy3-compatible API endpoint are required.
 ```bash
 python -m venv .venv
 source .venv/bin/activate
+pip install -e ./mcp_servers/code_review
 pip install -r apps/review_workbench/requirements.txt
 cp .env.example .env
 ```
@@ -72,7 +73,7 @@ Expected duration: about 45 seconds when presented separately.
 | `POST /api/review` | Ask Hy3 to generate a code review |
 | `POST /api/tests` | Ask Hy3 to generate a test plan |
 
-Each diff is limited to 24,000 characters. An external endpoint without credentials returns `503`; a timeout returns `504`; other upstream failures return a sanitized `502` response.
+Each diff is limited to 24,000 characters. Hy3 calls use a 30-second timeout and retry an empty provider response up to two times. An external endpoint without credentials returns `503`; a timeout returns `504`; empty or failed upstream responses return a sanitized `502` response.
 
 ## Tests
 
