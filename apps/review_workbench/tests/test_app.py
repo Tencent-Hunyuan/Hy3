@@ -1,0 +1,90 @@
+from __future__ import annotations
+
+from fastapi.testclient import TestClient
+
+from apps.review_workbench.app import app, get_hy3_client
+
+
+class FakeHy3Client:
+    def complete(self, prompt: str) -> str:
+        assert "+ risky_change()" in prompt
+        return "## Summary\nHy3 result"
+
+
+class FailingHy3Client:
+    def complete(self, prompt: str) -> str:
+        raise RuntimeError("secret upstream details")
+
+
+def client(completion_client=None) -> TestClient:
+    app.dependency_overrides[get_hy3_client] = lambda: completion_client or FakeHy3Client()
+    return TestClient(app)
+
+
+def test_review_calls_hy3_and_returns_metadata():
+    response = client().post(
+        "/api/review",
+        json={
+            "patch_text": "+ risky_change()",
+            "language": "python",
+            "focus": "security",
+            "context": "Payment service",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["content"] == "## Summary\nHy3 result"
+    assert response.json()["metadata"]["language"] == "python"
+    assert response.json()["metadata"]["duration_ms"] >= 0
+
+
+def test_test_plan_calls_hy3():
+    response = client().post(
+        "/api/tests",
+        json={
+            "diff_text": "+ risky_change()",
+            "test_framework": "pytest",
+            "risk_level": "high",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["content"].startswith("## Summary")
+    assert response.json()["metadata"]["test_framework"] == "pytest"
+
+
+def test_empty_and_oversized_diffs_are_rejected():
+    test_client = client()
+
+    assert test_client.post("/api/review", json={"patch_text": "   "}).status_code == 422
+    response = test_client.post("/api/review", json={"patch_text": "+" * 24_001})
+    assert response.status_code == 422
+
+
+def test_status_never_exposes_api_key(monkeypatch):
+    monkeypatch.setenv("HY3_BASE_URL", "https://gateway.example/v1")
+    monkeypatch.setenv("HY3_API_KEY", "super-secret")
+    monkeypatch.setenv("HY3_MODEL", "hy3")
+
+    response = client().get("/api/status")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "ready": True,
+        "model": "hy3",
+        "endpoint": "gateway.example",
+    }
+    assert "super-secret" not in response.text
+
+
+def test_upstream_errors_are_sanitized():
+    response = client(FailingHy3Client()).post(
+        "/api/review",
+        json={"patch_text": "+ change"},
+    )
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == (
+        "Hy3 request failed. Check the endpoint and try again."
+    )
+    assert "secret upstream details" not in response.text
