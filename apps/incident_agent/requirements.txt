@@ -1,0 +1,7 @@
+-e ../../mcp_servers/code_review
+fastapi>=0.115,<1
+pydantic>=2.7,<3
+python-multipart>=0.0.9,<1
+uvicorn[standard]>=0.30,<1
+httpx>=0.27,<1
+pytest>=8,<10
