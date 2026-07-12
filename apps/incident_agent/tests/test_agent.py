@@ -114,3 +114,18 @@ def test_upstream_failure_is_sanitized(tmp_path):
     assert error["message"] == "Hy3 investigation failed. Check the API and retry."
     assert "secret provider response" not in str(events)
     assert events[-1]["type"] == "done"
+
+
+def test_empty_hy3_response_is_retried_before_error(tmp_path):
+    client = FakeAgentClient(
+        [
+            AgentMessage(None, ()),
+            AgentMessage("## Root cause\nThe retry loop is off by one.", ()),
+        ]
+    )
+
+    events = list(investigate("Inspect", tmp_path, client))
+
+    assert len(client.calls) == 2
+    assert any(event["type"] == "report" for event in events)
+    assert not any(event["type"] == "error" for event in events)

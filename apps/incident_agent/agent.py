@@ -22,6 +22,12 @@ Your final report must be concise Markdown with these sections:
 4. Verification
 """
 
+MAX_EMPTY_RESPONSE_RETRIES = 2
+EMPTY_RESPONSE_NUDGE = (
+    "Your previous response was empty. Return at least one tool call or a complete "
+    "final incident report grounded in the available evidence."
+)
+
 
 @dataclass(frozen=True)
 class AgentToolCall:
@@ -147,6 +153,21 @@ def _parse_arguments(raw_arguments: str) -> tuple[dict[str, Any] | None, ToolRes
     return arguments, None
 
 
+def _complete_with_empty_retry(
+    client: AgentChatClient,
+    messages: list[dict[str, Any]],
+    tools: list[dict[str, Any]] | None,
+) -> AgentMessage:
+    message = AgentMessage(None, ())
+    for attempt in range(MAX_EMPTY_RESPONSE_RETRIES + 1):
+        message = client.complete(messages, tools)
+        if message.tool_calls or (message.content or "").strip():
+            return message
+        if attempt < MAX_EMPTY_RESPONSE_RETRIES:
+            messages.append({"role": "user", "content": EMPTY_RESPONSE_NUDGE})
+    return message
+
+
 def investigate(
     task: str,
     root: Path,
@@ -170,7 +191,7 @@ def investigate(
 
     try:
         for round_number in range(1, max_rounds + 1):
-            message = client.complete(messages, TOOL_DEFINITIONS)
+            message = _complete_with_empty_retry(client, messages, TOOL_DEFINITIONS)
             messages.append(_assistant_payload(message))
 
             if not message.tool_calls:
@@ -230,7 +251,7 @@ def investigate(
                 ),
             }
         )
-        final_message = client.complete(messages, None)
+        final_message = _complete_with_empty_retry(client, messages, None)
         report = (final_message.content or "").strip()
         if report:
             yield {"type": "report", "content": report}
