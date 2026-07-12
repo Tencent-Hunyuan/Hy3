@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Hy3-powered code review and test planning workbench.">
+    <title>Hy3 Review Workbench</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand-lockup">
+        <span class="brand-mark" aria-hidden="true">H3</span>
+        <div>
+          <h1>Hy3 Review Workbench</h1>
+          <p>Code risk analysis</p>
+        </div>
+      </div>
+      <div class="connection" aria-live="polite">
+        <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+        <span id="status-label">Checking Hy3</span>
+        <span class="model-label" id="model-label">hy3</span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="panel input-panel" aria-labelledby="input-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-index">01 / INPUT</p>
+            <h2 id="input-title">Change set</h2>
+          </div>
+          <span class="char-count" id="char-count">0 / 24,000</span>
+        </div>
+
+        <div class="mode-switch" role="tablist" aria-label="Analysis mode">
+          <button class="mode-button is-active" data-mode="review" role="tab" aria-selected="true" type="button">Code review</button>
+          <button class="mode-button" data-mode="tests" role="tab" aria-selected="false" type="button">Test plan</button>
+        </div>
+
+        <div class="form-row example-row">
+          <label for="example-select">Demo case</label>
+          <select id="example-select">
+            <option value="">Choose an example</option>
+          </select>
+        </div>
+
+        <div class="field-grid">
+          <div class="form-row review-field">
+            <label for="language-input">Language</label>
+            <input id="language-input" value="python" maxlength="40">
+          </div>
+          <div class="form-row review-field">
+            <label for="focus-select">Review focus</label>
+            <select id="focus-select">
+              <option value="correctness, security, reliability, and tests">Balanced</option>
+              <option value="security and privacy">Security</option>
+              <option value="correctness and reliability">Correctness</option>
+              <option value="performance and scalability">Performance</option>
+            </select>
+          </div>
+          <div class="form-row test-field" hidden>
+            <label for="framework-input">Framework</label>
+            <input id="framework-input" value="pytest" maxlength="40">
+          </div>
+          <div class="form-row test-field" hidden>
+            <label for="risk-select">Risk level</label>
+            <select id="risk-select">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high" selected>High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row context-row review-field">
+          <label for="context-input">Project context</label>
+          <input id="context-input" maxlength="1000" placeholder="Payment service handling authenticated charges">
+        </div>
+
+        <div class="editor-shell">
+          <div class="editor-topbar">
+            <span>diff</span>
+            <span>UTF-8</span>
+          </div>
+          <textarea id="diff-input" spellcheck="false" maxlength="24000" aria-label="Code diff" placeholder="diff --git a/service.py b/service.py"></textarea>
+        </div>
+
+        <div class="input-actions">
+          <button class="primary-button" id="run-button" type="button">Run Hy3 review</button>
+          <span class="keyboard-hint">Ctrl + Enter</span>
+        </div>
+      </section>
+
+      <section class="panel output-panel" aria-labelledby="output-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-index">02 / OUTPUT</p>
+            <h2 id="output-title">Analysis</h2>
+          </div>
+          <button class="copy-button" id="copy-button" type="button" title="Copy analysis" disabled>Copy</button>
+        </div>
+
+        <div class="result-meta" id="result-meta" aria-label="Request metadata"></div>
+        <article class="result" id="result" aria-live="polite">
+          <div class="empty-state">
+            <span class="empty-number">00</span>
+            <p>Load a change set and run Hy3.</p>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>

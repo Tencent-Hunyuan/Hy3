@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "hy3-code-review": {
+      "command": "/absolute/path/to/conda/envs/llms/bin/python",
+      "args": ["-m", "hy3_code_review_mcp.server"],
+      "env": {
+        "HY3_ENV_FILE": "/absolute/path/to/Hy3/.env"
+      }
+    }
+  }
+}

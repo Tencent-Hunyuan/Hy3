@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Hy3-powered engineering incident investigation agent.">
+    <title>Hy3 Incident Agent</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand-lockup">
+        <span class="brand-mark" aria-hidden="true">H3</span>
+        <div>
+          <h1>Hy3 Incident Agent</h1>
+          <p>Evidence-driven diagnosis</p>
+        </div>
+      </div>
+      <div class="connection" aria-live="polite">
+        <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+        <span id="status-label">Checking Hy3</span>
+        <span class="model-label" id="model-label">hy3</span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="panel input-panel" aria-labelledby="input-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-index">01 / INCIDENT</p>
+            <h2 id="input-title">Investigation brief</h2>
+          </div>
+          <span class="step-label">Trusted workspace</span>
+        </div>
+
+        <div class="form-row">
+          <label for="demo-select">Demo incident</label>
+          <select id="demo-select">
+            <option value="">Use uploaded evidence</option>
+          </select>
+        </div>
+
+        <div class="form-row task-row">
+          <div class="label-row">
+            <label for="task-input">Incident task</label>
+            <span id="task-count">0 / 2,000</span>
+          </div>
+          <textarea id="task-input" maxlength="2000" spellcheck="true" placeholder="Describe the failure, expected behavior, and operational impact."></textarea>
+        </div>
+
+        <div class="form-row">
+          <label for="file-input">Evidence files</label>
+          <label class="file-picker" for="file-input">
+            <span>Select files</span>
+            <span>.py .log .txt .json .yaml .toml .md</span>
+          </label>
+          <input id="file-input" type="file" multiple accept=".py,.txt,.log,.json,.yaml,.yml,.toml,.md">
+          <ul class="file-list" id="file-list" aria-live="polite">
+            <li class="file-placeholder">No evidence selected</li>
+          </ul>
+        </div>
+
+        <aside class="trust-note">
+          <strong>Trusted code only</strong>
+          <p>The pytest check executes uploaded project code. Use files you own and trust.</p>
+        </aside>
+
+        <div class="input-actions">
+          <button class="primary-button" id="run-button" type="button">Start investigation</button>
+          <button class="secondary-button" id="cancel-button" type="button" disabled>Cancel</button>
+        </div>
+      </section>
+
+      <section class="panel timeline-panel" aria-labelledby="timeline-title">
+        <div class="panel-heading">
+          <div>
+            <p class="section-index">02 / TRACE</p>
+            <h2 id="timeline-title">Evidence timeline</h2>
+          </div>
+          <button class="copy-button" id="copy-button" type="button" disabled title="Copy final report">Copy report</button>
+        </div>
+
+        <div class="timeline" id="timeline" aria-live="polite">
+          <div class="empty-state" id="empty-state">
+            <span class="empty-index">00</span>
+            <p>Choose a demo or add evidence to begin.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>

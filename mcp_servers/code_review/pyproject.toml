@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hy3-code-review-mcp"
+version = "0.1.0"
+description = "A stdio MCP server that uses Hy3 to review code diffs and suggest tests."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+  { name = "Tencent Hunyuan Hy3 contributors" }
+]
+dependencies = [
+  "mcp>=1.27,<2",
+  "openai>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+]
+
+[project.scripts]
+hy3-code-review-mcp = "hy3_code_review_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hy3_code_review_mcp"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
