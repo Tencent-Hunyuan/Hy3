@@ -88,3 +88,16 @@ def test_upstream_errors_are_sanitized():
         "Hy3 request failed. Check the endpoint and try again."
     )
     assert "secret upstream details" not in response.text
+
+
+def test_examples_support_both_demo_flows():
+    response = client().get("/api/examples")
+
+    assert response.status_code == 200
+    examples = response.json()
+    assert [item["id"] for item in examples] == [
+        "payment-security",
+        "retry-reliability",
+    ]
+    assert {item["mode"] for item in examples} == {"review", "tests"}
+    assert all(item["diff_text"].startswith("diff --git") for item in examples)

@@ -47,3 +47,15 @@ class StatusResponse(BaseModel):
     ready: bool
     model: str
     endpoint: str
+
+
+class DemoExampleResponse(BaseModel):
+    id: str
+    title: str
+    description: str
+    mode: Literal["review", "tests"]
+    language: str
+    framework: str
+    risk_level: Literal["low", "medium", "high", "critical"]
+    context: str
+    diff_text: str

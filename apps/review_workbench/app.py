@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 from time import perf_counter
 from urllib.parse import urlparse
 
@@ -14,7 +15,14 @@ from hy3_code_review_mcp.review import (
     suggest_tests_with_client,
 )
 
-from .schemas import Hy3Response, ReviewPayload, StatusResponse, TestPlanPayload
+from .examples import EXAMPLES
+from .schemas import (
+    DemoExampleResponse,
+    Hy3Response,
+    ReviewPayload,
+    StatusResponse,
+    TestPlanPayload,
+)
 
 
 app = FastAPI(
@@ -71,6 +79,11 @@ def status() -> StatusResponse:
         model=settings.model,
         endpoint=endpoint,
     )
+
+
+@app.get("/api/examples", response_model=list[DemoExampleResponse])
+def examples() -> list[dict[str, str]]:
+    return [asdict(example) for example in EXAMPLES]
 
 
 @app.post("/api/review", response_model=Hy3Response)
