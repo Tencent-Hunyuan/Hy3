@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from apps.review_workbench.app import app, get_hy3_client
@@ -16,6 +17,18 @@ class FakeHy3Client:
 class FailingHy3Client:
     def complete(self, prompt: str) -> str:
         raise RuntimeError("secret upstream details")
+
+
+class TimeoutHy3Client:
+    def complete(self, prompt: str) -> str:
+        raise TimeoutError("upstream took too long")
+
+
+@pytest.fixture(autouse=True)
+def clear_dependency_overrides():
+    app.dependency_overrides.clear()
+    yield
+    app.dependency_overrides.clear()
 
 
 def client(completion_client=None) -> TestClient:
@@ -90,6 +103,32 @@ def test_upstream_errors_are_sanitized():
         "Hy3 request failed. Check the endpoint and try again."
     )
     assert "secret upstream details" not in response.text
+
+
+def test_upstream_timeouts_return_gateway_timeout():
+    response = client(TimeoutHy3Client()).post(
+        "/api/review",
+        json={"patch_text": "+ change"},
+    )
+
+    assert response.status_code == 504
+    assert response.json()["detail"] == "Hy3 request timed out. Try again."
+
+
+def test_external_endpoint_without_api_key_returns_setup_error(monkeypatch):
+    monkeypatch.setenv("HY3_BASE_URL", "https://gateway.example/v1")
+    monkeypatch.setenv("HY3_API_KEY", "EMPTY")
+    monkeypatch.setenv("HY3_MODEL", "hy3")
+
+    response = TestClient(app).post(
+        "/api/review",
+        json={"patch_text": "+ change"},
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == (
+        "Hy3 API is not configured. Add credentials to .env and retry."
+    )
 
 
 def test_examples_support_both_demo_flows():
