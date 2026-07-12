@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 from apps.review_workbench.app import app, get_hy3_client
@@ -122,3 +124,16 @@ def test_static_assets_are_served():
     script = test_client.get("/static/app.js")
     assert script.status_code == 200
     assert "submitAnalysis" in script.text
+
+
+def test_app_readme_documents_required_submission_details():
+    readme = Path("apps/review_workbench/README.md").read_text(encoding="utf-8")
+    required = [
+        "Hy3's role",
+        "Demo 1",
+        "Demo 2",
+        "CodeBuddy collaboration",
+        "uvicorn apps.review_workbench.app:app",
+    ]
+
+    assert all(item in readme for item in required)

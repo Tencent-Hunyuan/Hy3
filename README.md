@@ -37,6 +37,7 @@
 - [News](#news)
 - [Model Links](#model-links)
 - [Quickstart](#quickstart)
+- [Hy3 Review Workbench](#hy3-review-workbench)
 - [Deployment](#deployment)
   - [vLLM](#vllm)
   - [SGLang](#sglang)
@@ -136,6 +137,12 @@ print(response.choices[0].message.content)
 > **Reasoning mode**: Set `reasoning_effort` to `"high"` for complex tasks (math, coding, reasoning) or `"no_think"` for direct responses.
 
 See the [Deployment](#deployment) section below for how to start the API server.
+
+## Hy3 Review Workbench
+
+The repository includes an interactive Web application that uses the Hy3 API to review pasted code diffs and generate focused test plans. It ships with two repeatable demo flows and reuses the existing code-review MCP implementation.
+
+See [apps/review_workbench/README.md](apps/review_workbench/README.md) for setup, architecture, demo scripts, and the CodeBuddy collaboration record.
 
 ## Deployment
 
