@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -115,3 +116,39 @@ def test_status_never_exposes_api_key(monkeypatch):
         "endpoint": "gateway.example",
     }
     assert "agent-secret" not in response.text
+
+
+def test_root_serves_incident_agent_without_secrets(monkeypatch):
+    monkeypatch.setenv("HY3_API_KEY", "never-render-agent-secret")
+
+    response = client().get("/")
+
+    assert response.status_code == 200
+    assert "Hy3 Incident Agent" in response.text
+    assert 'id="task-input"' in response.text
+    assert 'id="run-button"' in response.text
+    assert 'id="timeline"' in response.text
+    assert "never-render-agent-secret" not in response.text
+
+
+def test_static_assets_are_served():
+    test_client = client()
+
+    assert test_client.get("/static/styles.css").status_code == 200
+    script = test_client.get("/static/app.js")
+    assert script.status_code == 200
+    assert "readEventStream" in script.text
+
+
+def test_readme_documents_submission_requirements():
+    readme = Path("apps/incident_agent/README.md").read_text(encoding="utf-8")
+    required = [
+        "Hy3's role",
+        "Trusted code warning",
+        "Retry budget regression",
+        "Worker startup failure",
+        "CodeBuddy collaboration",
+        "uvicorn apps.incident_agent.app:app",
+    ]
+
+    assert all(item in readme for item in required)

@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterator, Sequence
-from typing import Annotated, Any
+from pathlib import Path
+from typing import Annotated
 from urllib.parse import urlparse
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 
 from hy3_code_review_mcp.config import Hy3Settings, load_default_dotenv
 
@@ -28,6 +30,9 @@ app = FastAPI(
     version="0.1.0",
 )
 
+STATIC_DIR = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
 
 def get_configured_agent_client() -> AgentChatClient:
     try:
@@ -39,6 +44,11 @@ def get_configured_agent_client() -> AgentChatClient:
 def _settings() -> Hy3Settings:
     load_default_dotenv()
     return Hy3Settings.from_env()
+
+
+@app.get("/", include_in_schema=False)
+def index() -> FileResponse:
+    return FileResponse(STATIC_DIR / "index.html")
 
 
 @app.get("/api/status", response_model=StatusResponse)

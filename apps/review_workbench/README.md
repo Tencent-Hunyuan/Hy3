@@ -1,19 +1,25 @@
 # Hy3 Review Workbench
 
-一个面向代码变更的轻量 Web 工作台：粘贴 unified diff，使用 Hy3 生成按严重程度排序的代码审查或针对性的测试计划。
+A lightweight web workbench for code changes: paste a unified diff and use Hy3 to generate a severity-ranked code review or a focused test plan.
+
+## Demo video
+
+[Watch the 23-second end-to-end demo](assets/demo.mp4).
+
+The recording covers both built-in workflows and is under the two-minute submission limit.
 
 ## Hy3's role
 
-Hy3 是系统中的核心推理引擎。应用把代码 diff、业务上下文和审查目标发送到 Hy3 OpenAI-compatible API；Hy3 负责理解代码变化、识别正确性/安全性/可靠性风险、解释影响并生成测试建议。FastAPI 层只负责输入校验、提示词复用、API 调用和脱敏错误处理，不包含训练、微调或本地推理。
+Hy3 is the system's core reasoning engine. The application sends the code diff, business context, and review objective to a Hy3 OpenAI-compatible API. Hy3 interprets the change, identifies correctness, security, and reliability risks, explains their impact, and generates test recommendations. The FastAPI layer only validates input, reuses the shared prompt builders, calls the API, and sanitizes errors. It performs no training, fine-tuning, or local inference.
 
 ```text
 Browser -> FastAPI -> existing prompt builders -> Hy3 API
-        <- JSON/markdown review or test plan <-
+        <- JSON/Markdown review or test plan <-
 ```
 
 ## Run locally
 
-要求 Python 3.10+，并准备一个 Hy3-compatible API endpoint。
+Python 3.10+ and a Hy3-compatible API endpoint are required.
 
 ```bash
 python -m venv .venv
@@ -22,7 +28,7 @@ pip install -r apps/review_workbench/requirements.txt
 cp .env.example .env
 ```
 
-在 `.env` 中选择一种 API 配置。OpenRouter 示例：
+Configure one API provider in `.env`. For example, with OpenRouter:
 
 ```bash
 HY3_BASE_URL=https://openrouter.ai/api/v1
@@ -31,44 +37,42 @@ HY3_MODEL=tencent/hy3:free
 HY3_REASONING_EFFORT=no_think
 ```
 
-启动应用：
+Start the application:
 
 ```bash
 uvicorn apps.review_workbench.app:app --reload --port 8008
 ```
 
-打开 `http://127.0.0.1:8008`。API key 仅由服务端从环境变量或 `.env` 读取，不会进入页面、响应或错误信息。
+Open `http://127.0.0.1:8008`. The API key is read server-side from environment variables or `.env`; it is never included in the page, API responses, or error messages.
 
 ## Demo 1: Payment security review
 
-目标时长约 45 秒。
+Expected duration: about 45 seconds when presented separately.
 
-1. 在 `Demo case` 选择 `Payment security regression`。
-2. 保持 `Code review` 和 `Balanced`，点击 `Run Hy3 review`。
-3. 展示 Hy3 对 token 日志泄露、无界递归重试、超时策略和缺失测试的分级分析。
-4. 点击 `Copy`，展示结果可直接进入 PR 评论。
+1. Select `Payment security regression` from `Demo case`.
+2. Keep `Code review` and `Balanced`, then click `Run Hy3 review`.
+3. Show Hy3's severity-ranked findings for token leakage, unbounded recursive retries, timeout policy, and missing tests.
+4. Click `Copy` to demonstrate that the result can be pasted directly into a PR comment.
 
 ## Demo 2: Retry test plan
 
-目标时长约 45 秒。
+Expected duration: about 45 seconds when presented separately.
 
-1. 在 `Demo case` 选择 `Retry reliability gap`，页面自动切换到 `Test plan`。
-2. 保持 `pytest` 与 `High`，点击 `Build test plan`。
-3. 展示 Hy3 生成的重试次数、异常分类、退避、最终失败和回归测试建议。
-4. 简短展示移动端或窄窗口下的单栏布局。
-
-两段可连续录制，总时长控制在两分钟内。提交前将视频或 GIF 放入 `apps/review_workbench/assets/`，并在本节加入相对链接。
+1. Select `Retry reliability gap` from `Demo case`; the workbench switches to `Test plan` automatically.
+2. Keep `pytest` and `High`, then click `Build test plan`.
+3. Show Hy3's recommendations for retry counts, exception categories, backoff, terminal failure, and regression coverage.
+4. Briefly resize the window to show the single-column mobile layout.
 
 ## API
 
 | Endpoint | Purpose |
 | --- | --- |
-| `GET /api/status` | 返回脱敏后的模型连接状态 |
-| `GET /api/examples` | 返回两个固定 Demo diff |
-| `POST /api/review` | 调用 Hy3 生成代码审查 |
-| `POST /api/tests` | 调用 Hy3 生成测试计划 |
+| `GET /api/status` | Return sanitized model connection status |
+| `GET /api/examples` | Return the two deterministic demo diffs |
+| `POST /api/review` | Ask Hy3 to generate a code review |
+| `POST /api/tests` | Ask Hy3 to generate a test plan |
 
-每个 diff 最大 24,000 字符。外部 API 未配置密钥时返回 `503`；超时返回 `504`；其他上游错误返回不包含内部细节的 `502`。
+Each diff is limited to 24,000 characters. An external endpoint without credentials returns `503`; a timeout returns `504`; other upstream failures return a sanitized `502` response.
 
 ## Tests
 
@@ -81,12 +85,12 @@ node --check apps/review_workbench/static/app.js
 
 ## CodeBuddy collaboration
 
-本应用与 CodeBuddy 协作完成的代码块记录如下：
+The following parts of the application were completed with CodeBuddy collaboration:
 
-- `app.py` / `schemas.py`：FastAPI 路由、Hy3 客户端复用、输入边界与错误脱敏。
-- `examples.py`：支付安全审查与重试测试计划两个端到端 Demo。
-- `static/`：双模式工作台、响应式布局、安全结果格式化和复制交互。
-- `tests/test_app.py`：API 契约、密钥脱敏、异常处理、Demo 和静态资源测试。
-- 本 README：运行方式、Hy3 角色、演示与录制脚本。
+- `app.py` and `schemas.py`: FastAPI routes, reuse of the Hy3 client, input limits, and sanitized error handling.
+- `examples.py`: the payment security review and retry test-plan demos.
+- `static/`: the two-mode workbench, responsive layout, safe result formatting, and copy interaction.
+- `tests/test_app.py`: API contracts, credential redaction, failure handling, demo data, and static asset coverage.
+- This README: setup, Hy3's role, demo flows, and recording instructions.
 
-现有 `mcp_servers/code_review/` 保持不变，Web 应用复用其 Hy3 API 客户端和提示词实现。
+The existing `mcp_servers/code_review/` implementation remains unchanged. The web application reuses its Hy3 API client and prompt builders.
