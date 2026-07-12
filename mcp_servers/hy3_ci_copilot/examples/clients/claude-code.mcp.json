@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "hy3-ci-copilot": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--env-file",
+        "/ABSOLUTE/PATH/TO/PACKAGE/.env",
+        "--from",
+        "/ABSOLUTE/PATH/TO/PACKAGE",
+        "hy3-ci-copilot"
+      ],
+      "env": {
+        "HY3_ALLOWED_ROOTS": "/ABSOLUTE/PATH/TO/TARGET_REPOSITORY"
+      },
+      "timeout": 180000
+    }
+  }
+}

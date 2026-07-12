@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "hy3-ci-copilot": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--frozen",
+        "--env-file",
+        ".env",
+        "hy3-ci-copilot"
+      ],
+      "disabled": false,
+      "timeout": 180000
+    }
+  }
+}

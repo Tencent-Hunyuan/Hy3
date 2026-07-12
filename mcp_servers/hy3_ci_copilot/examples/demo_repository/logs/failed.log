@@ -1,0 +1,11 @@
+2026-07-12T09:20:01Z Runner Image: ubuntu-24.04
+2026-07-12T09:20:02Z Python 3.12.4
+2026-07-12T09:20:04Z Run pip install -r requirements.txt
+2026-07-12T09:20:09Z Successfully installed legacy-release-tool-0.8.0 pytest-8.3.5
+2026-07-12T09:20:10Z Run pytest -q
+2026-07-12T09:20:11Z ImportError while loading conftest '/home/runner/work/demo/tests/conftest.py'.
+2026-07-12T09:20:11Z legacy_release_tool/config.py:4: in <module>
+2026-07-12T09:20:11Z     from distutils.util import strtobool
+2026-07-12T09:20:11Z E   ModuleNotFoundError: No module named 'distutils'
+2026-07-12T09:20:11Z ERROR: test collection failed
+2026-07-12T09:20:11Z Process completed with exit code 2.
