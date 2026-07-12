@@ -37,6 +37,7 @@
 - [新闻](#新闻)
 - [模型链接](#模型链接)
 - [快速开始](#快速开始)
+- [MCP Server](#mcp-server)
 - [推理和部署](#推理和部署)
   - [vLLM](#使用-vllm-推理)
   - [SGLang](#使用-sglang-推理)
@@ -133,6 +134,12 @@ print(response.choices[0].message.content)
 > **推理模式**：复杂任务（数学、编程、推理）建议设置 `reasoning_effort="high"`，日常对话可使用默认的 `"no_think"` 直接回复。
 
 具体部署方式请参考下方[推理和部署](#推理和部署)章节。
+
+## MCP Server
+
+[Hy3 CI Copilot](mcp_servers/hy3_ci_copilot/README_CN.md) 将 Hy3 封装为本地 stdio MCP
+Server，用于 CI 失败诊断、成功/失败运行对比、工作流审查和修复计划生成。它提供 4 个只读
+tool、一键安装、CodeBuddy 与 Claude Code 双客户端验证，以及[实测演示](mcp_servers/hy3_ci_copilot/docs/client-validation.md)。
 
 ## 推理和部署
 

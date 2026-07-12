@@ -37,6 +37,7 @@
 - [News](#news)
 - [Model Links](#model-links)
 - [Quickstart](#quickstart)
+- [MCP Server](#mcp-server)
 - [Deployment](#deployment)
   - [vLLM](#vllm)
   - [SGLang](#sglang)
@@ -136,6 +137,13 @@ print(response.choices[0].message.content)
 > **Reasoning mode**: Set `reasoning_effort` to `"high"` for complex tasks (math, coding, reasoning) or `"no_think"` for direct responses.
 
 See the [Deployment](#deployment) section below for how to start the API server.
+
+## MCP Server
+
+[Hy3 CI Copilot](mcp_servers/hy3_ci_copilot/README.md) packages Hy3 as a local stdio MCP
+server for CI failure diagnosis, run comparison, workflow review, and fix planning. It exposes
+four read-only tools and includes one-command installation, CodeBuddy and Claude Code validation,
+and a [live client demo](mcp_servers/hy3_ci_copilot/docs/client-validation.md).
 
 ## Deployment
 

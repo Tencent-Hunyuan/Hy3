@@ -1,0 +1,2 @@
+legacy-release-tool==0.8.0
+pytest==8.3.5

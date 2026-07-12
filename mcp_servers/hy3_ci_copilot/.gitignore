@@ -1,0 +1,8 @@
+.env
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+dist/
+*.egg-info/
+!examples/demo_repository/logs/*.log
