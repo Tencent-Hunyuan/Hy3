@@ -2,6 +2,10 @@
 
 A standalone engineering incident investigator powered by Hy3. Give it a failure description and trusted text files; Hy3 builds an investigation plan, calls bounded local tools, gathers evidence, and streams a grounded root-cause report to the browser.
 
+## Demo video
+
+[Watch the end-to-end Incident Agent demo](assets/demo.mp4).
+
 ## Hy3's role
 
 Hy3 is the Agent's reasoning and control layer. On every round it receives the incident context and prior tool observations, then decides whether to list files, search evidence, read a line range, run an allowlisted check, or produce the final report. The local FastAPI application validates and executes those requests but does not decide the investigation path.
