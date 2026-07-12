@@ -9,7 +9,7 @@ Usage::
 Environment:
     HY3_BASE_URL  — Hy3 API endpoint (default: http://127.0.0.1:8000/v1)
     HY3_API_KEY   — API key (default: EMPTY for local deployments)
-    HY3_MODEL     — Model name (default: tencent/Hy3)
+    HY3_MODEL     — Model name (default: hy3)
 """
 
 import os
@@ -18,7 +18,7 @@ from openai import OpenAI
 
 BASE_URL = os.environ.get("HY3_BASE_URL", "http://127.0.0.1:8000/v1")
 API_KEY = os.environ.get("HY3_API_KEY", "EMPTY")
-MODEL = os.environ.get("HY3_MODEL", "tencent/Hy3")
+MODEL = os.environ.get("HY3_MODEL", "hy3")
 
 REVIEW_PROMPT = """You are a senior code reviewer. Analyze the following code and provide:
 
@@ -62,6 +62,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     filepath = sys.argv[1]
-    print(f"🔍 Hy3 Code Review: {filepath}\n")
+    print(f"[Hy3 Code Review] {filepath}\n")
     result = review_code(filepath)
     print(result)

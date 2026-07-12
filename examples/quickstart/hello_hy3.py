@@ -12,7 +12,7 @@ from openai import OpenAI
 
 BASE_URL = os.environ.get("HY3_BASE_URL", "http://127.0.0.1:8000/v1")
 API_KEY = os.environ.get("HY3_API_KEY", "EMPTY")
-MODEL = os.environ.get("HY3_MODEL", "tencent/Hy3")
+MODEL = os.environ.get("HY3_MODEL", "hy3")
 
 client = OpenAI(base_url=BASE_URL, api_key=API_KEY)
 

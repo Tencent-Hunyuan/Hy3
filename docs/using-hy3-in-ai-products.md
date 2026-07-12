@@ -29,7 +29,7 @@ while True:
     if user.lower() == "quit": break
     messages.append({"role": "user", "content": user})
     resp = client.chat.completions.create(
-        model="tencent/Hy3", messages=messages, max_tokens=1024
+        model="hy3", messages=messages, max_tokens=1024
     )
     reply = resp.choices[0].message.content
     print(f"Hy3: {reply}")
@@ -70,7 +70,7 @@ Now Claude Code has `hy3_chat`, `hy3_code`, and `hy3_analyze` tools.
    - Provider: OpenAI Compatible
    - Base URL: `http://<hy3-host>:8000/v1`
    - API Key: `EMPTY` (or your key)
-   - Model: `tencent/Hy3`
+   - Model: `hy3`
 
 ## 3. Cursor
 
@@ -80,7 +80,7 @@ Now Claude Code has `hy3_chat`, `hy3_code`, and `hy3_analyze` tools.
 2. Configure:
    - Provider: OpenAI Compatible
    - Base URL: `http://<hy3-host>:8000/v1`
-   - Model ID: `tencent/Hy3`
+   - Model ID: `hy3`
 
 ## 4. Cline
 
@@ -89,7 +89,7 @@ Now Claude Code has `hy3_chat`, `hy3_code`, and `hy3_analyze` tools.
 1. Cline settings → API Provider
 2. Select "OpenAI Compatible"
 3. Set Base URL: `http://<hy3-host>:8000/v1`
-4. Set Model: `tencent/Hy3`
+4. Set Model: `hy3`
 
 ## 5. Open WebUI
 
