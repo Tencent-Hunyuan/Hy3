@@ -1,5 +1,5 @@
 """
-01_basic_chat.py
+ex01_basic_chat.py
 单轮与多轮对话示例
 """
 

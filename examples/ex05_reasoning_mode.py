@@ -1,5 +1,5 @@
 """
-05_reasoning_mode.py
+ex05_reasoning_mode.py
 思考模式开/关对比示例
 """
 

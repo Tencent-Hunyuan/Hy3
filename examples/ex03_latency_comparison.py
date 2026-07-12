@@ -1,5 +1,5 @@
 """
-03_latency_comparison.py
+ex03_latency_comparison.py
 非流式与流式的首 token 时延 / 总耗时对比
 """
 

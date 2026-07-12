@@ -1,5 +1,5 @@
 """
-04_tool_calling.py
+ex04_tool_calling.py
 单次工具调用与多轮工具循环示例
 """
 
@@ -65,8 +65,8 @@ def run_tool_loop(client: OpenAI, user_question: str, max_rounds: int = 3):
         print("content:", message.content)
         print("tool_calls:", message.tool_calls)
 
-        # 将 assistant 消息（含 tool_calls）追加到上下文
-        messages.append(message)
+        # 将 assistant 消息（含 tool_calls）转换为 dict 后追加到上下文
+        messages.append(message.model_dump())
 
         if not message.tool_calls:
             print("\n模型已给出最终回答，无需继续调用工具。")
@@ -91,8 +91,13 @@ def run_tool_loop(client: OpenAI, user_question: str, max_rounds: int = 3):
                 }
             )
 
-    print("\n达到最大轮次，返回最后一轮内容。")
-    return messages[-1].content
+    print("\n达到最大轮次，补充一次最终调用获取总结。")
+    final_response = client.chat.completions.create(
+        model="hy3",
+        messages=messages,
+        temperature=0.3,
+    )
+    return final_response.choices[0].message.content
 
 
 if __name__ == "__main__":

@@ -63,8 +63,8 @@ message = response.choices[0].message
 print("=== 第一轮模型输出 ===")
 print(message)
 
-# 将 assistant 消息追加到上下文
-messages.append(message)
+# 将 assistant 消息转换为 dict 后追加到上下文
+messages.append(message.model_dump())
 
 # 执行所有工具调用，并将结果追加到上下文
 if message.tool_calls:

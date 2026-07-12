@@ -1,5 +1,5 @@
 """
-02_streaming.py
+ex02_streaming.py
 流式请求与逐 chunk 解析示例
 """
 

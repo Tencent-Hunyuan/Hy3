@@ -1,5 +1,5 @@
 """
-06_error_handling.py
+ex06_error_handling.py
 超时 / 限流 / 网络错误的重试与退避示例
 """
 
@@ -39,6 +39,10 @@ def chat_with_retry(
         except APITimeoutError as e:
             print(f"[Attempt {attempt + 1}] Timeout: {e}")
         except APIError as e:
+            status = getattr(e, "status", None)
+            if status is not None and 400 <= status < 500:
+                print(f"[Attempt {attempt + 1}] Client error ({status}), no retry: {e}")
+                raise
             print(f"[Attempt {attempt + 1}] API error: {e}")
         except Exception as e:
             print(f"[Attempt {attempt + 1}] Unexpected error: {e}")
