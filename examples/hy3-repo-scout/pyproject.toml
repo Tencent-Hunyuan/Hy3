@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hy3-repo-scout"
+version = "0.1.0"
+description = "A read-only repository investigation agent powered by the Hy3 API"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [{ name = "Hy3 community contributors" }]
+dependencies = [
+  "openai>=1.30,<3",
+  "rich>=13.7,<15",
+]
+
+[project.optional-dependencies]
+dev = ["ruff>=0.15,<0.16"]
+
+[project.scripts]
+hy3-repo-scout = "hy3_repo_scout.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
