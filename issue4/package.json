@@ -1,0 +1,17 @@
+{
+  "name": "hy3-deep-research-assistant",
+  "version": "1.0.0",
+  "description": "Hy3 Deep Research Assistant",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

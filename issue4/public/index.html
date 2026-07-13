@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hy3 深度研究助手</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Hy3 深度研究助手</h1>
+    <span id="status" class="status-badge">检查中...</span>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="chat">智能对话</button>
+    <button class="tab" data-tab="research">深度研究</button>
+    <button class="tab" data-tab="translate">翻译重写</button>
+  </nav>
+
+  <!-- 对话面板 -->
+  <section id="panel-chat" class="panel active">
+    <div class="chat-box" id="chatBox">
+      <div class="msg assistant">你好！我是 Hy3 助手，有什么可以帮你？</div>
+    </div>
+    <div class="input-row">
+      <textarea id="chatInput" placeholder="输入你的问题..." rows="2"></textarea>
+      <label class="think-toggle">
+        <input type="checkbox" id="thinkToggle"> 深度思考
+      </label>
+      <button id="chatSend">发送</button>
+    </div>
+  </section>
+
+  <!-- 研究面板 -->
+  <section id="panel-research" class="panel">
+    <div class="input-row">
+      <input id="researchTopic" placeholder="输入研究主题，例如：量子计算对现代密码学的冲击" />
+      <label class="think-toggle">
+        <input type="checkbox" id="researchThinkToggle"> 深度思考
+      </label>
+      <button id="researchStart">开始研究</button>
+    </div>
+    <div class="output-box markdown" id="researchOutput">
+      <p class="hint">输入主题后点击"开始研究"，开启深度思考可获得推理过程与更高质量报告。</p>
+    </div>
+  </section>
+
+  <!-- 翻译面板 -->
+  <section id="panel-translate" class="panel">
+    <div class="config-row">
+      <select id="targetLang">
+        <option value="auto">自动检测（中英互译）</option>
+        <optgroup label="中文 → 其他语言">
+          <option value="zh2en">中文 → 英文</option>
+          <option value="zh2ja">中文 → 日文</option>
+          <option value="zh2ko">中文 → 韩文</option>
+          <option value="zh2fr">中文 → 法文</option>
+          <option value="zh2de">中文 → 德文</option>
+          <option value="zh2es">中文 → 西班牙文</option>
+          <option value="zh2ru">中文 → 俄文</option>
+          <option value="zh2ar">中文 → 阿拉伯文</option>
+        </optgroup>
+        <optgroup label="英文 → 其他语言">
+          <option value="en2zh">英文 → 中文</option>
+          <option value="en2ja">英文 → 日文</option>
+          <option value="en2ko">英文 → 韩文</option>
+          <option value="en2fr">英文 → 法文</option>
+          <option value="en2de">英文 → 德文</option>
+          <option value="en2es">英文 → 西班牙文</option>
+        </optgroup>
+      </select>
+      <select id="translateStyle">
+        <option value="casual">日常口语</option>
+        <option value="formal">正式公文</option>
+        <option value="academic">学术论文</option>
+        <option value="technical">技术文档</option>
+        <option value="marketing">营销文案</option>
+        <option value="creative">创意文学</option>
+        <option value="social">社交媒体</option>
+      </select>
+    </div>
+    <div class="translate-grid">
+      <div>
+        <label>原文</label>
+        <textarea id="sourceText" placeholder="输入要翻译的文本..." rows="8"></textarea>
+      </div>
+      <div>
+        <label>译文</label>
+        <div class="output-box" id="translateOutput">
+          <p class="hint">输入原文后点击翻译</p>
+        </div>
+      </div>
+    </div>
+    <button id="translateBtn">翻译</button>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>

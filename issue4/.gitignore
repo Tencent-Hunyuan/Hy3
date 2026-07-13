@@ -1,0 +1,8 @@
+node_modules/
+.env
+*.log
+*.err
+_probe*.txt
+.DS_Store
+.codebuddy/
+generated-images/
