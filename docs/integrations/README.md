@@ -96,7 +96,7 @@ The bundled sample intentionally contains an incomplete implementation, so `Not 
 
 The demo shows a real streaming request through the Guangzhou / China-mainland TokenHub service boundary, followed by the same completed report rendered as Markdown.
 
-![Hy3 Spec-to-Diff Reviewer streaming in PowerShell](assets/showcase/showcase-spec-to-diff-terminal.png)
+![Hy3 Spec-to-Diff Reviewer streaming preview](assets/showcase/showcase-spec-to-diff-preview.gif)
 
 ![Rendered Hy3 PR-readiness report](assets/showcase/showcase-spec-to-diff-report.png)
 
@@ -113,7 +113,7 @@ Project links:
 
 - Repository: https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer
 - Demo video: https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/assets/hy3-spec-to-diff-demo.mp4
-- Streaming screenshot: https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/assets/hy3-spec-to-diff-terminal.png
+- Streaming preview: https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/assets/hy3-spec-to-diff-preview.gif
 - Rendered report screenshot: https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/assets/hy3-spec-to-diff-report.png
 
 Run the bundled sample:
