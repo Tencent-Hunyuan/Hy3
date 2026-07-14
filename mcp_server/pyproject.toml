@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hy3-code-review-mcp"
+version = "0.1.0"
+description = "A read-only code review MCP server powered by Hy3"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "mcp>=1.27,<2",
+    "openai>=1.68,<3",
+    "python-dotenv>=1.2,<2",
+]
+
+[project.scripts]
+hy3-code-review-mcp = "hy3_code_review_mcp.server:main"
+hy3-code-review-smoke-test = "hy3_code_review_mcp.smoke_test:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3,<10",
+    "pytest-asyncio>=0.25,<2",
+    "ruff>=0.11,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hy3_code_review_mcp"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]

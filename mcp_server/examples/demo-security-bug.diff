@@ -1,0 +1,20 @@
+diff --git a/app/users.py b/app/users.py
+index a5d42ab..c3e8517 100644
+--- a/app/users.py
++++ b/app/users.py
+@@ -8,4 +8,5 @@ def find_user(connection, username: str):
+-    return connection.execute(
+-        "SELECT id, username, email FROM users WHERE username = ?",
+-        (username,),
+-    ).fetchone()
++    query = (
++        "SELECT id, username, email FROM users "
++        f"WHERE username = '{username}'"
++    )
++    return connection.execute(query).fetchone()
+@@ -17,4 +19,5 @@ def update_email(connection, user_id: int, email: str, logger):
+         "UPDATE users SET email = ? WHERE id = ?",
+         (email, user_id),
+     )
++    logger.info("Updated user %s with email %s", user_id, email)
+     connection.commit()
