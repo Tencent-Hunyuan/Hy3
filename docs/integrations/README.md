@@ -100,7 +100,19 @@ The demo shows a real streaming request through the Guangzhou / China-mainland T
 
 ![Hy3 Spec-to-Diff Reviewer streaming preview](assets/showcase/showcase-spec-to-diff-preview.gif)
 
+### Complete 31-second demo
+
+https://github.com/user-attachments/assets/93667341-2cd8-4a30-9b40-0c7ec7eed03b
+
+[Open the versioned MP4](https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/fecbbc49a4e3c21f2fe78b9ab3bcc9ee24ec156f/docs/assets/hy3-spec-to-diff-demo.mp4)
+
+### Rendered report
+
 ![Rendered Hy3 PR-readiness report](assets/showcase/showcase-spec-to-diff-report.png)
+
+The animated preview is extracted from the complete demo recording. The rendered
+report screenshot comes from a separate real TokenHub run, so exact model wording
+may differ.
 
 ### Verified Codex CLI Companion Workflow
 
