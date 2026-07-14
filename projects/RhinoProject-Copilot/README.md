@@ -51,6 +51,11 @@ RhinoProject Copilot 是一个交互式 AI Web 应用。
 
 ---
 
+## Demo Screenshot
+
+![RhinoProject Copilot Demo](assets/demo_screenshot.png)
+
+
 ## 3. Core Features
 
 ### 3.1 GitHub Issue 解读
