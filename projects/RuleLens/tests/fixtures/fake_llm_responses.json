@@ -1,0 +1,48 @@
+{
+  "RuleExtractionResult": {
+    "document_title": "示例规则",
+    "document_summary": "关于团队人数上限与报名截止的规则。",
+    "defined_terms": {},
+    "rules": [
+      {
+        "rule_id": "R001",
+        "title": "团队人数上限",
+        "normalized_statement": "本团队参赛人数上限为 5 人。",
+        "rule_type": "THRESHOLD",
+        "topic": "团队",
+        "conditions": [],
+        "exceptions": [],
+        "consequences": [],
+        "related_rule_ids": [],
+        "citations": [
+          {"source_id": "S0001", "evidence_quote": "本团队参赛人数上限为 5 人。"}
+        ],
+        "confidence": 0.9
+      }
+    ]
+  },
+  "ScenarioSet": {
+    "scenarios": [
+      {"scenario_id": "C001", "title": "恰好 5 人", "description": "某团队恰好有 5 人，是否符合人数上限要求？", "boundary_type": "临界值", "difficulty": "EASY", "related_rule_ids": ["R001"], "required_facts": []},
+      {"scenario_id": "C002", "title": "6 人团队", "description": "某团队有 6 人，是否符合人数上限要求？", "boundary_type": "临界值", "difficulty": "EASY", "related_rule_ids": ["R001"], "required_facts": []},
+      {"scenario_id": "C003", "title": "单人团队", "description": "某人试图单独参赛，是否允许？", "boundary_type": "阈值", "difficulty": "MEDIUM", "related_rule_ids": ["R001"], "required_facts": []},
+      {"scenario_id": "C004", "title": "多团队重复", "description": "一名参赛者加入两个团队，如何处理？", "boundary_type": "组合条件", "difficulty": "MEDIUM", "related_rule_ids": ["R001"], "required_facts": []},
+      {"scenario_id": "C005", "title": "截止前提交", "description": "团队在截止前提交报名表单，是否报名成功？", "boundary_type": "时间", "difficulty": "EASY", "related_rule_ids": ["R001"], "required_facts": []},
+      {"scenario_id": "C006", "title": "截止后补材料", "description": "团队截止后补交学籍证明，是否受理？", "boundary_type": "冲突", "difficulty": "HARD", "related_rule_ids": ["R001"], "required_facts": []}
+    ]
+  },
+  "AmbiguityReport": {
+    "issues": []
+  },
+  "Judgment": {
+    "scenario_id": "C001",
+    "verdict": "NON_COMPLIANT",
+    "rationale_summary": "5 人处于上限边界，需结合其他条款综合判断。",
+    "applied_rule_ids": ["R001"],
+    "citations": [
+      {"source_id": "S0001", "evidence_quote": "本团队参赛人数上限为 5 人。"}
+    ],
+    "missing_information": [],
+    "confidence": 0.8
+  }
+}

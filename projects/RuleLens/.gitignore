@@ -1,0 +1,38 @@
+# 依赖与构建产物
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+*.so
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# 环境变量与密钥（切勿提交真实密钥）
+.env
+.env.*
+!.env.example
+
+# 测试与覆盖率缓存
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# 用户上传与导出产物（默认不持久化）
+uploads/
+exports/
+*.md.json
+rulelens_*.md
+rulelens_*.json
