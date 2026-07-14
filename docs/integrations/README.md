@@ -83,6 +83,8 @@ The independent showcase project is **Hy3 TokenHub Spec-to-Diff Reviewer**.
 
 The Node.js CLI compares a written specification with a proposed unified diff and asks Hy3 to generate a structured Markdown PR-readiness report. It accepts specification and diff files, reads a diff from standard input, or reviews changes already staged in Git. Streaming is enabled by default, and a completed report can be published atomically with `--output`.
 
+Per Issue #2's capability list, this showcase exercises Hy3's long-form structured generation and evidence-grounded analysis of a written specification and unified diff. It does not claim native tool calling, independent repository access, or autonomous agent behavior.
+
 The report includes:
 
 - an executive verdict;
@@ -99,6 +101,16 @@ The demo shows a real streaming request through the Guangzhou / China-mainland T
 ![Hy3 Spec-to-Diff Reviewer streaming preview](assets/showcase/showcase-spec-to-diff-preview.gif)
 
 ![Rendered Hy3 PR-readiness report](assets/showcase/showcase-spec-to-diff-report.png)
+
+### Verified Codex CLI Companion Workflow
+
+Codex CLI is one of the Part A tools documented above. In the verified manual handoff, Codex CLI configured with Hy3 through TokenHub performed the implementation and correction passes; a human inspected and staged the diff; and the standalone reviewer evaluated the same written requirements and staged artifact.
+
+The first reviewer pass identified a malformed-`change.files` validation gap. Human review found one additional high-risk reviewer-selection defect that the model missed. After Codex corrected both defects, the target project's local suite passed 13/13 tests.
+
+The reviewer does not run inside Codex, access the repository independently, modify code, stage changes, or create an autonomous agent loop.
+
+Evidence: [workflow details and media](https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer#codex-companion-workflow) and the [preserved first-pass report](https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/examples/sample-pr-readiness-report.md).
 
 The showcase is separate from this Hy3 repository and uses:
 
