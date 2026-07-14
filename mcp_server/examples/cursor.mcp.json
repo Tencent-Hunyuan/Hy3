@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "hy3-code-review": {
+      "command": "/absolute/path/to/Hy3/mcp_server/.venv/bin/hy3-code-review-mcp",
+      "env": {
+        "HY3_ENV_FILE": "/absolute/path/to/Hy3/mcp_server/.env",
+        "HY3_WORKSPACE_ROOT": "/absolute/path/to/Hy3"
+      }
+    }
+  }
+}
