@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "hy3-deep-research": {
+      "command": "hy3-mcp-server",
+      "env": {
+        "HY3_API_KEY": "${HY3_API_KEY}",
+        "HY3_BASE_URL": "https://tokenhub-intl.tencentmaas.com/v1",
+        "HY3_MODEL_NAME": "hy3"
+      }
+    }
+  }
+}

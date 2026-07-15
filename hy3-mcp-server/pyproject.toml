@@ -1,0 +1,25 @@
+[project]
+name = "hy3-mcp-server"
+version = "0.1.0"
+description = "An MCP Server that exposes Hy3 AI capabilities as MCP tools"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.6.0",
+    "openai>=1.0.0",
+    "duckduckgo_search>=7.0.0",
+]
+
+[project.scripts]
+hy3-mcp-server = "hy3_mcp_server.server:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.build_meta"
