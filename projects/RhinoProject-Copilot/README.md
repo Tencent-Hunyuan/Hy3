@@ -1,179 +1,125 @@
 # RhinoProject Copilot
 
-RhinoProject Copilot is an AI-powered open-source project planning and documentation assistant based on Hy3-preview.
+RhinoProject Copilot is an AI-powered open-source project planning and documentation assistant based on **Hy3-preview**.  
+It is designed for student developers who participate in open-source training programs, innovation competitions, course projects, and research practice tasks.
 
-RhinoProject Copilot 是一个基于 Hy3-preview API 构建的开源项目实践助手，面向大学生开源训练营、创新创业竞赛、课程项目和科研训练等场景，帮助学生开发者从“看不懂任务”到“完成可展示、可开源、可答辩的项目”。
-
----
-
-## 1. 项目背景
-
-在开源训练营和创新竞赛中，很多学生开发者并不是没有想法，而是不知道如何将一个模糊的 GitHub Issue、项目主题或比赛要求拆解成可以执行的项目。
-
-常见问题包括：
-
-- 看不懂 GitHub Issue 的真实要求
-- 不知道如何设计项目结构
-- 不清楚应该使用什么技术栈
-- 不会写 README 和技术文档
-- 不会拆解开发计划
-- 不知道如何准备 PPT、答辩稿和 Demo 视频
-- 不清楚自己的项目质量是否达到开源提交标准
-
-Hy3-preview 具备较强的长上下文理解、任务拆解、代码辅助、文档生成和 Agent 规划能力，因此本项目希望基于 Hy3-preview 构建一个面向学生开发者的项目实践助手。
+The project helps users turn a vague GitHub Issue, project idea, competition topic, or existing project material into a clear and executable project plan.
 
 ---
 
-## 2. 项目简介
+## 1. Project Background
 
-RhinoProject Copilot 是一个交互式 AI Web 应用。
+In open-source training programs and student innovation projects, many beginners do not lack ideas. The real difficulty is often that they do not know how to:
 
-用户可以输入：
+- understand the real requirements behind a GitHub Issue;
+- convert a broad topic into a runnable project;
+- design a reasonable technical route;
+- prepare README documentation;
+- generate PPT or defense materials;
+- evaluate whether the project is complete enough for submission.
 
-- GitHub Issue
-- 开源任务描述
-- 项目想法
-- 比赛主题
-- 课程项目要求
-- 已有项目资料
-
-系统将基于 Hy3-preview 自动生成：
-
-- GitHub Issue 解读
-- 项目方案
-- 技术路线
-- 开发任务拆解
-- README 文档
-- PPT / 答辩大纲
-- 项目质量自评
-
-本项目重点展示 Hy3-preview 在真实学生开发场景中的应用能力，而不是只进行普通聊天问答。
+RhinoProject Copilot aims to solve this problem by using Hy3-preview as the core AI reasoning and generation engine.
 
 ---
 
-## Demo Screenshot
+## 2. Project Goal
+
+The goal of this project is to provide a lightweight but complete assistant for student developers.
+
+Given an Issue, a project idea, or competition requirements, RhinoProject Copilot can generate:
+
+- GitHub Issue analysis;
+- project proposal;
+- development plan;
+- README document;
+- PPT / defense outline;
+- project quality self-evaluation.
+
+This allows students to move from **“I do not know what to do”** to **“I know what to build, how to build it, and how to present it.”**
+
+---
+
+## 3. Demo Screenshot
 
 ![RhinoProject Copilot Demo](assets/demo_screenshot.png)
 
+---
 
-## 3. Core Features
+## 4. Key Features
 
-### 3.1 GitHub Issue 解读
-
-输入 GitHub Issue 内容后，系统会自动分析：
-
-- 任务目标
-- 完成要求
-- 技术关键词
-- 交付物
-- 难点分析
-- 推荐开发路线
-- MVP 建议
-
-### 3.2 项目方案生成
-
-根据用户输入的项目想法或比赛主题，生成：
-
-- 项目名称
-- 项目定位
-- 目标用户
-- 使用场景
-- 核心功能
-- 技术栈
-- 创新点
-- 预期成果
-
-### 3.3 开发计划生成
-
-系统会将项目拆解为可执行任务，例如：
-
-- Day 1：环境搭建与 API 调用
-- Day 2：核心功能开发
-- Day 3：前端页面与交互优化
-- Day 4：README、示例输出与 Demo 视频
-- Day 5：测试、优化与 PR 提交
-
-### 3.4 README 生成
-
-系统可以自动生成开源项目 README，包括：
-
-- 项目简介
-- 功能介绍
-- 技术栈
-- 安装方式
-- 运行方式
-- 项目结构
-- 使用示例
-- 未来计划
-- 贡献说明
-
-### 3.5 PPT / 答辩大纲生成
-
-系统可以生成项目展示材料，包括：
-
-- 路演 PPT 大纲
-- 答辩讲稿
-- 项目亮点总结
-- Demo 演示说明
-- 评委可能追问
-- 回答参考
-
-### 3.6 项目质量自评
-
-系统会基于 rubric 对项目进行评分：
-
-- 创新性
-- 完整度
-- 工程规范
-- Hy3 使用深度
-- 可复现性
-- README 完整度
-- Demo 展示效果
-- 开源价值
+| Feature | Description |
+|---|---|
+| Issue Analysis | Understands a GitHub Issue and extracts task goals, requirements, technical keywords, deliverables, and development risks. |
+| Project Proposal Generation | Generates a structured project plan based on an idea, topic, or Issue. |
+| Development Plan Generation | Breaks the project into executable steps and provides a practical development schedule. |
+| README Generation | Creates a Markdown README structure for open-source submission. |
+| PPT / Defense Outline | Generates presentation structure, demo script, project highlights, and possible Q&A. |
+| Project Quality Evaluation | Evaluates the project using a rubric including innovation, completeness, reproducibility, documentation, and demo quality. |
+| Demo Mode | Allows local preview without a real Hy3 API key. |
+| Markdown Download | Supports downloading generated results as Markdown files. |
 
 ---
 
-## 4. Tech Stack
+## 5. Why Hy3-preview
+
+Hy3-preview is used as the central AI capability of this project.
+
+In RhinoProject Copilot, Hy3-preview is responsible for:
+
+- long-context understanding of GitHub Issues and project requirements;
+- task decomposition and planning;
+- structured document generation;
+- project quality evaluation;
+- defense and presentation material generation.
+
+The project calls Hy3-preview through an **OpenAI-compatible API interface**, making the system easy to adapt to different deployment environments.
+
+---
+
+## 6. Tech Stack
 
 | Part | Technology |
 |---|---|
-| Frontend | Streamlit |
-| Backend | Python |
-| AI Model | Hy3-preview |
-| API Style | OpenAI-compatible API |
-| Data Format | Markdown / JSON / Text |
-| Project Platform | GitHub |
-| Documentation | README / Prompt Templates / Example Files |
+| Frontend / UI | Streamlit |
+| Programming Language | Python |
+| AI Model Interface | OpenAI-compatible API |
+| Model Target | Hy3-preview |
+| Configuration | `.env` / environment variables |
+| Output Format | Markdown |
+| Documentation | README, sample input, sample output, prompt templates |
 
 ---
 
-## 5. Project Structure
+## 7. Project Structure
 
 ```text
-RhinoProject-Copilot/
+projects/RhinoProject-Copilot/
 ├── app.py
 ├── requirements.txt
 ├── .env.example
 ├── README.md
+├── assets/
+│   └── demo_screenshot.png
 ├── examples/
 │   ├── sample_issue.md
-│   └── sample_output.md
+│   ├── sample_output.md
+│   └── sample_project_plan.md
 └── prompts/
-    ├── evaluator.md
     ├── issue_analyzer.md
     ├── project_planner.md
     ├── readme_generator.md
-    └── ppt_outline_generator.md
+    ├── ppt_outline_generator.md
+    └── evaluator.md
 ```
 
 ---
 
-## 6. Installation
+## 8. Installation
 
 Clone the repository and enter the project directory:
 
 ```bash
-git clone https://github.com/Bokai-Xie591/Hy3.git
+git clone -b rhinobird2026 https://github.com/Bokai-Xie591/Hy3.git
 cd Hy3/projects/RhinoProject-Copilot
 ```
 
@@ -183,17 +129,23 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
----
-
-## 7. Configuration
-
-Copy the example environment file:
+Copy the environment configuration example:
 
 ```bash
 cp .env.example .env
 ```
 
-Then configure the Hy3-preview OpenAI-compatible API endpoint:
+For Windows CMD, use:
+
+```cmd
+copy .env.example .env
+```
+
+---
+
+## 9. Configuration
+
+The application uses the following environment variables:
 
 ```env
 HY3_BASE_URL=http://127.0.0.1:8000/v1
@@ -201,239 +153,181 @@ HY3_API_KEY=EMPTY
 HY3_MODEL=hy3
 ```
 
-Environment variables:
+Explanation:
 
 | Variable | Description |
 |---|---|
-| HY3_BASE_URL | Hy3-preview OpenAI-compatible API base URL |
-| HY3_API_KEY | API key |
-| HY3_MODEL | Model name, default value is `hy3` |
+| `HY3_BASE_URL` | Base URL of the OpenAI-compatible Hy3 API service. |
+| `HY3_API_KEY` | API key used by the service. |
+| `HY3_MODEL` | Model name used for generation. |
+
+> For safety, `.env` should not be committed to GitHub. Only `.env.example` is included.
 
 ---
 
-## 8. Usage
+## 10. Usage
 
-Run the Streamlit application:
+Run the Streamlit app:
 
 ```bash
 streamlit run app.py
 ```
 
-After the web page opens, users can choose one of the following modes:
+Then open the local page in the browser:
 
-- Issue 解读
-- 项目方案生成
-- 开发计划生成
-- README 生成
-- PPT / 答辩大纲生成
-- 项目质量自评
+```text
+http://localhost:8501
+```
 
-Users can paste a GitHub Issue, project idea, competition topic or existing project description into the input box, then click the generation button to get structured output.
+Basic workflow:
+
+1. Choose a task from the sidebar.
+2. Paste a GitHub Issue, project idea, competition topic, or project material.
+3. Click **Generate Result**.
+4. View the structured output.
+5. Download the result as a Markdown file.
 
 ---
 
-## 9. Demo Workflows
+## 11. Demo Mode
 
-### Demo 1: GitHub Issue Understanding
+RhinoProject Copilot provides a **Demo Mode** for quick local preview.
 
-Input:
+When Demo Mode is enabled:
+
+- no real Hy3 API key is required;
+- no external model service is required;
+- the app can directly generate built-in sample results;
+- users can test the complete interaction flow locally.
+
+This is useful for reviewers who want to quickly verify the UI and end-to-end workflow.
+
+---
+
+## 12. Real API Mode
+
+To use the real Hy3-preview API mode:
+
+1. Configure `.env` with the correct API endpoint and key.
+2. Disable Demo Mode in the sidebar.
+3. Run the app with:
+
+```bash
+streamlit run app.py
+```
+
+The application will then call Hy3-preview through the OpenAI-compatible API.
+
+---
+
+## 13. Example Input
 
 ```text
 【犀牛鸟实战issue】Build a vibe-coded application powered by Hy3
+
+问题描述：
+希望看到更多基于 Hy3 的端到端应用，展示模型在真实场景中的能力。
+
+期望改进：
+参与者使用 CodeBuddy / WorkBuddy + Hy3 API，自由选题做一个端到端可运行的应用，体现 Hy3 在某个具体场景下的能力。
+
+我的项目方向：
+RhinoProject Copilot：基于 Hy3-preview 的学生开源项目实践助手。
+它可以帮助用户解读 Issue、生成项目方案、规划开发路线、生成 README、准备 PPT / 答辩大纲，并进行项目质量自评。
 ```
-
-Expected output:
-
-- Task goal
-- Completion requirements
-- Technical keywords
-- Deliverables
-- Difficulty analysis
-- Recommended development route
-- MVP suggestion
-
-This workflow demonstrates Hy3-preview's ability to understand long task descriptions and convert them into clear development instructions.
 
 ---
 
-### Demo 2: Project Planning and README Generation
+## 14. Example Output
 
-Input:
+The system can generate structured content such as:
 
 ```text
-I want to build an AI assistant for student developers to understand open-source issues, generate project plans and prepare README documents.
+1. Task Goal
+2. Completion Requirements
+3. Technical Keywords
+4. Deliverables
+5. Difficulty Analysis
+6. Recommended Development Route
+7. MVP Suggestion
 ```
 
-Expected output:
+More examples can be found in:
 
-- Project name
-- Target users
-- Core features
-- Tech stack
-- Project highlights
-- README draft
-- Future work
-
-This workflow demonstrates Hy3-preview's ability to transform a rough project idea into a structured and executable project plan.
+```text
+examples/sample_issue.md
+examples/sample_output.md
+examples/sample_project_plan.md
+```
 
 ---
 
-### Demo 3: Project Quality Evaluation
+## 15. Project Rubric
 
-Input:
+RhinoProject Copilot can evaluate a project from multiple dimensions:
 
-```text
-RhinoProject Copilot is a Streamlit-based AI application. It can analyze GitHub Issues, generate project plans, create README documents and evaluate project quality.
-```
-
-Expected output:
-
-- Rubric score table
-- Strengths
-- Weaknesses
-- Improvement suggestions
-- PR submission checklist
-
-This workflow demonstrates Hy3-preview's ability to evaluate project quality based on multiple dimensions.
-
----
-
-## 10. Example Files
-
-The `examples` directory provides sample input and output files:
-
-```text
-examples/
-├── sample_issue.md
-└── sample_output.md
-```
-
-- `sample_issue.md`: an example issue input
-- `sample_output.md`: an example structured output generated by the application
-
-These files help users understand how to use the application and what kind of output to expect.
-
----
-
-## 11. Prompt Templates
-
-The `prompts` directory stores task-specific prompt templates:
-
-```text
-prompts/
-├── evaluator.md
-├── issue_analyzer.md
-├── project_planner.md
-├── readme_generator.md
-└── ppt_outline_generator.md
-```
-
-Each prompt corresponds to a functional module in the application:
-
-| Prompt File | Function |
+| Dimension | Meaning |
 |---|---|
-| issue_analyzer.md | Analyze GitHub Issues |
-| project_planner.md | Generate project plans |
-| readme_generator.md | Generate README documents |
-| ppt_outline_generator.md | Generate PPT and defense outlines |
-| evaluator.md | Evaluate project quality |
-
-Although the current version mainly defines prompts inside `app.py`, these prompt files are kept as reusable prompt assets for future modular development.
-
----
-
-## 12. Hy3-preview Role
-
-Hy3-preview is the core AI engine of RhinoProject Copilot.
-
-In this project, Hy3-preview is responsible for:
-
-- Understanding long GitHub Issue descriptions
-- Extracting task requirements
-- Generating structured project plans
-- Producing README documents
-- Creating PPT and defense outlines
-- Evaluating project quality with rubric
-- Helping student developers complete open-source project workflows
-
-Hy3-preview is not used as a simple chatbot in this project. Instead, it acts as a project planning and documentation copilot that supports multiple task types.
+| Innovation | Whether the project has a clear scenario and differentiated value. |
+| Completeness | Whether the project forms a complete functional loop. |
+| Engineering Quality | Whether the code structure, dependencies, and configuration are clear. |
+| Hy3 Usage Depth | Whether Hy3-preview plays a core role in the system. |
+| Reproducibility | Whether the project can be easily run by others. |
+| README Quality | Whether the documentation is clear and complete. |
+| Demo Quality | Whether the project provides an interactive demo and sample results. |
+| Open-source Value | Whether the project is useful to other student developers. |
 
 ---
 
-## 13. Rubric Evaluation Design
+## 16. Highlights
 
-The project uses the following evaluation dimensions:
-
-| Dimension | Description |
-|---|---|
-| Innovation | Whether the project has a clear and meaningful application scenario |
-| Completeness | Whether the project forms a complete workflow |
-| Engineering Quality | Whether the code structure and project files are clear |
-| Hy3 Usage Depth | Whether Hy3-preview plays a core role in the system |
-| Reproducibility | Whether the project can be installed and run by others |
-| README Quality | Whether the documentation is complete |
-| Demo Quality | Whether the demo is easy to understand |
-| Open-source Value | Whether the project is useful for other developers |
-
-This rubric helps users check whether their project is ready for open-source submission.
+- Focuses on a real pain point of student developers.
+- Covers the whole workflow from Issue understanding to project presentation.
+- Uses Hy3-preview for core reasoning and generation tasks.
+- Provides a runnable Streamlit frontend.
+- Includes Demo Mode for quick review.
+- Supports Markdown output and download.
+- Includes prompt templates, examples, configuration files, and documentation.
 
 ---
 
-## 14. CodeBuddy / WorkBuddy Collaboration Record
+## 17. Limitations
 
-During the development process, AI coding assistants can be used to help generate and refine the following parts:
+Current limitations include:
 
-- Initial Streamlit page structure
-- Hy3 API calling template
-- Prompt templates for different tasks
-- README structure
-- Example input and output files
-- Project self-evaluation rubric
-
-All generated code and documents are manually reviewed and adjusted to match the actual project goal.
+- GitHub Issue URL auto-fetching is not yet implemented.
+- Real API mode depends on an available Hy3-compatible endpoint.
+- The current version mainly supports text-based generation.
+- Multi-file project analysis can be further improved in future versions.
 
 ---
 
-## 15. Current Limitations
-
-The current version is an MVP and still has several limitations:
-
-- GitHub Issue URL auto-fetching is not yet implemented
-- Prompt templates are not fully separated from `app.py`
-- No deployed online demo is provided yet
-- Demo video or GIF still needs to be added
-- More real-world test cases can be added in future versions
-- Error handling can be further improved
-
----
-
-## 16. Future Work
+## 18. Future Work
 
 Future improvements may include:
 
-- Add GitHub Issue link auto-parsing
-- Add README one-click export
-- Add PPT outline export
-- Add project score visualization
-- Add multi-turn project optimization
-- Add support for more open-source and competition scenarios
-- Add a demo GIF or short video
-- Improve prompt modularization
-- Add more example cases
+- automatic GitHub Issue URL parsing;
+- GitHub repository README auto-review;
+- multi-file project structure analysis;
+- one-click PPT outline export;
+- project score visualization;
+- more built-in examples for different project types;
+- better integration with open-source contribution workflows.
 
 ---
 
-## 17. License
+## 19. License
 
-This project is released under the Apache License 2.0.
+This project follows the license of the upstream repository.
 
 ---
 
-## 18. Author
+## 20. Acknowledgement
 
-Bokai Xie  
-GitHub: Bokai-Xie591
+This project is developed for the 2026 Rhino-bird Open-source Training Program issue:
 
-## License
+```text
+Build a vibe-coded application powered by Hy3
+```
 
-Apache License 2.0
+RhinoProject Copilot uses Hy3-preview as the core AI engine for project planning, documentation generation, and quality evaluation.
