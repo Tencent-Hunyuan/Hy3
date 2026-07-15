@@ -213,4 +213,4 @@ The training dynamics are stable: the rollout/training log-prob drift (`rollout_
 
 ## Acknowledgements
 
-We thank the Tencent Hunyuan team for their support on model training and engineering, as well as the [verl](https://github.com/volcengine/verl), [Megatron-Bridge](https://github.com/NVIDIA-NeMo/Megatron-Bridge), [Megatron-LM](https://github.com/NVIDIA/Megatron-LM), and [vLLM](https://github.com/vllm-project/vllm) communities for their help.
+We thank the Tencent Hunyuan team for their support on model training and engineering infrastructure, as well as the [verl](https://github.com/volcengine/verl), [Megatron-Bridge](https://github.com/NVIDIA-NeMo/Megatron-Bridge), [Megatron-LM](https://github.com/NVIDIA/Megatron-LM), and [vLLM](https://github.com/vllm-project/vllm) communities for their help.
