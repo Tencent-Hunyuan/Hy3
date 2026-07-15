@@ -1,0 +1,127 @@
+======================================================================
+  Hy3 MCP Server - Demo
+======================================================================
+
+[Step 1/5] Running unit tests...
+
+============================= test session starts ==============================
+platform linux -- Python 3.14.6, pytest-9.1.1, pluggy-1.6.0 -- /home/xiao/Programs/mine/fork/Hy3/hy3-mcp-server/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/xiao/Programs/mine/fork/Hy3/hy3-mcp-server
+configfile: pyproject.toml
+plugins: anyio-4.14.2, asyncio-1.4.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 12 items / 2 deselected / 10 selected
+
+tests/test_hy3_client.py::test_requires_api_key PASSED                   [ 10%]
+tests/test_hy3_client.py::test_uses_env_vars PASSED                      [ 20%]
+tests/test_hy3_client.py::test_default_base_url PASSED                   [ 30%]
+tests/test_hy3_client.py::test_chat_calls_openai PASSED                  [ 40%]
+tests/test_integration.py::test_list_tools PASSED                        [ 50%]
+tests/test_integration.py::test_tool_schemas_have_required_params PASSED [ 60%]
+tests/test_integration.py::test_tool_descriptions_exist PASSED           [ 70%]
+tests/test_tools.py::test_ask_hy3 PASSED                                 [ 80%]
+tests/test_tools.py::test_file_analyze PASSED                            [ 90%]
+tests/test_tools.py::test_file_analyze_not_found PASSED                  [100%]
+
+======================= 10 passed, 2 deselected in 6.70s =======================
+
+----------------------------------------------------------------------
+
+[Step 2/5] Inspecting MCP tools...
+
+Processing request of type ListToolsRequest
+  Tool: ask_hy3
+  Description: Directly chat with Hy3 AI model. Supports reasoning modes: no_think (fast), low ...
+    - prompt (string, required)
+    - reasoning_effort (string, optional)
+
+  Tool: search_and_analyze
+  Description: Search the web for a topic and use Hy3 to analyze the results into a comprehensi...
+    - query (string, required)
+    - max_results (integer, optional)
+
+  Tool: file_analyze
+  Description: Read a local file and ask Hy3 to analyze, summarize, or answer questions about i...
+    - file_path (string, required)
+    - prompt (string, required)
+
+
+----------------------------------------------------------------------
+
+[Step 3/5] MCP Protocol interaction test...
+
+Processing request of type ListToolsRequest
+  ✓ MCP initialize handshake: OK
+  ✓ tools/list: 3 tools registered
+  ✓ Tools: ['ask_hy3', 'search_and_analyze', 'file_analyze']
+  ✓ All tools have descriptions: True
+
+----------------------------------------------------------------------
+
+[Step 4/5] Client configuration files...
+
+  CodeBuddy (clients/codebuddy/.mcp.json):
+    {
+      "mcpServers": {
+        "hy3-deep-research": {
+          "command": "hy3-mcp-server",
+          "env": {
+            "HY3_API_KEY": "${HY3_API_KEY}",
+            "HY3_BASE_URL": "https://tokenhub-intl.tencentmaas.com/v1",
+            "HY3_MODEL_NAME": "hy3"
+          }
+        }
+      }
+    }
+
+  Cursor (clients/cursor/.cursor/mcp.json):
+    {
+      "mcpServers": {
+        "hy3-deep-research": {
+          "command": "hy3-mcp-server",
+          "env": {
+            "HY3_API_KEY": "${HY3_API_KEY}",
+            "HY3_BASE_URL": "https://tokenhub-intl.tencentmaas.com/v1",
+            "HY3_MODEL_NAME": "hy3"
+          }
+        }
+      }
+    }
+
+  Cline (clients/cline/mcp_settings.json):
+    {
+      "mcpServers": {
+        "hy3-deep-research": {
+          "command": "hy3-mcp-server",
+          "env": {
+            "HY3_API_KEY": "${HY3_API_KEY}",
+            "HY3_BASE_URL": "https://tokenhub-intl.tencentmaas.com/v1",
+            "HY3_MODEL_NAME": "hy3"
+          }
+        }
+      }
+    }
+
+----------------------------------------------------------------------
+
+[Step 5/5] Summary
+
+  ✓ 3 MCP tools implemented:
+    - ask_hy3          : Direct chat with Hy3
+    - search_and_analyze : Web search + Hy3 analysis
+    - file_analyze     : File content analysis with Hy3
+
+  ✓ All tests passing (10 passed, 2 skipped - need API key)
+
+  ✓ No hardcoded credentials - all via env vars
+
+  ✓ One-click install:
+    cd hy3-mcp-server && uv sync
+    HY3_API_KEY=sk-xxx hy3-mcp-server
+
+  ✓ Compatible with: CodeBuddy, Cursor, Cline, etc.
+
+======================================================================
+  Demo Complete
+======================================================================

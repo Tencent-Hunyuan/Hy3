@@ -1,0 +1,2 @@
+[console_scripts]
+hy3-mcp-server = hy3_mcp_server.server:main
