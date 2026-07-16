@@ -8,3 +8,8 @@
 Thumbs.db
 __pycache__/
 *.pyc
+.venv/
+uploads/
+outputs/
+hy3-video-copilot/demo/assets/
+hy3-video-copilot/backend/tests/fixtures/

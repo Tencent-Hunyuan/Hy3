@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hy3 Video Copilot</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f13; color: #e0e0e0; min-height: 100vh; }
+.app { max-width: 1200px; margin: 0 auto; padding: 20px; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; padding: 20px 0; border-bottom: 1px solid #2a2a35; }
+header h1 { font-size: 24px; background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+header span { color: #666; font-size: 14px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+.card { background: #1a1a24; border-radius: 12px; padding: 24px; border: 1px solid #2a2a35; }
+.card h2 { font-size: 16px; margin-bottom: 16px; color: #a5b4fc; }
+textarea, input, select { width: 100%; background: #0f0f13; border: 1px solid #2a2a35; border-radius: 8px; padding: 12px; color: #e0e0e0; font-size: 14px; outline: none; transition: border-color 0.2s; }
+textarea:focus, input:focus, select:focus { border-color: #6366f1; }
+textarea { resize: vertical; font-family: inherit; }
+button { background: #6366f1; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+button:hover { background: #4f46e5; transform: translateY(-1px); }
+button:disabled { background: #333; cursor: not-allowed; transform: none; }
+.file-upload { border: 2px dashed #2a2a35; border-radius: 8px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 16px; }
+.file-upload:hover { border-color: #6366f1; background: #1a1a24; }
+.file-upload input { display: none; }
+.result { margin-top: 16px; padding: 16px; background: #0f0f13; border-radius: 8px; white-space: pre-wrap; font-size: 13px; line-height: 1.6; max-height: 400px; overflow-y: auto; }
+.result .label { color: #6366f1; font-weight: 600; margin-bottom: 8px; }
+.status-bar { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+.spinner { width: 16px; height: 16px; border: 2px solid #2a2a35; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.tag { display: inline-block; background: #312e81; color: #a5b4fc; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px; }
+.output-video { width: 100%; border-radius: 8px; margin-top: 12px; }
+.tab-bar { display: flex; gap: 4px; margin-bottom: 16px; background: #0f0f13; border-radius: 8px; padding: 4px; }
+.tab { flex: 1; padding: 8px; text-align: center; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.tab.active { background: #6366f1; color: white; }
+.tab:not(.active):hover { background: #1a1a24; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef } = React;
+
+function App() {
+  const [tab, setTab] = useState('edit');
+  const [file, setFile] = useState(null);
+  const [instruction, setInstruction] = useState('');
+  const [topic, setTopic] = useState('');
+  const [duration, setDuration] = useState(60);
+  const [style, setStyle] = useState('通用');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [outputUrl, setOutputUrl] = useState('');
+  const fileInputRef = useRef(null);
+
+  const API = 'http://localhost:8000';
+
+  const uploadAndEdit = async () => {
+    if (!file || !instruction) return;
+    setLoading(true); setResult(null); setOutputUrl('');
+    const form = new FormData();
+    form.append('file', file);
+    form.append('instruction', instruction);
+    try {
+      const res = await fetch(`${API}/api/edit`, { method: 'POST', body: form });
+      const data = await res.json();
+      setResult(data);
+      if (data.output) {
+        setOutputUrl(`${API}/api/output/${data.output.replace(/\\/g, '/').replace(/.*outputs\//, '')}`);
+      }
+    } catch (e) { setResult({ error: e.message }); }
+    setLoading(false);
+  };
+
+  const uploadAndAnalyze = async () => {
+    if (!file) return;
+    setLoading(true); setResult(null);
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const res = await fetch(`${API}/api/analyze`, { method: 'POST', body: form });
+      const data = await res.json();
+      setResult(data);
+    } catch (e) { setResult({ error: e.message }); }
+    setLoading(false);
+  };
+
+  const generateScript = async () => {
+    if (!topic) return;
+    setLoading(true); setResult(null);
+    const form = new FormData();
+    form.append('topic', topic);
+    form.append('duration', String(duration));
+    form.append('style', style);
+    try {
+      const res = await fetch(`${API}/api/script`, { method: 'POST', body: form });
+      const data = await res.json();
+      setResult(data);
+    } catch (e) { setResult({ error: e.message }); }
+    setLoading(false);
+  };
+
+  return (
+    <div className="app">
+      <header>
+        <h1>Hy3 Video Copilot</h1>
+        <span>— AI 视频剪辑助手</span>
+      </header>
+
+      <div className="grid">
+        <div className="card">
+          <h2>🎬 视频操作</h2>
+          <div className="tab-bar">
+            <div className={`tab ${tab === 'edit' ? 'active' : ''}`} onClick={() => setTab('edit')}>智能剪辑</div>
+            <div className={`tab ${tab === 'analyze' ? 'active' : ''}`} onClick={() => setTab('analyze')}>视频分析</div>
+            <div className={`tab ${tab === 'script' ? 'active' : ''}`} onClick={() => setTab('script')}>脚本生成</div>
+          </div>
+
+          <div className="file-upload" onClick={() => fileInputRef.current?.click()}>
+            {file ? <span>✅ {file.name}</span> : <span>📁 点击上传视频文件</span>}
+            <input ref={fileInputRef} type="file" accept="video/*" onChange={e => setFile(e.target.files[0])} />
+          </div>
+
+          {tab === 'edit' && (
+            <>
+              <textarea rows={3} placeholder="描述剪辑需求，例如：帮我剪掉前5秒，添加2秒淡入效果..." value={instruction} onChange={e => setInstruction(e.target.value)} />
+              <div className="status-bar">
+                <button onClick={uploadAndEdit} disabled={loading || !file || !instruction}>
+                  {loading ? '处理中...' : '执行剪辑'}
+                </button>
+                {loading && <div className="spinner" />}
+              </div>
+            </>
+          )}
+
+          {tab === 'analyze' && (
+            <div className="status-bar">
+              <button onClick={uploadAndAnalyze} disabled={loading || !file}>
+                {loading ? '分析中...' : '开始分析'}
+              </button>
+              {loading && <div className="spinner" />}
+            </div>
+          )}
+
+          {tab === 'script' && (
+            <>
+              <input type="text" placeholder="输入视频主题..." value={topic} onChange={e => setTopic(e.target.value)} style={{marginBottom: 8}} />
+              <div style={{display: 'flex', gap: 8, marginBottom: 8}}>
+                <input type="number" placeholder="时长(秒)" value={duration} onChange={e => setDuration(Number(e.target.value))} style={{flex: 1}} />
+                <select value={style} onChange={e => setStyle(e.target.value)} style={{flex: 1}}>
+                  <option>通用</option><option>教程</option><option>Vlog</option><option>宣传片</option><option>短视频</option>
+                </select>
+              </div>
+              <div className="status-bar">
+                <button onClick={generateScript} disabled={loading || !topic}>
+                  {loading ? '生成中...' : '生成脚本'}
+                </button>
+                {loading && <div className="spinner" />}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="card">
+          <h2>📋 输出</h2>
+          {outputUrl && (
+            <video className="output-video" controls src={outputUrl}>
+              您的浏览器不支持视频播放
+            </video>
+          )}
+          {result && (
+            <div className="result">
+              {result.plan && <><div className="label">📝 编辑计划</div>{result.plan}</>}
+              {result.analysis && <><div className="label">🔍 分析报告</div>{result.analysis}</>}
+              {result.script && <><div className="label">📄 脚本</div>{result.script}</>}
+              {result.error && <><div className="label" style={{color: '#ef4444'}}>❌ 错误</div>{result.error}</>}
+            </div>
+          )}
+          {!result && !outputUrl && (
+            <div style={{color: '#666', textAlign: 'center', padding: 40}}>
+              选择操作后，结果将在此显示
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
