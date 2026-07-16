@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "hy3-data-analysis": {
+      "command": "python",
+      "args": [
+        "-m",
+        "hy3_mcp_server.server"
+      ],
+      "cwd": "your_real_path",
+      "env": {
+        "PYTHONPATH": "src",
+        "PYTHONUTF8": "1",
+        "HY3_API_KEY": "在此填入你的_Hy3_API_Key",
+        "HY3_BASE_URL": "https://tokenhub.tencentmaas.com/v1",
+        "HY3_MODEL": "hy3",
+        "LLM_REASONING_EFFORT": "high"
+      }
+    }
+  }
+}

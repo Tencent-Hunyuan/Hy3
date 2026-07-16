@@ -1,0 +1,23 @@
+[project]
+name = "hy3-mcp-server"
+version = "0.1.0"
+description = "一个即插即用的 MCP Server，内部调用 Hy3 API 完成 CSV/JSON 数据分析与图表描述"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "mcp>=1.2.0",
+    "openai>=1.40.0",
+    "pandas>=2.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+hy3-mcp-server = "hy3_mcp_server.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hy3_mcp_server"]
