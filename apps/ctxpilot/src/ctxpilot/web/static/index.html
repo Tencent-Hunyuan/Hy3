@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CtxPilot · 跨会话上下文连续性层</title>
+<style>
+  :root{
+    --bg:#f5f7fa; --panel:#ffffff; --ink:#1f2328; --muted:#6b7280;
+    --line:#e4e8ee; --brand:#2f6feb; --brand-d:#1b4fc4; --ok:#1a7f37;
+    --warn:#9a6700; --bad:#cf222e; --chip:#eef2ff; --chip2:#eafaf0;
+    --code-bg:#0d1117; --code-ink:#e6edf3;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft Yahei",sans-serif;background:var(--bg);color:var(--ink)}
+  header{display:flex;align-items:center;gap:14px;padding:12px 18px;background:linear-gradient(90deg,#1b3a8f,#2f6feb);color:#fff;border-bottom:1px solid #1b4fc4}
+  header h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.01em}
+  header .sub{color:#d7e2ff;font-size:12px}
+  .stats{display:flex;gap:10px;margin-left:6px}
+  .stat{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:3px 10px;font-size:12px;text-align:center;min-width:62px}
+  .stat b{display:block;font-size:16px;font-weight:700;line-height:1.1}
+  .stat span{opacity:.85}
+  .spacer{flex:1}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff}
+  .pill .dot{width:8px;height:8px;border-radius:50%;background:#ffd33d}
+  .pill.on .dot{background:#3fb950}
+  button{cursor:pointer;font:inherit;border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 13px;border-radius:8px;transition:.12s}
+  button:hover{border-color:var(--brand)}
+  button:disabled{opacity:.55;cursor:default}
+  button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.primary:hover{background:var(--brand-d)}
+  .banner{display:none;align-items:center;gap:10px;background:#fff8e6;border:1px solid #f0d27a;color:#7a5b00;padding:9px 16px;font-size:13px}
+  .banner.show{display:flex}
+  .banner b{color:#7a3b00}
+  .banner button{margin-left:auto;background:#7a5b00;border-color:#7a5b00;color:#fff}
+  main{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;padding:14px;align-items:start}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .card h2{font-size:13px;margin:0 0 10px;color:var(--muted);font-weight:600;letter-spacing:.02em;display:flex;align-items:center;gap:8px}
+  .card h2 .hint{font-weight:400;color:#9aa3af;font-size:11px}
+  .agents{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .agent{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;background:var(--chip);font-size:12px}
+  .agent .n{font-weight:700}
+  .agent .c{background:#fff;border:1px solid var(--line);border-radius:999px;padding:0 6px;font-size:11px;color:var(--brand-d)}
+  .agent .live{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+  .projlist{display:flex;flex-direction:column;gap:9px;max-height:60vh;overflow:auto;padding-right:2px}
+  .proj{border:1px solid var(--line);border-radius:11px;padding:11px;cursor:pointer;background:#fff;transition:.12s;position:relative}
+  .proj:hover{border-color:var(--brand);box-shadow:0 1px 6px rgba(47,111,235,.08)}
+  .proj.sel{border-color:var(--brand);box-shadow:0 0 0 2px rgba(47,111,235,.18)}
+  .proj .p{font-weight:650;word-break:break-all;font-size:13px}
+  .proj .meta{color:var(--muted);font-size:12px;margin-top:5px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .tag{font-size:11px;padding:1px 8px;border-radius:999px;background:var(--chip);color:var(--brand-d);border:1px solid var(--line)}
+  .tag.git{background:#eafaf0;color:var(--ok);border-color:#bfe9cc}
+  .acts{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+  .acts button{padding:4px 10px;font-size:12px}
+  .out{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;background:var(--code-bg);color:var(--code-ink);padding:11px;border-radius:9px;max-height:38vh;overflow:auto}
+  .feed{list-style:none;margin:0;padding:0;max-height:28vh;overflow:auto;font-size:12px}
+  .feed li{padding:6px 9px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:baseline}
+  .feed li.new{background:var(--chip2)}
+  .feed .a{font-weight:700;color:var(--brand-d)}
+  .feed .muted{color:var(--muted)}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.38);display:none;align-items:center;justify-content:center;z-index:50}
+  .modal.show{display:flex}
+  .modal .box{background:#fff;border-radius:13px;padding:18px;width:460px;max-width:92vw;box-shadow:0 12px 40px rgba(0,0,0,.22)}
+  .modal h3{margin:0 0 12px}
+  .field{margin-bottom:10px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+  .field input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit}
+  .field .row2{display:flex;gap:8px}
+  .field .row2>div{flex:1}
+  .modal .row{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+  .hint{font-size:11px;color:var(--muted);margin-top:2px}
+  .testres{font-size:12px;margin-top:8px;min-height:16px}
+  .testres.ok{color:var(--ok)} .testres.bad{color:var(--bad)}
+  .status{font-size:12px;color:var(--muted);padding:0 18px 10px}
+  .spin{display:inline-block;width:11px;height:11px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-1px;margin-right:4px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>CtxPilot</h1><span class="sub">跨会话上下文连续性层 · powered by Hy3</span>
+  <div class="stats">
+    <div class="stat"><b id="stProj">–</b><span>项目</span></div>
+    <div class="stat"><b id="stSess">–</b><span>会话</span></div>
+    <div class="stat"><b id="stAgent">–</b><span>agent</span></div>
+  </div>
+  <span class="spacer"></span>
+  <span id="monPill" class="pill"><span class="dot"></span>未监控</span>
+  <button id="monBtn" class="primary">▶ 开始监控</button>
+  <button id="setBtn">⚙ 设置</button>
+</header>
+
+<div class="banner" id="keyBanner">
+  <span>⚠️ 尚未配置 <b>Hy3 Key</b>：生成 HANDOFF / 启动简报 需要调用 Hy3。监控与项目发现不受影响。</span>
+  <button id="bannerSet">去设置</button>
+</div>
+
+<div class="status" id="status">正在加载…</div>
+
+<main>
+  <section class="card">
+    <h2>可监控的 agent <span class="hint">只读扫描其会话目录，绝不写入其数据库</span></h2>
+    <div class="agents" id="agents"><span class="muted">…</span></div>
+    <h2 style="margin-top:14px">已发现项目 <span class="hint">从 agent 历史自动推断，无需手填</span></h2>
+    <div class="projlist" id="projects"><span class="muted">…</span></div>
+  </section>
+
+  <section class="card">
+    <h2>操作结果 <span class="hint">选中左侧项目后点击按钮</span></h2>
+    <div class="out" id="out">// 选择一个项目，再点 HANDOFF / 简报 / 看门狗 / 导出</div>
+    <h2 style="margin-top:14px">实时监听流 <span class="hint">新开 agent 会话会出现在这里</span></h2>
+    <ul class="feed" id="feed"><li class="muted">开启监控后，新会话会实时出现在这里</li></ul>
+  </section>
+</main>
+
+<!-- Settings modal -->
+<div class="modal" id="modal">
+  <div class="box">
+    <h3>Hy3 接入设置</h3>
+    <div class="field">
+      <label>API Key</label>
+      <input id="f_key" type="password" placeholder="在 TokenHub 控制台获取的 Key" autocomplete="off" />
+      <div class="hint">留空 = 保留已保存的 Key；仅存于本地 ~/.ctxpilot/config.json</div>
+    </div>
+    <div class="field">
+      <div class="row2">
+        <div><label>Base URL</label><input id="f_url" placeholder="https://tokenhub.tencentmaas.com/v1" /></div>
+        <div><label>Model</label><input id="f_model" placeholder="hy3" /></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>推理强度</label>
+      <input id="f_reasoning" placeholder="low / no_think / high" />
+    </div>
+    <div class="testres" id="testres"></div>
+    <div class="row">
+      <button id="testBtn">测试连接</button>
+      <button id="saveBtn" class="primary">保存</button>
+      <button id="closeBtn">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const state = { selected: null, monitoring: false, timer: null };
+
+async function api(path, opt) {
+  const r = await fetch(path, opt);
+  let data = null;
+  try { data = await r.json(); } catch (e) { data = null; }
+  if (!r.ok) {
+    const msg = (data && data.error) ? data.error : (await r.text());
+    throw new Error(msg);
+  }
+  return data;
+}
+const post = (body) => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+function setStatus(m) { $("status").textContent = m; }
+function showOut(t) { $("out").textContent = (typeof t === "string") ? t : JSON.stringify(t, null, 2); }
+const esc = (s) => String(s).replace(/[&<>]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;" }[c]));
+
+async function refreshConfig() {
+  const c = await api("/config");
+  $("keyBanner").classList.toggle("show", !c.has_credentials);
+  return c;
+}
+
+async function refreshAgents() {
+  const { agents } = await api("/agents");
+  const el = $("agents");
+  el.innerHTML = "";
+  if (!agents.length) { el.innerHTML = '<span class="muted">未发现 agent</span>'; return; }
+  for (const a of agents) {
+    const s = document.createElement("span");
+    s.className = "agent";
+    s.innerHTML = `<span class="live"></span><span class="n">${esc(a.name)}</span><span class="c">${a.session_count} 会话</span>`;
+    el.appendChild(s);
+  }
+  $("stAgent").textContent = agents.length;
+  return agents;
+}
+
+async function refreshProjects() {
+  const { projects } = await api("/scan");
+  const el = $("projects");
+  el.innerHTML = "";
+  if (!projects.length) { el.innerHTML = '<span class="muted">未发现项目</span>'; return; }
+  let totalSess = 0;
+  for (const p of projects) {
+    const ags = [...new Set((p.sessions || []).map(s => s.agent))];
+    const agTags = ags.map(a => `<span class="tag">${esc(a)}</span>`).join("");
+    const branch = p.branch ? `<span class="tag git">⎇ ${esc(p.branch)}</span>` : (p.is_git ? `<span class="tag git">git</span>` : `<span class="muted">非 git</span>`);
+    totalSess += (p.session_count || p.sessions.length);
+    const d = document.createElement("div");
+    d.className = "proj" + (state.selected === p.path ? " sel" : "");
+    d.dataset.path = p.path;
+    d.innerHTML = `<div class="p">${esc(p.path)}</div>
+      <div class="meta"><span>💬 ${p.session_count || p.sessions.length} 会话</span>${branch}${agTags}</div>
+      <div class="acts">
+        <button data-act="handoff">生成 HANDOFF</button>
+        <button data-act="brief">启动简报</button>
+        <button data-act="watch">看门狗</button>
+        <button data-act="export">导出</button>
+      </div>`;
+    d.addEventListener("click", (e) => {
+      if (e.target.dataset.act) { doAction(e.target.dataset.act); return; }
+      state.selected = p.path;
+      [...el.children].forEach(c => c.classList.remove("sel"));
+      d.classList.add("sel");
+      setStatus("已选择项目：" + p.path);
+    });
+    el.appendChild(d);
+  }
+  $("stProj").textContent = projects.length;
+  $("stSess").textContent = totalSess;
+}
+
+async function doAction(kind) {
+  if (!state.selected) { alert("请先在项目列表中点击选择一个项目"); return; }
+  const labels = { handoff:"生成 HANDOFF", brief:"启动简报", watch:"看门狗", export:"导出" };
+  setStatus("处理中：" + labels[kind] + " …");
+  try {
+    if (kind === "handoff") {
+      const r = await api("/snapshot", post({ project_path: state.selected }));
+      showOut(`已写入 ${r.written_to}\n目标 ${r.goals.length} 个 · 任务 ${r.tasks.length} · 决策 ${r.decisions.length}\n\n` +
+        (r.goals.length ? "Goals:\n- " + r.goals.join("\n- ") : "(模型未提取到显式目标)"));
+    } else if (kind === "brief") {
+      const r = await api("/brief", post({ project_path: state.selected }));
+      showOut(r.brief);
+    } else if (kind === "watch") {
+      const r = await api("/watch", post({ project_path: state.selected }));
+      showOut(`漂移级别: ${r.level}  (has_red=${r.has_red})\n\n` + (r.flags || []).join("\n"));
+    } else if (kind === "export") {
+      const r = await api("/export", post({ project_path: state.selected }));
+      showOut("target: " + r.target_agent + "\n\n--- 注入新 agent 的首条 prompt ---\n\n" + (r.prompt || ""));
+    }
+    setStatus("完成：" + labels[kind]);
+  } catch (e) {
+    showOut("⚠️ " + e.message);
+    setStatus("失败：" + labels[kind] + " — " + e.message.slice(0, 60));
+  }
+}
+
+async function updatePill() {
+  const st = await api("/monitor/status");
+  const pill = $("monPill");
+  pill.classList.toggle("on", st.running);
+  pill.innerHTML = `<span class="dot"></span>` + (st.running ? `监控中 · 已知 ${st.known_sessions} 会话` : "未监控");
+  return st;
+}
+
+async function toggleMonitor() {
+  const btn = $("monBtn");
+  if (!state.monitoring) {
+    btn.disabled = true; btn.innerHTML = '<span class="spin"></span>启动中';
+    const st = await api("/monitor/start", { method: "POST" });
+    state.monitoring = true;
+    btn.textContent = "⏹ 停止监控";
+    addFeed(`已建立基线：正在监控 ${st.known_sessions} 个已知会话`, true);
+    state.timer = setInterval(pollEvents, 3000);
+    await updatePill();
+    btn.disabled = false;
+  } else {
+    await api("/monitor/stop", { method: "POST" });
+    state.monitoring = false;
+    clearInterval(state.timer);
+    btn.textContent = "▶ 开始监控";
+    await updatePill();
+  }
+}
+
+async function pollEvents() {
+  try {
+    const { events } = await api("/events");
+    for (const e of events) {
+      const proj = e.project_path || "(未关联)";
+      addFeed(`<span class="a">${esc(e.agent)}</span> 新会话 <code>${esc(e.session_id)}</code> → ${esc(proj)} <span class="muted">(${e.message_count} 消息)</span>`, true);
+    }
+    await updatePill();
+  } catch (e) { /* swallow transient poll errors */ }
+}
+
+function addFeed(html, isNew) {
+  const ul = $("feed");
+  if (ul.firstChild && ul.firstChild.classList && ul.firstChild.classList.contains("muted"))
+    ul.innerHTML = "";
+  const li = document.createElement("li");
+  if (isNew) li.className = "new";
+  li.innerHTML = html;
+  ul.prepend(li);
+}
+
+// ---- settings modal ----
+async function openSettings() {
+  const cfg = await api("/config");
+  $("f_url").value = cfg.base_url || "";
+  $("f_model").value = cfg.model || "";
+  $("f_reasoning").value = cfg.reasoning || "";
+  $("f_key").value = "";
+  $("testres").textContent = "";
+  $("modal").classList.add("show");
+}
+function settingsBody() {
+  const key = $("f_key").value.trim();
+  return {
+    api_key: key || null,
+    base_url: $("f_url").value.trim() || null,
+    model: $("f_model").value.trim() || null,
+    reasoning: $("f_reasoning").value.trim() || null,
+  };
+}
+async function testConn() {
+  const btn = $("testBtn"); btn.disabled = true; btn.innerHTML = '<span class="spin"></span>测试中';
+  const t = $("testres"); t.className = "testres"; t.textContent = "";
+  try {
+    const res = await api("/config/test", post(settingsBody()));
+    t.className = "testres " + (res.ok ? "ok" : "bad");
+    t.textContent = res.ok ? "✅ 连接成功（Key 有效，可保存）" : ("❌ " + (res.error || "连接失败"));
+  } catch (e) {
+    t.className = "testres bad"; t.textContent = "❌ " + e.message;
+  } finally { btn.disabled = false; btn.textContent = "测试连接"; }
+}
+async function saveSettings() {
+  await api("/config", post(settingsBody()));
+  $("modal").classList.remove("show");
+  await refreshConfig();
+  setStatus("设置已保存");
+}
+
+$("monBtn").addEventListener("click", toggleMonitor);
+$("setBtn").addEventListener("click", openSettings);
+$("bannerSet").addEventListener("click", openSettings);
+$("closeBtn").addEventListener("click", () => $("modal").classList.remove("show"));
+$("testBtn").addEventListener("click", testConn);
+$("saveBtn").addEventListener("click", saveSettings);
+
+(async () => {
+  try {
+    await refreshConfig();
+    await refreshAgents();
+    await refreshProjects();
+    // auto-start monitoring so the live feed + pill work immediately
+    await toggleMonitor();
+    setStatus("就绪 · 选项目 → 生成 HANDOFF；监控已自动开启，新 agent 会话会实时出现");
+  } catch (e) {
+    setStatus("初始化失败：" + e.message);
+  }
+})();
+</script>
+</body>
+</html>

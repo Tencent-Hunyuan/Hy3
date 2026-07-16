@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Secrets & local config (never commit)
+.env
+.env.local
+*.secret
+
+# CtxPilot runtime artifacts (may contain project context)
+HANDOFF.md
+*.handoff.json
+.ctxpilot/
+
+# Logs
+*.log
