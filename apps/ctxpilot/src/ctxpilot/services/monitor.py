@@ -39,6 +39,15 @@ def _infer_root(files_touched: list[str]) -> str | None:
 
 
 def _summarize(t: SessionTranscript, mtime: float) -> SessionSummary:
+    preview = ""
+    for m in t.messages:
+        if m.role == "user" and m.content.strip():
+            preview = m.content.strip().replace("\n", " ")
+            break
+    if not preview and t.messages:
+        preview = t.messages[0].content.strip().replace("\n", " ")
+    if len(preview) > 140:
+        preview = preview[:140] + "…"
     return SessionSummary(
         agent=t.agent,
         session_id=t.session_id,
@@ -47,6 +56,7 @@ def _summarize(t: SessionTranscript, mtime: float) -> SessionSummary:
         ended_at=t.ended_at,
         message_count=len(t.messages),
         files_touched=list(t.files_touched),
+        preview=preview,
         mtime=mtime,
     )
 
@@ -85,6 +95,10 @@ class ProjectScanner:
                 transcripts.append(t)
 
         # Group sessions by their (inferred) project root.
+        # NOTE: we do NOT fold a child project into a parent container (the old
+        # _merge_nested did that and produced wrong cards like "D:\\Documents"
+        # swallowing "D:\\Documents\\kill-tower"). Each real project directory is
+        # its own card, exactly as the user expects.
         root_map: dict[str, list[SessionTranscript]] = {}
         unlinked: list[SessionTranscript] = []
         for t in transcripts:
@@ -93,9 +107,6 @@ class ProjectScanner:
                 root_map.setdefault(self._norm(root), []).append(t)
             else:
                 unlinked.append(t)
-
-        # Collapse tiny nested roots so we don't show one card per session.
-        root_map = self._merge_nested(root_map)
 
         views: list[ProjectView] = []
         configured = [self._norm(str(r)) for r in (watched_roots or [])]
@@ -130,21 +141,6 @@ class ProjectScanner:
             return t.project_path
         return _infer_root(t.files_touched)
 
-    def _merge_nested(self, root_map: dict[str, list]) -> dict[str, list]:
-        """Fold a root into its nearest strict ancestor that also has sessions."""
-        items = {r: list(s) for r, s in root_map.items()}
-        roots = list(items.keys())
-        for r in roots:
-            if r not in items:
-                continue
-            for other in roots:
-                if other == r or other not in items:
-                    continue
-                if self._under(r, other):  # r sits under other
-                    items[other].extend(items.pop(r))
-                    break
-        return items
-
     def _view_for(self, path: str, transcripts: list[SessionTranscript]) -> ProjectView:
         is_git = Path(path).joinpath(".git").exists()
         git: dict = self._git_collect(path) if is_git else {}
@@ -178,7 +174,7 @@ class ProjectScanner:
 
 
 class Monitor:
-    """Polls adapter session stores and reports sessions that are NEW or changed.
+    """Polls adapter session stores and reports sessions that are NEW.
 
     Lightweight by design: no filesystem watcher library, just mtime diffing.
     Safe to unit-test by calling ``poll()`` directly with fake adapters.
@@ -196,7 +192,7 @@ class Monitor:
         """(Re)build the baseline of sessions currently known on disk.
 
         Called on construction and again on ``start()`` so that the live feed
-        only reports sessions that appear/change AFTER monitoring begins.
+        only reports sessions that appear AFTER monitoring begins.
         """
         self._seen.clear()
         for ad in self._adapters:
@@ -220,7 +216,17 @@ class Monitor:
         self._seen[key] = mtime
 
     def poll(self) -> list[SessionSummary]:
-        """Return summaries of sessions new or changed since the last poll."""
+        """Return summaries of sessions that are NEW or CHANGED since last poll.
+
+        - A session whose key was never seen before is reported (a freshly
+          opened agent session → "新会话" in the live feed).
+        - A known session whose mtime advanced (an in-progress session that got
+          new messages) is reported again so the feed reflects activity.
+
+        Visual flooding is prevented at the UI layer, which dedups by
+        ``agent:session_id`` — so a continuously-written session appears as a
+        single feed line rather than dozens of duplicates.
+        """
         new: list[SessionSummary] = []
         for ad in self._adapters:
             try:
@@ -233,7 +239,7 @@ class Monitor:
                     mtime = float(Path(p).stat().st_mtime)
                 except OSError:
                     mtime = 0.0
-                if key not in self._seen or self._seen[key] < mtime:
+                if key not in self._seen:
                     try:
                         t = ad.parse_session(p)
                     except Exception:
@@ -241,6 +247,18 @@ class Monitor:
                         continue
                     self._seen[key] = mtime
                     new.append(_summarize(t, mtime))
+                elif mtime != self._seen[key]:
+                    # known session whose content changed — report once, refresh baseline
+                    try:
+                        t = ad.parse_session(p)
+                    except Exception:
+                        self._seen[key] = mtime
+                        continue
+                    self._seen[key] = mtime
+                    new.append(_summarize(t, mtime))
+                else:
+                    # seen & unchanged — keep baseline fresh, no re-emit
+                    self._seen[key] = mtime
         self._last_poll = time.time()
         return new
 

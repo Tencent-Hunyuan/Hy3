@@ -24,6 +24,7 @@
   .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff}
   .pill .dot{width:8px;height:8px;border-radius:50%;background:#ffd33d}
   .pill.on .dot{background:#3fb950}
+  .pill.stop .dot{background:#ffa657}
   button{cursor:pointer;font:inherit;border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 13px;border-radius:8px;transition:.12s}
   button:hover{border-color:var(--brand)}
   button:disabled{opacity:.55;cursor:default}
@@ -42,20 +43,36 @@
   .agent .n{font-weight:700}
   .agent .c{background:#fff;border:1px solid var(--line);border-radius:999px;padding:0 6px;font-size:11px;color:var(--brand-d)}
   .agent .live{width:7px;height:7px;border-radius:50%;background:var(--ok)}
-  .projlist{display:flex;flex-direction:column;gap:9px;max-height:60vh;overflow:auto;padding-right:2px}
-  .proj{border:1px solid var(--line);border-radius:11px;padding:11px;cursor:pointer;background:#fff;transition:.12s;position:relative}
+  .projlist{display:flex;flex-direction:column;gap:9px;max-height:62vh;overflow:auto;padding-right:2px}
+  .proj{border:1px solid var(--line);border-radius:11px;padding:11px;background:#fff;transition:.12s;position:relative}
   .proj:hover{border-color:var(--brand);box-shadow:0 1px 6px rgba(47,111,235,.08)}
   .proj.sel{border-color:var(--brand);box-shadow:0 0 0 2px rgba(47,111,235,.18)}
   .proj .p{font-weight:650;word-break:break-all;font-size:13px}
-  .proj .meta{color:var(--muted);font-size:12px;margin-top:5px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .proj .meta{color:var(--muted);font-size:12px;margin-top:5px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .tag{font-size:11px;padding:1px 8px;border-radius:999px;background:var(--chip);color:var(--brand-d);border:1px solid var(--line)}
   .tag.git{background:#eafaf0;color:var(--ok);border-color:#bfe9cc}
+  .badge{font-size:11px;padding:1px 8px;border-radius:999px;border:1px solid var(--line)}
+  .badge.inst{background:#eafaf0;color:var(--ok);border-color:#bfe9cc}
+  .badge.hf{background:#fff4e6;color:var(--warn);border-color:#f3d9a6}
+  .exp{margin-top:8px;font-size:12px;padding:3px 10px;color:var(--brand-d);background:var(--chip);border-color:var(--line)}
+  .sessions{margin-top:8px;display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--line);padding-top:8px}
+  .sess{border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:#fbfcfe}
+  .sess .sa{font-weight:700;color:var(--brand-d);font-size:12px}
+  .sess code{font-size:11px;color:var(--muted)}
+  .sess .spv{font-size:12px;color:#404a57;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .acts{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
-  .acts button{padding:4px 10px;font-size:12px}
-  .out{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;background:var(--code-bg);color:var(--code-ink);padding:11px;border-radius:9px;max-height:38vh;overflow:auto}
+  .acts button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:5px 10px;font-size:12px;line-height:1.2}
+  .acts button b{font-weight:650}
+  .acts button small{font-size:10px;color:var(--muted);font-weight:400}
+  .acts button:hover small{color:var(--brand-d)}
+  .acts button.phase2{background:#f3f4f6}
+  .legend{font-size:11.5px;color:var(--muted);background:var(--chip);border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin-bottom:10px;line-height:1.7}
+  .legend b{color:var(--ink)}
+  .out{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;background:var(--code-bg);color:var(--code-ink);padding:11px;border-radius:9px;max-height:40vh;overflow:auto}
   .feed{list-style:none;margin:0;padding:0;max-height:28vh;overflow:auto;font-size:12px}
   .feed li{padding:6px 9px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:baseline}
   .feed li.new{background:var(--chip2)}
+  .feed li.stop{background:#fff4e6}
   .feed .a{font-weight:700;color:var(--brand-d)}
   .feed .muted{color:var(--muted)}
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.38);display:none;align-items:center;justify-content:center;z-index:50}
@@ -101,13 +118,22 @@
   <section class="card">
     <h2>可监控的 agent <span class="hint">只读扫描其会话目录，绝不写入其数据库</span></h2>
     <div class="agents" id="agents"><span class="muted">…</span></div>
-    <h2 style="margin-top:14px">已发现项目 <span class="hint">从 agent 历史自动推断，无需手填</span></h2>
+    <h2 style="margin-top:14px">已发现项目 <span class="hint">从 agent 历史自动推断，无需手填；点卡片选中后可操作</span></h2>
     <div class="projlist" id="projects"><span class="muted">…</span></div>
   </section>
 
   <section class="card">
     <h2>操作结果 <span class="hint">选中左侧项目后点击按钮</span></h2>
-    <div class="out" id="out">// 选择一个项目，再点 HANDOFF / 简报 / 看门狗 / 导出</div>
+    <div class="legend">
+      <b>每个项目能做什么：</b><br/>
+      📝 <b>生成 HANDOFF</b>：调用 Hy3 把项目状态快照写入 <code>HANDOFF.md</code><br/>
+      ⚡ <b>启动简报</b>：生成一段给新会话的开场说明<br/>
+      📤 <b>导出提示词</b>：产出可粘贴给任意 agent 的首条 prompt<br/>
+      🔗 <b>安装续接</b>：写入 <code>AGENTS.md</code>，新会话/切换 agent 自动读 HANDOFF（推荐）<br/>
+      📋 <b>复制提示词</b>：复制“先读 HANDOFF”的提示词到剪贴板<br/>
+      🐺 <b>看门狗</b>：漂移检测（二期，需 Hy3 Key）
+    </div>
+    <div class="out" id="out">// 在左侧选一个项目，再点上面的按钮</div>
     <h2 style="margin-top:14px">实时监听流 <span class="hint">新开 agent 会话会出现在这里</span></h2>
     <ul class="feed" id="feed"><li class="muted">开启监控后，新会话会实时出现在这里</li></ul>
   </section>
@@ -143,7 +169,7 @@
 
 <script>
 const $ = (id) => document.getElementById(id);
-const state = { selected: null, monitoring: false, timer: null };
+const state = { selected: null, monitoring: false, timer: null, expanded: new Set(), feedKeys: new Set(), projects: {} };
 
 async function api(path, opt) {
   const r = await fetch(path, opt);
@@ -181,30 +207,60 @@ async function refreshAgents() {
   return agents;
 }
 
+async function loadHandoffStatuses(paths) {
+  if (!paths.length) { state.hstatus = {}; return; }
+  try {
+    const { statuses } = await api("/handoff-statuses", post({ paths }));
+    state.hstatus = statuses || {};
+  } catch (e) { state.hstatus = {}; }
+}
+
 async function refreshProjects() {
   const { projects } = await api("/scan");
+  await loadHandoffStatuses(projects.map(p => p.path));
   const el = $("projects");
   el.innerHTML = "";
   if (!projects.length) { el.innerHTML = '<span class="muted">未发现项目</span>'; return; }
   let totalSess = 0;
+  state.projects = {};
   for (const p of projects) {
+    state.projects[p.path] = p;
     const ags = [...new Set((p.sessions || []).map(s => s.agent))];
     const agTags = ags.map(a => `<span class="tag">${esc(a)}</span>`).join("");
     const branch = p.branch ? `<span class="tag git">⎇ ${esc(p.branch)}</span>` : (p.is_git ? `<span class="tag git">git</span>` : `<span class="muted">非 git</span>`);
+    const hs = state.hstatus[p.path] || {};
+    const instBadge = hs.installed ? `<span class="badge inst" title="已安装续接：新会话会自动读 HANDOFF.md">🔗 已续接</span>` : "";
+    const hfBadge = hs.has_handoff ? `<span class="badge hf" title="已生成 HANDOFF.md">📄 HANDOFF</span>` : "";
     totalSess += (p.session_count || p.sessions.length);
+    const sessHtml = (p.sessions || []).map(s => `
+      <div class="sess">
+        <span class="sa">${esc(s.agent)}</span> <code>${esc(s.session_id)}</code>
+        <div class="spv">${esc(s.preview || "(无预览)")}</div>
+      </div>`).join("");
+    const expanded = state.expanded.has(p.path);
     const d = document.createElement("div");
     d.className = "proj" + (state.selected === p.path ? " sel" : "");
     d.dataset.path = p.path;
     d.innerHTML = `<div class="p">${esc(p.path)}</div>
-      <div class="meta"><span>💬 ${p.session_count || p.sessions.length} 会话</span>${branch}${agTags}</div>
+      <div class="meta"><span>💬 ${p.session_count || p.sessions.length} 会话</span>${branch}${agTags}${instBadge}${hfBadge}</div>
+      <button class="exp" data-exp="${esc(p.path)}">${expanded ? "▴ 收起会话" : "▾ 展开 " + (p.session_count || p.sessions.length) + " 个会话"}</button>
+      <div class="sessions" ${expanded ? "" : "hidden"}>${sessHtml}</div>
       <div class="acts">
-        <button data-act="handoff">生成 HANDOFF</button>
-        <button data-act="brief">启动简报</button>
-        <button data-act="watch">看门狗</button>
-        <button data-act="export">导出</button>
+        <button data-act="handoff" title="调用 Hy3 把项目状态快照写入 HANDOFF.md"><b>📝 生成 HANDOFF</b><small>写状态快照</small></button>
+        <button data-act="brief" title="生成给新会话的开场说明"><b>⚡ 启动简报</b><small>开工说明</small></button>
+        <button data-act="export" title="产出可粘贴给任意 agent 的首条 prompt"><b>📤 导出提示词</b><small>跨 agent</small></button>
+        <button data-act="install" title="写入 AGENTS.md，让新会话/切换 agent 自动读 HANDOFF（推荐）"><b>🔗 安装续接</b><small>默认续接</small></button>
+        <button data-act="copy" title="复制“先读 HANDOFF”的提示词"><b>📋 复制提示词</b><small>剪贴板</small></button>
+        <button class="phase2" data-act="watch" title="漂移检测（二期功能，需要 Hy3 Key）"><b>🐺 看门狗</b><small>二期 · 需 Key</small></button>
       </div>`;
     d.addEventListener("click", (e) => {
-      if (e.target.dataset.act) { doAction(e.target.dataset.act); return; }
+      const exp = e.target.dataset.exp;
+      if (exp) {
+        if (state.expanded.has(exp)) state.expanded.delete(exp); else state.expanded.add(exp);
+        refreshProjects();
+        return;
+      }
+      if (e.target.dataset.act) { doAction(e.target.dataset.act); e.stopPropagation(); return; }
       state.selected = p.path;
       [...el.children].forEach(c => c.classList.remove("sel"));
       d.classList.add("sel");
@@ -218,22 +274,37 @@ async function refreshProjects() {
 
 async function doAction(kind) {
   if (!state.selected) { alert("请先在项目列表中点击选择一个项目"); return; }
-  const labels = { handoff:"生成 HANDOFF", brief:"启动简报", watch:"看门狗", export:"导出" };
+  const labels = { handoff:"生成 HANDOFF", brief:"启动简报", watch:"看门狗", export:"导出提示词", install:"安装续接", copy:"复制提示词" };
   setStatus("处理中：" + labels[kind] + " …");
   try {
     if (kind === "handoff") {
       const r = await api("/snapshot", post({ project_path: state.selected }));
-      showOut(`已写入 ${r.written_to}\n目标 ${r.goals.length} 个 · 任务 ${r.tasks.length} · 决策 ${r.decisions.length}\n\n` +
+      showOut(`✅ 已写入 ${r.written_to}\n目标 ${r.goals.length} 个 · 任务 ${r.tasks.length} · 决策 ${r.decisions.length}\n\n` +
         (r.goals.length ? "Goals:\n- " + r.goals.join("\n- ") : "(模型未提取到显式目标)"));
+      await refreshProjects();
     } else if (kind === "brief") {
       const r = await api("/brief", post({ project_path: state.selected }));
       showOut(r.brief);
-    } else if (kind === "watch") {
-      const r = await api("/watch", post({ project_path: state.selected }));
-      showOut(`漂移级别: ${r.level}  (has_red=${r.has_red})\n\n` + (r.flags || []).join("\n"));
     } else if (kind === "export") {
       const r = await api("/export", post({ project_path: state.selected }));
       showOut("target: " + r.target_agent + "\n\n--- 注入新 agent 的首条 prompt ---\n\n" + (r.prompt || ""));
+    } else if (kind === "watch") {
+      const r = await api("/watch", post({ project_path: state.selected }));
+      showOut(`漂移级别: ${r.level}  (has_red=${r.has_red})\n\n` + (r.flags || []).join("\n"));
+    } else if (kind === "install") {
+      const r = await api("/install", post({ project_path: state.selected }));
+      let out = `🔗 已安装续接（默认续接已开启）\n\n`;
+      out += `AGENTS.md : ${r.agents_md}\n`;
+      out += `适用 agent: ${r.agents.join(", ")}\n`;
+      out += `HANDOFF.md: ${r.handoff_md} ${r.handoff_generated ? "（已生成）" : "（未生成）"}\n`;
+      if (r.warning) out += `\n⚠️ ${r.warning}\n（块已写入；配置 Hy3 Key 后点“生成 HANDOFF”即可补全）`;
+      out += `\n\n新会话/切换 agent 时会自动读 HANDOFF.md 续接上下文。`;
+      showOut(out);
+      await refreshProjects();
+    } else if (kind === "copy") {
+      const r = await api("/continue-prompt", post({ project_path: state.selected }));
+      showOut("已复制到剪贴板：\n\n" + r.prompt);
+      copyText(r.prompt);
     }
     setStatus("完成：" + labels[kind]);
   } catch (e) {
@@ -246,7 +317,10 @@ async function updatePill() {
   const st = await api("/monitor/status");
   const pill = $("monPill");
   pill.classList.toggle("on", st.running);
-  pill.innerHTML = `<span class="dot"></span>` + (st.running ? `监控中 · 已知 ${st.known_sessions} 会话` : "未监控");
+  pill.classList.toggle("stop", !st.running && state.feedKeys.size > 0);
+  if (st.running) pill.innerHTML = `<span class="dot"></span>监控中 · 已知 ${st.known_sessions} 会话`;
+  else if (state.feedKeys.size > 0) pill.innerHTML = `<span class="dot"></span>已停止（保留 ${state.feedKeys.size} 条）`;
+  else pill.innerHTML = `<span class="dot"></span>未监控`;
   return st;
 }
 
@@ -257,7 +331,10 @@ async function toggleMonitor() {
     const st = await api("/monitor/start", { method: "POST" });
     state.monitoring = true;
     btn.textContent = "⏹ 停止监控";
-    addFeed(`已建立基线：正在监控 ${st.known_sessions} 个已知会话`, true);
+    addFeed("", `▶ 已建立基线：正在监控 ${st.known_sessions} 个已知会话`, true, true);
+    // 重启后即时刷新项目与 agent 信息
+    await refreshProjects();
+    await refreshAgents();
     state.timer = setInterval(pollEvents, 3000);
     await updatePill();
     btn.disabled = false;
@@ -266,6 +343,7 @@ async function toggleMonitor() {
     state.monitoring = false;
     clearInterval(state.timer);
     btn.textContent = "▶ 开始监控";
+    addFeed("", "⏹ 已停止监控，历史已保留", false, false, true);
     await updatePill();
   }
 }
@@ -275,20 +353,40 @@ async function pollEvents() {
     const { events } = await api("/events");
     for (const e of events) {
       const proj = e.project_path || "(未关联)";
-      addFeed(`<span class="a">${esc(e.agent)}</span> 新会话 <code>${esc(e.session_id)}</code> → ${esc(proj)} <span class="muted">(${e.message_count} 消息)</span>`, true);
+      const key = `${e.agent}:${e.session_id}`;
+      addFeed(key, `<span class="a">${esc(e.agent)}</span> 新会话 <code>${esc(e.session_id)}</code> → ${esc(proj)} <span class="muted">(${e.message_count} 消息)</span>`, true);
     }
     await updatePill();
   } catch (e) { /* swallow transient poll errors */ }
 }
 
-function addFeed(html, isNew) {
+function addFeed(key, html, isNew, skipDedup, isStop) {
+  if (key && !skipDedup && state.feedKeys.has(key)) return;  // dedup by agent:session_id
   const ul = $("feed");
   if (ul.firstChild && ul.firstChild.classList && ul.firstChild.classList.contains("muted"))
     ul.innerHTML = "";
+  if (key) state.feedKeys.add(key);
   const li = document.createElement("li");
   if (isNew) li.className = "new";
+  if (isStop) li.className = "stop";
+  li.dataset.key = key || "";
   li.innerHTML = html;
   ul.prepend(li);
+  while (ul.children.length > 50) ul.removeChild(ul.lastChild);  // cap history
+}
+
+function copyText(text) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+    } else fallbackCopy(text);
+  } catch (e) { fallbackCopy(text); }
+}
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text; document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
 }
 
 // ---- settings modal ----

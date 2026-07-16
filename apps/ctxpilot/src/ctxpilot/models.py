@@ -316,6 +316,7 @@ class SessionSummary:
     ended_at: str | None
     message_count: int
     files_touched: list[str]
+    preview: str = ""  # first user message, truncated — for the UI session list
     mtime: float = 0.0  # filesystem mtime — used for change detection
 
     def to_dict(self) -> dict:
@@ -327,6 +328,7 @@ class SessionSummary:
             "ended_at": self.ended_at,
             "message_count": self.message_count,
             "files_touched": list(self.files_touched),
+            "preview": self.preview,
             "mtime": self.mtime,
         }
 

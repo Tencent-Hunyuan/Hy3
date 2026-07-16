@@ -43,6 +43,12 @@ class TestReq(BaseModel):
     reasoning: str | None = None
 
 
+class StatusReq(BaseModel):
+    """Batch handoff status lookup for the project cards (one round-trip)."""
+
+    paths: list[str] = []
+
+
 def create_app(config: Config | None = None, hy3=None, adapters: list | None = None) -> FastAPI:
     cfg = config or Config.from_store()
     cp = CtxPilot(cfg, hy3=hy3, adapters=adapters)
@@ -174,6 +180,19 @@ def create_app(config: Config | None = None, hy3=None, adapters: list | None = N
     @app.post("/brief")
     def brief(req: ProjectReq):
         return {"brief": cp.brief(req.project_path)}
+
+    # -- default continuation (Point ④) -----------------------------------
+    @app.post("/install")
+    def install(req: ProjectReq):
+        return cp.install_handoff(req.project_path)
+
+    @app.post("/continue-prompt")
+    def continue_prompt(req: ProjectReq):
+        return {"prompt": cp.continue_prompt(req.project_path)}
+
+    @app.post("/handoff-statuses")
+    def handoff_statuses(req: StatusReq):
+        return {"statuses": {p: cp.handoff_status(p) for p in req.paths}}
 
     @app.post("/watch")
     def watch(req: ProjectReq):

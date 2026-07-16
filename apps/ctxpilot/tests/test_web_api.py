@@ -147,3 +147,37 @@ def test_savings_endpoint():
     c = _client()
     r = c.post("/savings", json={"project_path": "/tmp/proj"})
     assert r.json()["saved_tokens"] > 0
+
+
+def test_install_endpoint_writes_marker(tmp_path):
+    c = _client()
+    proj = tmp_path / "proj"
+    proj.mkdir()
+    r = c.post("/install", json={"project_path": str(proj)})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["installed"] is True
+    assert (proj / "AGENTS.md").exists()
+    assert "<!-- ctxpilot:handoff -->" in (proj / "AGENTS.md").read_text(encoding="utf-8")
+    assert body["handoff_generated"] is True
+
+
+def test_continue_prompt_endpoint():
+    c = _client()
+    r = c.post("/continue-prompt", json={"project_path": "/tmp/proj"})
+    assert "HANDOFF.md" in r.json()["prompt"]
+
+
+def test_handoff_statuses_endpoint(tmp_path):
+    c = _client()
+    proj = tmp_path / "proj"
+    proj.mkdir()
+    # before install
+    r0 = c.post("/handoff-statuses", json={"paths": [str(proj)]})
+    assert r0.json()["statuses"][str(proj)]["installed"] is False
+    # install, then re-check
+    c.post("/install", json={"project_path": str(proj)})
+    r1 = c.post("/handoff-statuses", json={"paths": [str(proj)]})
+    st = r1.json()["statuses"][str(proj)]
+    assert st["installed"] is True
+    assert st["has_handoff"] is True

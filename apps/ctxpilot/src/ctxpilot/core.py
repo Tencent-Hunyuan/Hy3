@@ -88,6 +88,105 @@ class CtxPilot:
         snap = self.snapshot(project_path)
         return self.brief_svc.generate(snap, self.hy3)
 
+    # -- default continuation (Point ④) -----------------------------------
+    # Both opencode and codex auto-load `AGENTS.md` from the project root on
+    # EVERY session start. We exploit that as the safe "default continuation"
+    # injection point: a guarded marker block (and ONLY that block — user
+    # content is never touched) tells a fresh session to read HANDOFF.md.
+    _MARKER_OPEN = "<!-- ctxpilot:handoff -->"
+    _MARKER_CLOSE = "<!-- /ctxpilot -->"
+
+    def install_handoff(self, project_path: str | None = None, agents: list[str] | None = None) -> dict:
+        """Make a project resume automatically across new sessions / agent switches.
+
+        - Ensures ``HANDOFF.md`` exists (generates it via Hy3 if missing; if no
+          key is configured the block is still installed and a warning returned).
+        - Upserts a guarded marker block into the project's ``AGENTS.md`` — the
+          file opencode & codex auto-read on session start. The block is the only
+          thing we ever write there; any user content outside it is preserved.
+        """
+        pp = str(Path(project_path or str(self.config.project_path)).resolve())
+        agents_used = agents or self._agents_for_project(pp)
+
+        handoff_md = Path(pp) / "HANDOFF.md"
+        warning = None
+        if not handoff_md.exists():
+            try:
+                snap = self.snapshot(pp)
+                self.snapshot_svc.write(snap, pp)
+            except Exception as e:  # noqa: BLE001
+                warning = f"HANDOFF.md 未生成（需配置 Hy3 Key）：{e}"
+
+        block = self._handoff_block(agents_used)
+        agents_md = self._upsert_agents_md(pp, block)
+        return {
+            "installed": True,
+            "agents_md": str(agents_md),
+            "agents": agents_used,
+            "handoff_md": str(handoff_md),
+            "handoff_generated": handoff_md.exists(),
+            "warning": warning,
+        }
+
+    def continue_prompt(self, project_path: str | None = None) -> str:
+        """Copy-paste prompt a user can drop into a brand-new agent session."""
+        return (
+            "请先阅读本项目的 HANDOFF.md（位于项目根目录），它记录了由 CtxPilot "
+            "(powered by Hy3) 维护的跨会话上下文快照：目标 / 任务 / 决策 / 未决问题 / 约定。\n"
+            "据此续接工作，不要从头重复已完成的探索与文件扫描。\n"
+            "若 HANDOFF.md 缺失或已过时，可运行 `python -m ctxpilot snapshot <project>` 刷新。"
+        )
+
+    def handoff_status(self, project_path: str) -> dict:
+        pp = Path(project_path).resolve()
+        handoff = (pp / "HANDOFF.md").exists()
+        md = pp / "AGENTS.md"
+        installed = False
+        if md.exists():
+            try:
+                installed = self._MARKER_OPEN in md.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                installed = False
+        return {"has_handoff": handoff, "installed": installed}
+
+    def _agents_for_project(self, pp: str) -> list[str]:
+        norm = str(Path(pp).resolve())
+        for v in self._scanner.scan_projects(self._project_roots):
+            if str(Path(v.path).resolve()) == norm:
+                return sorted({s.agent for s in v.sessions}) or ["ctxpilot"]
+        return ["ctxpilot"]
+
+    @staticmethod
+    def _handoff_block(agents: list[str]) -> str:
+        ags = ", ".join(agents) or "ctxpilot"
+        return (
+            f"{CtxPilot._MARKER_OPEN}\n"
+            "# CtxPilot 跨会话续接\n"
+            f"本项目的上下文快照由 **CtxPilot** (powered by Hy3) 维护，新会话 / 切换 agent（{ags}）时默认续接。\n"
+            "- 开始工作前请先阅读仓库根目录的 `HANDOFF.md`（含目标 / 任务 / 决策 / 未决问题 / 约定）。\n"
+            "- 不要从头重复已完成的探索；若 `HANDOFF.md` 缺失或过时，运行 `python -m ctxpilot snapshot <project>` 刷新。\n"
+            f"{CtxPilot._MARKER_CLOSE}"
+        )
+
+    def _upsert_agents_md(self, pp: str, block: str) -> Path:
+        base = Path(pp)
+        base.mkdir(parents=True, exist_ok=True)  # mirror SnapshotService.write's robustness
+        md = base / "AGENTS.md"
+        if md.exists():
+            content = md.read_text(encoding="utf-8", errors="ignore")
+            start = content.find(self._MARKER_OPEN)
+            end = content.find(self._MARKER_CLOSE)
+            if start != -1 and end != -1:
+                end += len(self._MARKER_CLOSE)
+                new_content = content[:start] + block + content[end:]
+            else:
+                sep = "\n\n" if content.strip() else ""
+                new_content = content + sep + block + "\n"
+        else:
+            new_content = block + "\n"
+        md.write_text(new_content, encoding="utf-8")
+        return md
+
     # -- phase-2 use-cases -------------------------------------------------
     def watch(self, project_path: str | None = None) -> "DriftReport":  # noqa: F821
         from ctxpilot.services.drift import DriftReport

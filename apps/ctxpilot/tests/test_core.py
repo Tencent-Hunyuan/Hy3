@@ -101,3 +101,48 @@ def test_test_connection_fails_without_credentials():
     cp = CtxPilot(config=cfg, hy3=FakeHy3([SAMPLE_MARKDOWN]))
     assert cp.test_connection()["ok"] is False
     assert cp.test_connection()["error"] == "missing_credentials"
+
+
+def test_install_handoff_writes_marker_block(tmp_path):
+    cp = _cp()
+    proj = tmp_path / "proj"
+    proj.mkdir()
+    res = cp.install_handoff(str(proj))
+    assert res["installed"] is True
+    agents_md = proj / "AGENTS.md"
+    assert agents_md.exists()
+    content = agents_md.read_text(encoding="utf-8")
+    assert "<!-- ctxpilot:handoff -->" in content
+    assert "<!-- /ctxpilot -->" in content
+    assert (proj / "HANDOFF.md").exists()
+    # re-install updates the block, never duplicates it
+    cp.install_handoff(str(proj))
+    assert agents_md.read_text(encoding="utf-8").count("<!-- ctxpilot:handoff -->") == 1
+
+
+def test_install_handoff_preserves_user_content(tmp_path):
+    cp = _cp()
+    proj = tmp_path / "proj"
+    proj.mkdir()
+    user_md = proj / "AGENTS.md"
+    user_md.write_text("# My Project\n\nSome user rules here.\n", encoding="utf-8")
+    cp.install_handoff(str(proj))
+    content = user_md.read_text(encoding="utf-8")
+    assert "Some user rules here." in content
+    assert content.index("Some user rules here.") < content.index("<!-- ctxpilot:handoff -->")
+
+
+def test_handoff_status_detects_install(tmp_path):
+    cp = _cp()
+    proj = tmp_path / "proj"
+    proj.mkdir()
+    assert cp.handoff_status(str(proj))["installed"] is False
+    cp.install_handoff(str(proj))
+    st = cp.handoff_status(str(proj))
+    assert st["installed"] is True
+    assert st["has_handoff"] is True
+
+
+def test_continue_prompt_mentions_handoff():
+    cp = _cp()
+    assert "HANDOFF.md" in cp.continue_prompt("/tmp/proj")
