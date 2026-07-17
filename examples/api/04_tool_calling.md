@@ -1,9 +1,9 @@
-# 04 — Tool calling
+# 04 工具调用（Tool calling）
 
-目标：让模型提出一次只读温度换算工具调用，并通过有边界的 assistant → tool →
-assistant 循环得到最终答案。完整代码见 [04_tool_calling.py](04_tool_calling.py)。
+这个示例让模型调用本地温度换算函数，再把结果交回模型生成最终答案。循环有明确的
+轮数上限。完整代码见 [04_tool_calling.py](04_tool_calling.py)。
 
-## 完整请求
+## 请求代码
 
 `TOOLS` 使用 JSON Schema，限制 `value`、`from_unit`、`to_unit`，并设置
 `additionalProperties=false`。请求为：
@@ -34,19 +34,20 @@ result = run_tool_loop(
 每轮先解析完整 assistant message。若含 tool calls：
 
 1. 原样把 `content`、`reasoning_content`、`tool_calls` 放回同一 assistant 消息；
-2. 工具名必须在 allowlist；arguments 必须是 JSON object 并通过 JSON Schema；
+2. 工具名必须在允许列表（allowlist）中；arguments 必须是 JSON object 并通过
+   JSON Schema；
 3. 阻止重复 call ID 或相同 `name + canonical arguments`；
 4. 执行确定性的本地函数，以对应 `tool_call_id` 追加 `role=tool` 结果；
 5. 最多执行 4 个 tool rounds，模型继续请求时立即失败。
 
-## 运行与真实输出
+## 运行结果
 
 ```powershell
 python examples/api/04_tool_calling.py
 ```
 
-2026-07-17 在 TokenHub 广州入口以 `model=hy3`、thinking `medium` 实测完成 1 个
-tool round。发布样本省略动态 call ID，但脚本在实际消息历史中原样保留并回填该 ID：
+以下输出采集于 2026-07-17，使用 TokenHub 广州入口、`model=hy3` 和 thinking
+`medium`，共执行 1 轮工具调用。文档省略了动态 call ID，脚本仍会原样保存并回填：
 
 ```text
 Model response 1
@@ -66,8 +67,11 @@ usage: prompt_tokens=387, completion_tokens=48, total_tokens=435
 Completed after 1 tool round(s).
 ```
 
-这里的工具结果来自本地确定性函数，不是模型自行声称的换算值；第二次模型请求收到
-的是已通过 schema 校验、allowlist 执行后追加的 `role=tool` 消息。
+换算结果来自本地函数，不是模型自行给出的数字。第二次请求收到的是经过 schema
+校验和允许列表检查后追加的 `role=tool` 消息。
 
-常见错误：直接执行任意模型工具名、未验证 JSON、遗漏 `tool_call_id`、丢失
-`reasoning_content`、同一失败调用无限循环。
+## 容易踩坑
+
+- 不要直接执行模型给出的任意工具名或未经验证的 JSON。
+- 回填结果时不能漏掉 `tool_call_id` 和 `reasoning_content`。
+- 重复或持续失败的调用必须停止，不能无限循环。

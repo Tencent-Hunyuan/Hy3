@@ -1,9 +1,14 @@
-# Hy3 Hosted API：5 分钟 Quickstart
+# Hy3 托管 API：5 分钟快速开始
 
-这份入门只面向腾讯云托管 API。仓库 README 中 vLLM/SGLang 的
-`chat_template_kwargs` 属于本地部署参数，不能用于 TokenHub Hosted API。
+第一次接入时，按第 1～4 节操作即可。后面的参数、重试和错误排查可以等首次调用
+成功后再看。本文只介绍腾讯云托管 API；仓库 README 中 vLLM/SGLang 的
+`chat_template_kwargs` 是本地部署参数，不能用于 TokenHub。
 
-## 1. 选择与服务同地域的入口
+## 1. 准备 Key 和接口地址
+
+先在 TokenHub 或 Token Plan 控制台开通 Hy3 并创建 API Key。国内站通常使用广州
+入口；如果开通的是新加坡站或 Token Plan，请改用对应地址。Key 和接口地址必须
+属于同一产品和地域。
 
 | 产品/地域 | `HY3_BASE_URL` |
 |---|---|
@@ -11,8 +16,8 @@
 | TokenHub 新加坡 | `https://tokenhub-intl.tencentmaas.com/v1` |
 | Token Plan 个人版 | `https://api.lkeap.cloud.tencent.com/plan/v3` |
 
-TokenHub 不支持跨地域、跨站点调用。默认服务 ID 是 `hy3`；自定义在线推理服务
-可能使用 `ep-xxxxxxxx`，应以控制台或 `GET /v1/models` 的结果为准。
+默认服务 ID 是 `hy3`。自定义在线推理服务可能使用 `ep-xxxxxxxx`，请以控制台或
+`GET /v1/models` 的结果为准。
 
 ## 2. 在本机设置环境变量
 
@@ -60,8 +65,9 @@ curl "$HY3_BASE_URL/chat/completions" \
   }'
 ```
 
-响应的主要字段是 `choices[0].message.content`、`finish_reason` 和 `usage`。不要把
-`id` 当成业务数据或收录进公开示例输出。
+成功后，回答在 `choices[0].message.content` 中；`finish_reason` 表示结束原因，
+`usage` 记录 token 用量。如果请求失败，直接跳到下方的“常见错误”。不要把 `id`
+当成业务数据或收录进公开示例输出。
 
 ## 4. 用 OpenAI Python SDK 调用
 
@@ -133,14 +139,19 @@ QPM/RPM、TPM、TPD 和并发限制取决于模型、套餐与 API Key 配置，
 | 连接失败 | 检查 Base URL 地域、`/v1` 或 `/plan/v3` 路径、代理和 DNS。 |
 | `finish_reason=length` | 增大 `max_tokens` 或缩短任务；思考与答案共享额度。 |
 
-## 下一步与 live 证据
+## 继续学习
 
-按顺序阅读并运行 [examples/api/README.md](examples/api/README.md)。2026-07-17 已在
-TokenHub 广州入口用 `model=hy3` 完成 smoke 和六个示例的真实调用；每份示例文档都
-记录了脱敏输出、参数或测量样本。凭据、HTTP headers、response/request ID 与账户
-信息均未写入样本。模型文本、chunk 边界、时延和 jitter 再次运行时可能变化。
+第一次接入建议先运行基础对话和流式输出。工具调用、思考模式、时延测量和重试可以
+按需学习，入口见 [examples/api/README.md](examples/api/README.md)。
 
-官方资料：
+## 验证说明
+
+本文和六个示例已于 2026-07-17 在 TokenHub 广州入口使用 `model=hy3` 实测通过。
+示例只保留脱敏后的输出、参数和测量样本，不包含凭据、HTTP headers、
+response/request ID 或账户信息。模型文本、chunk 切分、时延和 jitter 每次运行都
+可能不同。
+
+参考文档：
 
 - [TokenHub API 使用说明](https://cloud.tencent.com/document/product/1823/130078)
 - [语言模型调用概览](https://cloud.tencent.com/document/product/1823/130079)

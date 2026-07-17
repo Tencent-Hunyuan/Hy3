@@ -1,10 +1,10 @@
-# 06 — Error handling and retry
+# 06 错误处理与重试
 
-目标：演示 Hosted API 的显式、有限重试。SDK 自带重试被关闭，所有决策由
-[common.py](common.py) 的 `call_with_retry` 可测试地完成。完整调用见
+这个示例只重试临时错误，并限制尝试次数和总等待时间。SDK 自带重试已关闭，避免
+SDK 和业务代码重复重试。完整代码见
 [06_error_handling_retry.py](06_error_handling_retry.py)。
 
-## 完整请求与策略
+## 请求和重试策略
 
 ```python
 policy = RetryPolicy(
@@ -39,16 +39,16 @@ response = call_with_retry(
 `max_total_wait`，抛出 `RetryBudgetExceeded`。达到 `max_attempts` 后抛出最后一个
 原始错误，避免无限循环。
 
-## 运行与真实输出
+## 运行结果
 
 ```powershell
 python examples/api/06_error_handling_retry.py
 ```
 
-正常调用可能不会触发重试；离线测试用 fake 401/429/502/503/504、timeout 和
-connection error 覆盖分支。2026-07-17 的 TokenHub 广州 `hy3` live 会话实际命中
-字符串业务码 `429006`（官方定义为上游服务繁忙或容量限流），且响应未带
-`Retry-After`。同一次真实运行的公开日志如下：
+正常调用可能不会触发重试，离线测试使用模拟的 401/429/502/503/504、timeout 和
+connection error 覆盖各分支。2026-07-17 在 TokenHub 广州入口使用 `hy3` 时，真实
+请求曾收到字符串业务码 `429006`（上游服务繁忙或容量限流），响应没有
+`Retry-After`。该次运行的脱敏日志如下：
 
 ```text
 Transient HTTP 429; attempt 2/4 in 0.255s
@@ -65,10 +65,13 @@ Transient HTTP 429; attempt 4/4 in 1.516s
 }
 ```
 
-之后的两次 live 复跑都首试成功，这正是临时错误的预期特征；jitter 随机值与模型
-文本也会变化。若持续收到 `429002/429003/429004/429005`，应检查
-RPM/TPM/TPD/并发配置，而不是增加无限重试。
+之后两次复跑都在第一次请求成功，符合临时错误会自行恢复的特点。jitter 和模型文本
+每次都可能不同。若持续收到 `429002/429003/429004/429005`，应检查
+RPM/TPM/TPD/并发配置，而不是不断增加重试。
 
-重试日志只显示状态类别、下一次 attempt 和等待时长，不打印异常 body、headers、
-request ID 或 Key。常见错误是同时开启 SDK 自动重试与应用重试，导致尝试次数成倍
-增长，或把欠费/额度耗尽当成临时 429 无限重试。
+## 容易踩坑
+
+- 不要同时开启 SDK 自动重试和应用重试，否则尝试次数会成倍增长。
+- 欠费或额度耗尽不是临时错误，重试不会解决。
+- 日志不要打印异常 body、headers、request ID 或 Key。本示例只记录状态类别、
+  下一次 attempt 和等待时长。

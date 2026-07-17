@@ -1,10 +1,10 @@
-# 03 — Non-streaming vs streaming latency
+# 03 非流式与流式时延对比
 
-目标：用相同 prompt 与采样参数重复比较客户端观察到的非流式总耗时，以及流式首个
-可见 content delta 的 TTFT 和总耗时。完整代码见
+这个示例用相同 prompt 和参数重复测量两种请求：非流式记录总耗时，流式记录首个
+可见正文的时间（TTFT）和总耗时。完整代码见
 [03_latency_compare.py](03_latency_compare.py)。
 
-## 请求与测量
+## 请求和测量方式
 
 基础请求固定为：
 
@@ -27,10 +27,10 @@ request = {
 python examples/api/03_latency_compare.py --warmup 1 --runs 5
 ```
 
-## 解释与真实输出
+## 运行结果
 
-这些值同时包含客户端、网络、网关、排队和模型生成时间，不是服务端 SLA。一次
-回答的快慢也不能证明回答质量；对比时应固定地区、网络、prompt、model 和参数。
+这些值包含客户端、网络、网关、排队和模型生成时间，并不是服务端 SLA。对比时应
+固定地区、网络、prompt、model 和参数；速度也不能代表回答质量。
 
 2026-07-17 在 TokenHub 广州入口以 `model=hy3`、预热 1 对、测量 5 对实测如下
 （秒，按实际运行顺序；本轮所有样本 `transient_retries=0`）：
@@ -44,5 +44,8 @@ python examples/api/03_latency_compare.py --warmup 1 --runs 5
 10 个测量请求均为 `finish_reason=stop`；5 个流式结果均 `complete=true`。这是一次
 客户端观测快照，不是服务端 SLA，也不能外推到其他地域、时段、prompt 或输出长度。
 
-常见错误：把请求对象返回当作 TTFT、用 `time.time()` 遭遇系统时钟调整、只测一次、
-或把 reasoning delta 当成用户可见 content TTFT。
+## 容易踩坑
+
+- TTFT 是第一个可见 content delta 到达的时间，不是请求对象返回的时间。
+- 计时应使用单调时钟，不要用可能被系统调整的 `time.time()`。
+- 不要只测一次，也不要把 reasoning delta 算作用户可见正文。

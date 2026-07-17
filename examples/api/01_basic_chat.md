@@ -1,9 +1,10 @@
-# 01 — Basic chat
+# 01 基础对话（Basic chat）
 
-目标：展示一次非流式单轮调用，以及显式维护 `system → user → assistant → user`
-历史的多轮调用。完整代码见 [01_basic_chat.py](01_basic_chat.py)。
+这个示例先发送一条消息，再演示怎样维护
+`system → user → assistant → user` 的多轮历史。完整代码见
+[01_basic_chat.py](01_basic_chat.py)。
 
-## 完整请求
+## 请求代码
 
 单轮请求使用 Hosted API 顶层 `thinking` 字段：
 
@@ -34,15 +35,15 @@ second = create_chat_completion(client, messages=messages, **shared)
 `response_summary` 解析 `model`、`finish_reason`、assistant 的 `content`、可选
 `reasoning_content`/`tool_calls` 和 `usage`，同时省略 request ID 与 headers。
 
-## 运行与真实输出
+## 运行结果
 
 ```powershell
 python examples/api/01_basic_chat.py
 ```
 
-2026-07-17 在 TokenHub 广州入口以 `model=hy3`、`temperature=0.3`、
-`max_tokens=512` 实测通过。下面是脚本核心公开字段的脱敏实测摘录；request ID 和 headers
-未进入输出，模型文本再次运行时可能变化。
+以下输出采集于 2026-07-17，使用 TokenHub 广州入口、`model=hy3`、
+`temperature=0.3` 和 `max_tokens=512`。request ID 和 headers 已省略，模型文本再次
+运行时可能不同。
 
 ```text
 === Single turn ===
@@ -72,8 +73,10 @@ python examples/api/01_basic_chat.py
 }
 ```
 
-脚本通过公共 `create_chat_completion` 对 429/502/503/504、连接失败和超时做有限
-重试；上面的业务请求与解析逻辑不因此改变。
+脚本会对 429/502/503/504、连接失败和超时做有限重试，具体策略见示例 06。
 
-常见错误：多轮历史遗漏 assistant 消息会丢失上下文；若后续启用思考或工具调用，
-还必须保留 assistant 消息中的 `reasoning_content` 和 `tool_calls`。
+## 容易踩坑
+
+- 多轮历史漏掉 assistant 消息时，模型会失去上一轮上下文。
+- 启用思考或工具调用后，还要保留 assistant 消息中的 `reasoning_content` 和
+  `tool_calls`。
