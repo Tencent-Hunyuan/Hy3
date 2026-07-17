@@ -111,6 +111,24 @@ Model usefulness is not fully captured by benchmarks. Based on extensive product
 
 ## Quickstart
 
+### Hosted API
+
+Use Tencent Cloud TokenHub's OpenAI-compatible API to make a first Hy3 call in five minutes without local GPUs:
+
+- [Hy3 API Quickstart](./quickstart.md): base URLs, API keys, minimal curl/Python calls, parameters, and troubleshooting
+- [API Examples](./examples/api/): six runnable examples for chat, streaming, latency, tool calling, reasoning, and retries
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r examples/api/requirements.txt
+cp examples/api/.env.example examples/api/.env
+# Edit examples/api/.env and set HY3_API_KEY
+python examples/api/01_basic_chat.py
+```
+
+### Self-hosted API
+
 Deploy Hy3 with [vLLM](#vllm) or [SGLang](#sglang) first, then call the OpenAI-compatible API:
 
 ```python
