@@ -33,3 +33,7 @@
 - 勿将 `hy3-rag` 目录与腾讯 Hy3 **模型仓库**混淆——两者不可混放。本目录只放 RAG 应用源码。
 - 提交到 GitHub 时务必 `.gitignore` 排除 `.env`、`data/`、`*.pyc`、`__pycache__`。
 - 前端版本号改动需同步 `index.html` 中 `app.js?/styles.css?` 的 `?v=` 查询参数以破除缓存。
+- **PDF 解析**：`_read_pdf` 必须用 **pypdf** 为主解析器；pdfplumber 仅作兜底（pypdf 提取 <50 字符时才用）。
+  原因：pdfplumber 在部分 PDF（实测 `考点汇总.pdf`）上会**原生段错误（segfault，无 Python traceback，直接崩进程）**，不能作为主解析器。
+- **Git 仓库历史**：`hy3-rag/.git` 历史上曾被腾讯模型仓库覆盖，`rhinobird2026` 分支已重置为 **orphan（无模型仓库历史）**，仅含 RAG 源码。
+  提交前确认 `git status -sb` 显示 `## rhinobird2026`（**无 upstream**）；若显示跟踪 `upstream/rhinobird2026` 说明被模型仓库配置污染，需 `git branch --unset-upstream` 防止误推到模型仓库。
