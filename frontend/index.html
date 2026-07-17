@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hy3 RAG · 多文档检索增强问答</title>
+    <link rel="stylesheet" href="/static/styles.css?v=6" />
+</head>
+<body>
+    <div class="app">
+        <!-- ── Sidebar ─────────────────────────────────────── -->
+        <aside class="doc-panel" id="docPanel">
+            <div class="panel-header">
+                <div class="brand">
+                    <span class="brand-logo">H</span>
+                    <span class="brand-name">Hy3 RAG</span>
+                </div>
+                <button id="menuBtn" class="icon-btn" title="菜单">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Upload -->
+            <div class="panel-upload">
+                <label class="upload-drop" id="uploadDrop">
+                    <input type="file" id="fileInput" multiple hidden
+                           accept=".pdf,.txt,.md,.docx,.doc,.rst,.py,.js,.ts,.json,.csv,.xml,.html,.htm" />
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    <span>拖拽或点击上传文档</span>
+                </label>
+            </div>
+
+            <!-- Documents + folder tabs -->
+            <div class="panel-docs">
+                <div class="panel-section-title">文档</div>
+                <div class="folder-tabs" id="folderTabs"></div>
+                <div class="doc-list" id="docList"></div>
+            </div>
+
+            <!-- History conversations -->
+            <div class="panel-conv">
+                <div class="panel-section-title">对话</div>
+                <button id="sidebarNewConvBtn" class="new-conv-btn">+ 新建对话</button>
+                <div class="sidebar-conv-list" id="sidebarConvList"></div>
+            </div>
+        </aside>
+
+        <!-- ── Chat area ───────────────────────────────────── -->
+        <main class="chat-area">
+            <div class="chat-header">
+                <div class="chat-title" id="chatTitle">Hy3 RAG 问答</div>
+                <div class="chat-status" id="connStatus">检测连接…</div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">📚</div>
+                    <h2>多文档检索增强问答</h2>
+                    <p>上传文档后，向 Hy3 提问。答案会标注来源，支持中英文。</p>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper" id="chatInputWrapper">
+                    <div class="doc-context-inline hidden" id="docContextInline"></div>
+                    <textarea id="questionInput" class="chat-input" rows="1"
+                              placeholder="输入你的问题... 例如：文档中提到了哪些主要发现？"></textarea>
+                    <button id="sendBtn" class="send-btn" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="chat-hint">按 Enter 发送 · Shift+Enter 换行 · 从侧边栏拖拽文档到输入框以限定搜索范围</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Menu modal -->
+    <div class="modal-overlay" id="menuModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span>菜单</span>
+                <button class="modal-close" id="menuClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <button class="modal-item" id="menuDocMgmt">📁 文档管理</button>
+                <button class="modal-item" id="menuConvMgmt">💬 对话管理</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conversation management modal -->
+    <div class="modal-overlay" id="convModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span>对话管理</span>
+                <button class="modal-close" id="convClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="convModalList" class="conv-modal-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document management modal -->
+    <div class="modal-overlay" id="docModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span>文档管理</span>
+                <button class="modal-close" id="docClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="docModalList" class="doc-modal-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js?v=6"></script>
+</body>
+</html>

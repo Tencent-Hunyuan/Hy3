@@ -1,0 +1,27 @@
+# Hy3 RAG - multi-document retrieval-augmented QA (see README.md)
+
+# ---- Web framework ----
+fastapi==0.139.0
+uvicorn[standard]==0.51.0
+python-multipart==0.0.32
+pydantic==2.13.4
+
+# ---- Hy3 LLM client (OpenAI-compatible) ----
+openai==2.45.0
+
+# ---- Local multilingual embeddings (ONNX Runtime, no torch / sentence-transformers) ----
+onnxruntime==1.27.0
+numpy==2.5.1
+tokenizers==0.23.1
+huggingface_hub==1.23.0
+
+# ---- Vector database ----
+chromadb==1.5.9
+
+# ---- Document parsing ----
+pdfplumber==0.11.4
+pypdf==6.14.2
+python-docx==1.2.0
+
+# ---- Config / env ----
+python-dotenv==1.2.2

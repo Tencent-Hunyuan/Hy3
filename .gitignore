@@ -1,0 +1,48 @@
+# ---- Python ----
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- Virtual environment ----
+.venv/
+venv/
+env/
+
+# ---- Secrets ----
+.env
+*.env
+.env.*
+
+# ---- Runtime data (user documents, vector DB, conversation memory) ----
+data/uploads/
+data/chroma_db/
+data/memory/conversations/
+data/memory/documents.json
+data/memory/folders.json
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# ---- Misc caches ----
+.cache/
+.huggingface/
+
+# ---- Leftover files from the Tencent Hy3 model repo (overwrote this dir) ----
+# These are NOT part of the RAG project and must never be committed.
+assets/
+finetune/
+projects/
+README_CN.md
+
+# ---- Local debug logs ----
+_uvicorn.log
+_ingest.log
+_probe*.py
