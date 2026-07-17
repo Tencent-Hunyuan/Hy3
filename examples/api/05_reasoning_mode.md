@@ -63,11 +63,12 @@ python examples/api/05_reasoning_mode.py --modes off low high
 只从贴“红白”标签的盒子里取一个球，看颜色，就能确定三个盒子的真实内容。
 ```
 
-这些都是单次样本，只说明字段形态和本次成本/时延，不能据此断言档位间的稳定质量
-排名。尤其不能把本轮 token 数当成未来请求的固定值。
+这些单次样本只说明字段形态和本次成本/时延。稳定质量排名需要多轮评测，未来请求
+也应读取当次 usage。
 
 ## 容易踩坑
 
-- Hosted API 不使用本地部署参数 `chat_template_kwargs.reasoning_effort=no_think`。
-- 关闭 thinking 时不要继续发送 effort。
-- 只打印最终答案会漏掉 reasoning，也看不到 `finish_reason=length` 截断。
+- Hosted API 使用顶层 `thinking`；`chat_template_kwargs.reasoning_effort=no_think`
+  属于本地部署参数。
+- 关闭 thinking 时一并省略 effort。
+- 同时检查 reasoning 和 finish reason，及时发现 `finish_reason=length` 截断。

@@ -67,11 +67,11 @@ usage: prompt_tokens=387, completion_tokens=48, total_tokens=435
 Completed after 1 tool round(s).
 ```
 
-换算结果来自本地函数，不是模型自行给出的数字。第二次请求收到的是经过 schema
-校验和允许列表检查后追加的 `role=tool` 消息。
+本地函数完成换算。第二次请求收到经过 schema 校验和允许列表检查的 `role=tool`
+消息。
 
 ## 容易踩坑
 
-- 不要直接执行模型给出的任意工具名或未经验证的 JSON。
-- 回填结果时不能漏掉 `tool_call_id` 和 `reasoning_content`。
-- 重复或持续失败的调用必须停止，不能无限循环。
+- 执行前校验工具名和 JSON 参数。
+- 回填结果时保留 `tool_call_id` 和 `reasoning_content`。
+- 重复或持续失败的调用到达上限后立即停止。

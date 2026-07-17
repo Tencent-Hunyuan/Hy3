@@ -1,11 +1,10 @@
 # Hy3 托管 API 示例
 
-请先完成仓库根目录的 [quickstart.md](../../quickstart.md)，再从 01 开始。第一次
-接入不必一次看完全部示例：01 和 02 是基础，04 和 05 展示进阶能力，03 和 06 更
-适合准备上线时阅读。
+请先完成仓库根目录的 [quickstart.md](../../quickstart.md)，再从 01 开始。01 和 02
+讲基础调用，04 和 05 展示进阶能力，03 和 06 适合准备上线时阅读。
 
 六个脚本共用 [common.py](common.py) 中的配置、流式解析、工具循环、重试和脱敏
-代码。每个脚本仍保留本主题的完整请求和响应解析，避免把同一套底层逻辑复制六遍。
+代码。每个脚本保留本主题的完整请求和响应解析，底层逻辑只维护一份。
 
 ## 先运行基础对话
 
@@ -26,14 +25,14 @@ python examples/api/06_error_handling_retry.py
 
 脚本只读取环境变量：
 
-- `HY3_API_KEY`：必填，没有默认值
+- `HY3_API_KEY`：必填，由用户提供
 - `HY3_BASE_URL`：必填，必须以 `/v1` 或 `/plan/v3` 结尾
 - `HY3_MODEL`：可选，默认 `hy3`
 - `HY3_TIMEOUT_SECONDS`：可选，默认 60 秒
 - `HY3_REASONING_MAX_TOKENS`：只用于思考模式对比，默认 4096
 
-`.env.example` 只是字段模板，脚本不会自动读取 `.env`；请在当前终端或受控的秘密
-管理器中注入变量，避免无意提交 Key。
+`.env.example` 只列出字段。脚本从当前终端或受控的秘密管理器读取环境变量，Key
+应始终留在版本控制之外。
 
 ## 选择示例
 
@@ -60,6 +59,7 @@ pytest examples/api/tests -m "not live"
 pytest examples/api/tests/test_live_smoke.py -m live
 ```
 
-离线测试通过不代表当前网络和账号一定可用。上述 smoke 与六个脚本已于 2026-07-17
-在 TokenHub 广州入口使用 `hy3` 实测通过。输出函数会省略 response/request ID、
-HTTP headers 和凭据，请不要改成 `print(response)`。
+离线测试覆盖本地逻辑，live smoke 检查当前网络和账号。上述 smoke 与六个脚本已于
+2026-07-17 在 TokenHub 广州入口使用 `hy3` 实测通过。输出函数会省略
+response/request ID、HTTP headers 和凭据；直接使用 `print(response)` 可能暴露这些
+字段。

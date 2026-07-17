@@ -19,14 +19,14 @@ stream = create_chat_completion(
 result = aggregate_stream(stream, on_content=print, on_reasoning=print)
 ```
 
-流式响应不保证每一块都有正文。`aggregate_stream` 会处理这些情况：
+流式响应的 chunk 结构会变化。`aggregate_stream` 会处理这些情况：
 
-1. `choices=[]` 时不访问索引；如果该块含 `usage`，保存最终统计。
+1. `choices=[]` 时读取可选的 `usage`，随后进入下一块。
 2. 分别拼接 `delta.reasoning_content` 与 `delta.content`。
-3. 按 `tool_calls[].index` 拼接分片 arguments，不重复拼接 ID/name。
-4. 保存非空 `finish_reason`；没有 finish reason 的流不标记为完整。
+3. 按 `tool_calls[].index` 拼接分片 arguments，ID/name 只保存一次。
+4. 保存非空 `finish_reason`；缺少 finish reason 的流标记为 incomplete。
 5. 迭代器抛错时抛出 `StreamInterruptedError`，其中只保留可识别的 partial result；
-   部分文本不能当成完整答案。
+   部分文本标记为 partial result。
 
 ## 运行结果
 
@@ -58,11 +58,10 @@ complete：true
 ```
 
 该次完整正文依次建议“打好基础”“多动手写代码”“围绕目标做项目”。chunk 怎样
-切分由服务端决定，测试应检查合并后的文本、finish reason、usage 和 `complete`，
-不要检查每个 chunk 的固定内容。
+切分由服务端决定，测试只检查合并后的文本、finish reason、usage 和 `complete`。
 
 ## 容易踩坑
 
-- 只读取 `delta.content` 会漏掉 reasoning。
+- 同时读取 `delta.content` 和 `delta.reasoning_content`。
 - 假设每一块都有 `choices`，会在只有 usage 的尾块报错。
-- 网络中断后的部分文本不是完整答案，展示时要明确标记。
+- 网络中断后，把已有文本标记为 partial result。

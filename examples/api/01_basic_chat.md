@@ -43,7 +43,7 @@ python examples/api/01_basic_chat.py
 
 以下输出采集于 2026-07-17，使用 TokenHub 广州入口、`model=hy3`、
 `temperature=0.3` 和 `max_tokens=512`。request ID 和 headers 已省略，模型文本再次
-运行时可能不同。
+运行结果可能变化。
 
 ```text
 === Single turn ===
@@ -77,6 +77,6 @@ python examples/api/01_basic_chat.py
 
 ## 容易踩坑
 
-- 多轮历史漏掉 assistant 消息时，模型会失去上一轮上下文。
+- 多轮历史需包含 assistant 消息，模型才能接续上一轮上下文。
 - 启用思考或工具调用后，还要保留 assistant 消息中的 `reasoning_content` 和
   `tool_calls`。

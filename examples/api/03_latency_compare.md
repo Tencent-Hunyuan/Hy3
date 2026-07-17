@@ -29,8 +29,8 @@ python examples/api/03_latency_compare.py --warmup 1 --runs 5
 
 ## 运行结果
 
-这些值包含客户端、网络、网关、排队和模型生成时间，并不是服务端 SLA。对比时应
-固定地区、网络、prompt、model 和参数；速度也不能代表回答质量。
+这些值是客户端观测结果，包含网络、网关、排队和模型生成时间。服务端 SLA 需使用
+官方监控口径。对比时应固定地区、网络、prompt、model 和参数，回答质量需单独评估。
 
 2026-07-17 在 TokenHub 广州入口以 `model=hy3`、预热 1 对、测量 5 对实测如下
 （秒，按实际运行顺序；本轮所有样本 `transient_retries=0`）：
@@ -41,11 +41,11 @@ python examples/api/03_latency_compare.py --warmup 1 --runs 5
 | streaming TTFT | 0.652, 0.666, 0.692, 0.660, 0.752 | 0.666 | 0.740 |
 | streaming 总耗时 | 1.645, 1.766, 1.844, 1.693, 1.726 | 1.726 | 1.828 |
 
-10 个测量请求均为 `finish_reason=stop`；5 个流式结果均 `complete=true`。这是一次
-客户端观测快照，不是服务端 SLA，也不能外推到其他地域、时段、prompt 或输出长度。
+10 个测量请求均为 `finish_reason=stop`；5 个流式结果均 `complete=true`。这份客户端
+快照只对应本次地域、时段、prompt 和输出长度。
 
 ## 容易踩坑
 
-- TTFT 是第一个可见 content delta 到达的时间，不是请求对象返回的时间。
-- 计时应使用单调时钟，不要用可能被系统调整的 `time.time()`。
-- 不要只测一次，也不要把 reasoning delta 算作用户可见正文。
+- TTFT 从请求开始计时，到第一个可见 content delta 到达为止。
+- 计时使用单调时钟，例如 `time.perf_counter()`。
+- 重复测量，并把 reasoning delta 排除在用户可见正文之外。
