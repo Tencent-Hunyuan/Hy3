@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hy3 × 学术写作智能助手</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 背景粒子 -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- 主容器 -->
+    <div class="app-container">
+
+        <!-- 侧边栏：API 配置 -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32">
+                        <rect width="32" height="32" rx="8" fill="url(#logoGrad)"/>
+                        <text x="16" y="22" text-anchor="middle" fill="white" font-size="18" font-weight="bold">H</text>
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
+                                <stop offset="0%" stop-color="#667eea"/>
+                                <stop offset="100%" stop-color="#764ba2"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <span class="logo-text">Hy3 工作台</span>
+            </div>
+
+            <div class="config-section">
+                <h3>API 配置</h3>
+
+                <label>提供商</label>
+                <select id="providerSelect" onchange="handleProviderChange()">
+                    <option value="selfhost">自建服务</option>
+                    <option value="openrouter">OpenRouter</option>
+                    <option value="custom">自定义</option>
+                </select>
+
+                <label>Base URL</label>
+                <input id="baseUrl" type="text"
+                       value="http://127.0.0.1:8000/v1"
+                       placeholder="http://127.0.0.1:8000/v1">
+
+                <label>API Key</label>
+                <div class="key-input-wrapper">
+                    <input id="apiKey" type="password" value="EMPTY" placeholder="EMPTY">
+                    <button id="toggleKeyBtn" onclick="toggleKeyVisibility()" title="显示/隐藏">👁</button>
+                </div>
+
+                <label>Model</label>
+                <input id="modelName" type="text" value="hy3" placeholder="hy3">
+
+                <label>
+                    Temperature
+                    <span class="param-value" id="tempValue">0.9</span>
+                </label>
+                <input id="temperature" type="range" min="0" max="2" step="0.1" value="0.9"
+                       oninput="document.getElementById('tempValue').textContent = this.value">
+
+                <label>
+                    Max Tokens
+                    <span class="param-value" id="maxTokensValue">4096</span>
+                </label>
+                <input id="maxTokens" type="range" min="256" max="16384" step="256" value="4096"
+                       oninput="document.getElementById('maxTokensValue').textContent = this.value">
+
+                <button id="testConnBtn" class="test-btn" onclick="testConnection()">
+                    测试连接
+                </button>
+                <span id="connStatus" class="status-text"></span>
+            </div>
+
+            <div class="sidebar-footer">
+                <span>Powered by Tencent Hy3</span>
+                <span class="divider">·</span>
+                <a href="https://github.com/Tencent-Hunyuan/Hy3" target="_blank">GitHub</a>
+            </div>
+        </aside>
+
+        <!-- 主内容 -->
+        <main class="main-content">
+
+            <!-- 顶部导航 -->
+            <header class="topbar">
+                <button class="menu-btn" onclick="toggleSidebar()" title="侧边栏">☰</button>
+                <nav class="tabs">
+                    <button class="tab active" data-tab="chat" onclick="switchTab('chat')">
+                        <span class="tab-icon">💬</span>
+                        AI 对话
+                    </button>
+                    <button class="tab" data-tab="polish" onclick="switchTab('polish')">
+                        <span class="tab-icon">✍️</span>
+                        论文润色
+                    </button>
+                </nav>
+                <div class="topbar-right">
+                    <span id="modelBadge" class="model-badge">hy3</span>
+                    <button id="clearBtn" class="clear-btn" onclick="clearChat()" title="清空对话">
+                        🗑 清空
+                    </button>
+                </div>
+            </header>
+
+            <!-- ========== Tab 1: AI 对话 ========== -->
+            <section id="chatTab" class="tab-content active">
+                <div id="chatMessages" class="chat-messages">
+                    <div class="welcome-screen">
+                        <div class="welcome-icon">
+                            <svg width="64" height="64" viewBox="0 0 64 64">
+                                <circle cx="32" cy="32" r="30" fill="none" stroke="url(#welcomeGrad)" stroke-width="2"/>
+                                <text x="32" y="40" text-anchor="middle" fill="#667eea" font-size="28" font-weight="bold">H3</text>
+                                <defs>
+                                    <linearGradient id="welcomeGrad" x1="0" y1="0" x2="64" y2="64">
+                                        <stop offset="0%" stop-color="#667eea"/>
+                                        <stop offset="100%" stop-color="#764ba2"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                        <h2>Hy3 智能助手</h2>
+                        <p>由腾讯混元 295B MoE 模型驱动 · 256K 上下文 · 深度推理</p>
+                        <div class="quick-prompts">
+                            <span>试试这些：</span>
+                            <div class="prompt-chips">
+                                <button onclick="quickPrompt('用 Python 写一个快速排序算法，附带注释')">🔢 算法实现</button>
+                                <button onclick="quickPrompt('解释什么是 Transformer 注意力机制')">🧠 技术概念</button>
+                                <button onclick="quickPrompt('帮我写一个 RESTful API 的接口文档模板')">📝 文档模板</button>
+                                <button onclick="quickPrompt('对比 vLLM 和 SGLang 的优缺点')">⚡ 框架对比</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <div class="input-wrapper">
+                        <label class="reasoning-toggle" title="开启深度推理模式">
+                            <input type="checkbox" id="reasoningToggle" onchange="updateReasoningBadge()">
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">深度推理</span>
+                        </label>
+                        <textarea id="chatInput" rows="1"
+                                  placeholder="输入消息，Enter 发送，Shift+Enter 换行"
+                                  onkeydown="handleChatKeydown(event)"></textarea>
+                        <button id="sendBtn" class="send-btn" onclick="sendMessage()" title="发送">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M2 10l16-8-8 16-1.5-6.5L2 10z" fill="currentColor"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <span id="chatStatus" class="status-text"></span>
+                </div>
+            </section>
+
+            <!-- ========== Tab 2: 论文润色 ========== -->
+            <section id="polishTab" class="tab-content">
+                <div class="polish-layout">
+                    <!-- 输入区 -->
+                    <div class="polish-panel input-panel">
+                        <div class="panel-header">
+                            <h3>📥 原始文本</h3>
+                            <div class="polish-modes">
+                                <button class="mode-btn active" data-mode="academic" onclick="setPolishMode('academic', this)">
+                                    🎓 学术润色
+                                </button>
+                                <button class="mode-btn" data-mode="concise" onclick="setPolishMode('concise', this)">
+                                    ✂️ 精简压缩
+                                </button>
+                                <button class="mode-btn" data-mode="translate" onclick="setPolishMode('translate', this)">
+                                    🌐 中英互译
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="polishInput" class="polish-textarea"
+                                  placeholder="在此粘贴需要润色的学术文本...&#10;&#10;例如：&#10;&#10;当前我们提出了一种新的深度学习方法，该方法可以改善图像分类的性能。我们的实验表明，该方法在多个数据集上都有良好的表现。"></textarea>
+                        <div class="panel-footer">
+                            <span id="inputCharCount">0 字</span>
+                            <button id="polishBtn" class="polish-btn" onclick="runPolish()">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                    <path d="M1 9l4 4 8-8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                开始润色
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 输出区 -->
+                    <div class="polish-panel output-panel">
+                        <div class="panel-header">
+                            <h3>📤 润色结果</h3>
+                            <div class="output-actions">
+                                <button class="action-btn" onclick="copyPolishResult()" title="复制">📋</button>
+                                <button class="action-btn" onclick="downloadPolishResult()" title="下载">💾</button>
+                            </div>
+                        </div>
+                        <div id="polishOutput" class="polish-output">
+                            <div class="output-placeholder">
+                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                    <circle cx="24" cy="24" r="22" stroke="#ddd" stroke-width="2"/>
+                                    <path d="M18 24h12M24 18v12" stroke="#ddd" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                                <p>润色结果将在这里显示</p>
+                                <p class="sub">Hy3 将使用深度推理模式分析文本，提供专业的学术润色建议</p>
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <span id="outputCharCount">0 字</span>
+                            <span id="polishStatus" class="status-text"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
