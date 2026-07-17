@@ -51,4 +51,4 @@ HY3_MOCK=1 python 01_basic_chat/main.py
 
 - 不要把真实 Key 写进代码或提交 `.env`
 - 分享日志前脱敏 `Authorization`、request / response id
-- 示例输出为脱敏样例，真实运行结果会因模型采样而变化
+- 示例 README 中的输出为 **2026-07-18** 在 TokenHub（`model=hy3`）实测后脱敏写入；文案与时延每次运行可能变化

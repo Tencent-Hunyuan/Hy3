@@ -83,7 +83,7 @@ Retry-After: 2
 {"error": {"message": "rate limit exceeded", "type": "rate_limit_error"}}
 ```
 
-## 示例输出（脱敏）
+## 示例输出（2026-07-18 TokenHub 实测）
 
 ```text
 === Retry classification ===
@@ -96,10 +96,15 @@ Retry-After: 2
 
 === Backoff with Retry-After ===
   Retry-After honored → sleep 1.5s
+=== Backoff without Retry-After (exp + jitter) ===
+  attempt=1 suggested_wait≈1.05s
+  attempt=2 suggested_wait≈2.37s
+  attempt=3 suggested_wait≈4.31s
 
 === Wrapped live call (with_retry) ===
-  [retry] ping attempt 1/4 failed: RateLimitError: mock 429. sleep 0.10s
-  success content='mock ok after retry'
+  success content='pong'
 ```
+
+分类与退避为本地演示；最后的 `pong` 为真实 TokenHub 调用结果。离线可用 `HY3_MOCK=1` 观察模拟 429 重试。
 
 生产环境请把重试逻辑下沉到统一 HTTP 客户端，并打点监控 429 / 5xx 比例。更多错误码见 [TokenHub API 错误码](https://cloud.tencent.com/document/product/1823/131595)。

@@ -47,12 +47,12 @@ python 04_tool_calling/main.py
 | `message.tool_calls[].function.arguments` | JSON 字符串参数 |
 | `message.reasoning_content` | 若开启思考，可能存在；**回写时务必保留** |
 
-示例（脱敏）：
+示例（2026-07-18 TokenHub 实测，tool id 已脱敏）：
 
 ```json
 {
   "role": "assistant",
-  "content": "我来查一下深圳天气。",
+  "content": "",
   "tool_calls": [
     {
       "id": "chatcmpl-tool-REPLACED",
@@ -66,6 +66,8 @@ python 04_tool_calling/main.py
 }
 ```
 
+`finish_reason` 为 `tool_calls`。
+
 ## 完整请求（第 2 轮：工具循环）
 
 将第 1 轮 assistant 消息（含 `reasoning_content` / `tool_calls`）与工具结果一并回填：
@@ -77,8 +79,7 @@ python 04_tool_calling/main.py
     {"role": "user", "content": "深圳今天天气怎么样？"},
     {
       "role": "assistant",
-      "content": "我来查一下深圳天气。",
-      "reasoning_content": "（若有则原样保留）",
+      "content": "",
       "tool_calls": [
         {
           "id": "chatcmpl-tool-REPLACED",
@@ -100,12 +101,13 @@ python 04_tool_calling/main.py
 }
 ```
 
-## 最终响应示例
+## 最终响应示例（实测）
 
 ```json
 {
   "role": "assistant",
-  "content": "根据查询，深圳今天多云，气温 24~30°C，湿度 70%。出门可适当防晒。"
+  "content": "深圳今天的天气情况如下：\n\n- **天气**：多云\n- **气温**：24~30°C\n- **湿度**：70%\n\n整体来看是比较舒适的多云天气，早晚稍凉、中午偏热，出门可以根据气温变化适当增减衣物。",
+  "reasoning_content": "用户问深圳今天天气怎么样，我已经调用了get_weather工具获取了深圳的天气信息……"
 }
 ```
 

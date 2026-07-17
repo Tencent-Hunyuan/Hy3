@@ -51,16 +51,18 @@ for chunk in client.chat.completions.create(..., stream=True):
 total = time.perf_counter() - t0
 ```
 
-## 示例输出（脱敏样例）
+## 示例输出（2026-07-18 TokenHub 实测）
 
 ```text
 === Latency compare ===
-[non-stream] ttft_ms=1842.3  total_ms=1842.3  chars=42  preview='TTFT 是从发出请求到收到第一个输出 token 的时间。'
-[stream]     ttft_ms=312.7   total_ms=1905.1  chars=45  preview='TTFT 是从发出请求到收到第一个输出 token 的时间。'
+[non-stream] ttft_ms=1959.5  total_ms=1959.5  chars=81
+  preview='首 token 时延（TTFT）指用户发起请求到大模型生成第一个输出 token 所耗时间…'
+[stream]     ttft_ms=664.4   total_ms=1319.0  chars=77
+  preview='首 token 时延（TTFT）指用户发起请求到模型生成第一个输出 token 的等待时间…'
 
 === How to read ===
 - Non-stream: client waits for full JSON; TTFT ≈ total.
 - Stream: TTFT is usually much smaller; total may be similar or slightly higher.
 ```
 
-> 数值受网络、地域入口、负载与输出长度影响，请以本机实测为准。交互场景优先流式以降低体感等待。
+> 数值受网络、地域入口、负载与输出长度影响，请以本机实测为准。本次流式 TTFT（约 0.66s）明显低于非流式全文等待（约 1.96s）。

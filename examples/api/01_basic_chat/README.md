@@ -61,18 +61,18 @@ print(resp.choices[0].message.content)
 | `choices[0].finish_reason` | `stop` 正常结束；`length` 触及 `max_tokens` |
 | `usage.prompt_tokens` / `completion_tokens` / `total_tokens` | 用量统计 |
 
-## 示例输出（脱敏）
+## 示例输出（2026-07-18 TokenHub 实测，脱敏）
 
 ```text
 === Single-turn ===
 finish_reason: stop
-content: 你好！我是混元 Hy3，由腾讯混元团队研发的大模型助手。
-usage: prompt=18 completion=28 total=46
+content: 我是混元，是由腾讯开发的大模型，能回答问题、处理信息、辅助创作，为你提供实用帮助。
+usage: prompt=20 completion=25 total=45
 
 === Multi-turn ===
 {
   "role": "assistant",
-  "content": "大文件可用流式解析（如 ijson），或按行读取 NDJSON，避免一次性载入内存。"
+  "content": "用 `ijson` 库流式解析：import ijson; for item in ijson.items(open('a.json','rb'), 'path.to.item'): ...。"
 }
 ```
 

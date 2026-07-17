@@ -60,15 +60,16 @@ text = "".join(
 )
 ```
 
-## 示例输出（脱敏）
+## 示例输出（2026-07-18 TokenHub 实测，脱敏）
 
 ```text
 === Chunk parse (delta.content) ===
-Hy3 适合编程助手与 Agent 工作流。它在长上下文理解上表现稳定。复杂推理任务可开启思考模式。
+Hy3 适合处理复杂的多步骤推理任务，比如数学证明、代码生成与逻辑分析等需要深度思考的场景。
+它擅长在对话中保持长期上下文一致性，适用于需要连续交互的咨询、写作辅助或项目管理等任务。
+同时，Hy3 也适合用于知识整合与内容创作，能高效将分散信息转化为结构化的摘要、报告或教学材料。
 
-chunks_seen≈42 finish_reason=stop
-usage: prompt=22 completion=48 total=70
-assembled_content: Hy3 适合编程助手与 Agent 工作流。它在长上下文理解上表现稳定。复杂推理任务可开启思考模式。
+chunks_seen≈53 finish_reason=stop
+usage: prompt=25 completion=84 total=109
 ```
 
 原始 SSE 形态示意：
@@ -78,6 +79,6 @@ data: {"id":"REPLACED_ID","object":"chat.completion.chunk","choices":[{"delta":{
 data: {"id":"REPLACED_ID","choices":[{"delta":{"content":"Hy3"}}]}
 data: {"id":"REPLACED_ID","choices":[{"delta":{"content":" 适合"},"finish_reason":null}]}
 ...
-data: {"id":"REPLACED_ID","choices":[],"usage":{"prompt_tokens":22,"completion_tokens":48,"total_tokens":70}}
+data: {"id":"REPLACED_ID","choices":[],"usage":{"prompt_tokens":25,"completion_tokens":84,"total_tokens":109}}
 data: [DONE]
 ```

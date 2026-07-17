@@ -72,28 +72,30 @@ print(msg.content)
 
 也可用单独的 `reasoning_effort`（`low` / `medium` / `high`）控制强度。官方文档默认约为 `low`。
 
-## 示例输出（脱敏）
+## 示例输出（2026-07-18 TokenHub 实测，思考过程已截断）
 
 ```text
 === Response parse (thinking-off) ===
 {
   "role": "assistant",
-  "content": "6。因为先减 2 再加 3。"
+  "content": "6个；5减2加3等于6。"
 }
-usage: prompt=42 completion=18 total=60
+usage: prompt=48 completion=12 total=60
 
 === Response parse (thinking-on) ===
 {
   "role": "assistant",
-  "content": "最终还剩 6 个苹果。",
-  "reasoning_content": "5-2=3，再 +3 → 6。…"
+  "content": "6\n因为5减2加3等于6。",
+  "reasoning_content": "用户要求：\n1. 小明有 5 个苹果。\n2. 给了小红 2 个 -> 5 - 2 = 3 个。\n3. 又买了 3 个 -> 3 + 3 = 6 个。……"
 }
-usage: prompt=42 completion=126 total=168
+usage: prompt=45 completion=316 total=361
 
 === Diff summary ===
 thinking-off has reasoning_content: False
 thinking-on  has reasoning_content: True
 ```
+
+开启思考后 `completion_tokens` 明显增加（本次 12 → 316），因为思考 token 与最终答案共享额度。
 
 ## 与本地部署的差异
 
