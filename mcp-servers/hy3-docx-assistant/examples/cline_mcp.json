@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "hy3-docx-assistant": {
+      "command": "docx-assistant-mcp",
+      "env": {
+        "HY3_BASE_URL": "http://127.0.0.1:8000/v1",
+        "HY3_API_KEY": "EMPTY",
+        "HY3_MODEL": "hy3"
+      }
+    }
+  }
+}
