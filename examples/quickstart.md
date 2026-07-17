@@ -25,8 +25,19 @@
 | API Key | `"EMPTY"` 或任意非空字符串 | 自部署场景无需真实密钥，填写任意值即可 |
 | Model | `"hy3"` | 模型名称，与部署时 `--served-model-name` 参数保持一致 |
 | 协议 | OpenAI 兼容 API | 支持 `/v1/chat/completions` 等标准接口 |
+| 速率限制 | 自部署无固定 RPM/TPM | 实际上限取决于推理服务配置和 GPU 容量；托管服务以供应商控制台/响应头为准 |
 
 > **注意**：如使用云服务商托管的 Hy3 API，请将 Base URL 和 API Key 替换为服务商提供的值。
+
+#### 速率限制与并发
+
+Hy3 模型仓库本身没有设置统一的每分钟请求数（RPM）或 token 数（TPM）。自部署时，
+可承载并发取决于 vLLM/SGLang 的调度配置、上下文长度、输出长度和 GPU 容量；建议先压测，
+再在 API 网关或反向代理中设置适合本机容量的并发/RPM/TPM 上限。托管 API 的配额可能随
+账户和服务商变化，应以服务商控制台及响应头为准，不要把示例中的并发数当成平台配额。
+
+客户端收到 HTTP 429 时应优先遵循 `Retry-After` 响应头；没有该响应头时，使用带随机抖动
+的指数退避。完整实现见 [错误处理与重试](./06_error_handling.md)。
 
 ---
 
@@ -148,8 +159,23 @@ This guide helps you make your **first Hy3 API call in 5 minutes** and master th
 | API Key | `"EMPTY"` or any non-empty string | Not required for self-hosted deployment |
 | Model | `"hy3"` | Must match `--served-model-name` used at launch |
 | Protocol | OpenAI-compatible API | Supports `/v1/chat/completions` and other standard endpoints |
+| Rate limit | No fixed RPM/TPM for self-hosting | Capacity depends on serving configuration and GPUs; for managed APIs, use provider quotas and response headers |
 
 > **Note**: If using a cloud-hosted Hy3 API, replace the Base URL and API Key with your provider's values.
+
+#### Rate limits and concurrency
+
+The Hy3 model repository does not impose a universal requests-per-minute (RPM)
+or tokens-per-minute (TPM) quota. For self-hosting, safe concurrency depends on
+the vLLM/SGLang scheduler configuration, context/output lengths, and available
+GPU capacity. Benchmark the deployment, then enforce an appropriate
+concurrency/RPM/TPM policy at an API gateway or reverse proxy. Managed API
+quotas can vary by provider and account; use the provider dashboard and
+response headers instead of treating an example concurrency value as a quota.
+
+On HTTP 429, clients should honor `Retry-After` first and otherwise use
+exponential backoff with jitter. See [Error Handling & Retry](./06_error_handling.md)
+for a complete implementation.
 
 ---
 

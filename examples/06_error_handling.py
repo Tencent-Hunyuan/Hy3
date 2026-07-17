@@ -3,7 +3,10 @@ Hy3 API - 错误处理与重试示例 / Error Handling & Retry Example
 包含基础错误捕获、指数退避重试、流式请求错误处理
 """
 
+import random
 import time
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from openai import (
     OpenAI,
     APIConnectionError,
@@ -22,6 +25,33 @@ API_KEY = "EMPTY"
 MODEL = "hy3"
 
 client = OpenAI(base_url=BASE_URL, api_key=API_KEY)
+
+
+def retry_delay(
+    attempt: int,
+    base_delay: float,
+    error: Exception | None = None,
+    max_delay: float = 60.0,
+) -> float:
+    """Return Retry-After when present, otherwise capped backoff with jitter."""
+    response = getattr(error, "response", None)
+    headers = getattr(response, "headers", None)
+    retry_after = headers.get("retry-after") if headers is not None else None
+    if retry_after:
+        try:
+            return min(max(float(retry_after), 0.0), max_delay)
+        except ValueError:
+            try:
+                retry_at = parsedate_to_datetime(retry_after)
+                if retry_at.tzinfo is None:
+                    retry_at = retry_at.replace(tzinfo=timezone.utc)
+                seconds = (retry_at - datetime.now(timezone.utc)).total_seconds()
+                return min(max(seconds, 0.0), max_delay)
+            except (TypeError, ValueError, OverflowError):
+                pass
+
+    exponential = min(base_delay * (2 ** attempt), max_delay)
+    return exponential + random.uniform(0, min(1.0, exponential * 0.25))
 
 
 # ============================================================
@@ -113,7 +143,7 @@ def call_with_retry(
         except (APIConnectionError, APITimeoutError) as e:
             last_error = e
             if attempt < max_retries:
-                delay = base_delay * (2 ** attempt)
+                delay = retry_delay(attempt, base_delay, e)
                 print(f"  [尝试 {attempt + 1}/{max_retries + 1}] "
                       f"{type(e).__name__}，{delay:.1f}s 后重试...")
                 time.sleep(delay)
@@ -123,7 +153,7 @@ def call_with_retry(
         except RateLimitError as e:
             last_error = e
             if attempt < max_retries:
-                delay = base_delay * (2 ** attempt)
+                delay = retry_delay(attempt, base_delay, e)
                 print(f"  [尝试 {attempt + 1}/{max_retries + 1}] "
                       f"限流（429），{delay:.1f}s 后重试...")
                 time.sleep(delay)
@@ -133,7 +163,7 @@ def call_with_retry(
         except APIStatusError as e:
             last_error = e
             if e.status_code >= 500 and attempt < max_retries:
-                delay = base_delay * (2 ** attempt)
+                delay = retry_delay(attempt, base_delay, e)
                 print(f"  [尝试 {attempt + 1}/{max_retries + 1}] "
                       f"服务端错误（{e.status_code}），{delay:.1f}s 后重试...")
                 time.sleep(delay)
@@ -206,7 +236,7 @@ def stream_with_retry(
         except (APIConnectionError, APITimeoutError, RateLimitError) as e:
             last_error = e
             if attempt < max_retries:
-                delay = base_delay * (2 ** attempt)
+                delay = retry_delay(attempt, base_delay, e)
                 print(f"\n  [重试 {attempt + 1}] {type(e).__name__}，{delay:.1f}s 后重试...")
                 time.sleep(delay)
             else:
@@ -214,7 +244,7 @@ def stream_with_retry(
 
         except APIStatusError as e:
             if e.status_code >= 500 and attempt < max_retries:
-                delay = base_delay * (2 ** attempt)
+                delay = retry_delay(attempt, base_delay, e)
                 print(f"\n  [重试 {attempt + 1}] 服务端错误（{e.status_code}），{delay:.1f}s 后重试...")
                 time.sleep(delay)
             else:
@@ -284,7 +314,7 @@ class Hy3Client:
             except (APIConnectionError, APITimeoutError, RateLimitError) as e:
                 last_error = e
                 if attempt < self.max_retries:
-                    delay = self.base_delay * (2 ** attempt)
+                    delay = retry_delay(attempt, self.base_delay, e)
                     time.sleep(delay)
                 else:
                     raise RuntimeError(
@@ -293,7 +323,7 @@ class Hy3Client:
 
             except APIStatusError as e:
                 if e.status_code >= 500 and attempt < self.max_retries:
-                    delay = self.base_delay * (2 ** attempt)
+                    delay = retry_delay(attempt, self.base_delay, e)
                     time.sleep(delay)
                 else:
                     raise RuntimeError(f"API 错误 [{e.status_code}]: {e.message}") from e
