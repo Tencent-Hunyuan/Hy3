@@ -6,9 +6,10 @@ README 中的 `chat_template_kwargs` 仅供 vLLM/SGLang 本地部署使用。
 
 ## 1. 准备 Key 和接口地址
 
-先在 TokenHub 或 Token Plan 控制台开通 Hy3 并创建 API Key。国内站通常使用广州
-入口；如果开通的是新加坡站或 Token Plan，请改用对应地址。Key 和接口地址必须
-属于同一产品和地域。
+先在对应控制台开通 Hy3 并创建 API Key。TokenHub 的具体步骤见
+[API Key 管理](https://cloud.tencent.com/document/product/1823/130090)。国内站通常
+使用广州入口；如果开通的是新加坡站或 Token Plan，请改用对应地址。Key 和接口
+地址必须属于同一产品和地域。
 
 | 产品/地域 | `HY3_BASE_URL` |
 |---|---|
@@ -45,10 +46,20 @@ export HY3_MODEL='hy3'
 PowerShell：
 
 ```powershell
-curl.exe "$env:HY3_BASE_URL/chat/completions" `
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$body = @'
+{
+  "model": "hy3",
+  "messages": [{"role": "user", "content": "用一句话解释什么是 API。"}],
+  "max_tokens": 256,
+  "thinking": {"type": "disabled"}
+}
+'@
+
+$body | curl.exe "$env:HY3_BASE_URL/chat/completions" `
   -H "Authorization: Bearer $env:HY3_API_KEY" `
   -H "Content-Type: application/json" `
-  -d '{"model":"hy3","messages":[{"role":"user","content":"用一句话介绍 Hy3。"}],"max_tokens":256,"thinking":{"type":"disabled"}}'
+  --data-binary "@-"
 ```
 
 Bash：
@@ -59,7 +70,7 @@ curl "$HY3_BASE_URL/chat/completions" \
   -H 'Content-Type: application/json' \
   -d '{
     "model": "hy3",
-    "messages": [{"role": "user", "content": "用一句话介绍 Hy3。"}],
+    "messages": [{"role": "user", "content": "用一句话解释什么是 API。"}],
     "max_tokens": 256,
     "thinking": {"type": "disabled"}
   }'
@@ -71,7 +82,7 @@ curl "$HY3_BASE_URL/chat/completions" \
 
 ## 4. 用 OpenAI Python SDK 调用
 
-从仓库根目录执行：
+Python 示例需要 Python 3.10 或更新版本。从仓库根目录执行：
 
 ```powershell
 python -m pip install -r examples/api/requirements.txt
@@ -90,7 +101,7 @@ client = OpenAI(
 )
 response = client.chat.completions.create(
     model=os.getenv("HY3_MODEL", "hy3"),
-    messages=[{"role": "user", "content": "用一句话介绍 Hy3。"}],
+    messages=[{"role": "user", "content": "用一句话解释什么是 API。"}],
     max_tokens=256,
     extra_body={"thinking": {"type": "disabled"}},
 )

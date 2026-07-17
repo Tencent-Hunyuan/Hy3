@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -9,6 +10,7 @@ from common import (
     RetryPolicy,
     call_with_retry,
     create_chat_completion,
+    retry_after_seconds,
 )
 
 
@@ -71,6 +73,13 @@ def test_retry_after_is_respected_without_jitter() -> None:
         call_with_retry(operation, sleep=sleeps.append, random_fn=lambda: 0.0) == "ok"
     )
     assert sleeps == [3.5]
+
+
+def test_retry_after_accepts_http_date() -> None:
+    now = datetime(2026, 7, 17, 8, 0, tzinfo=timezone.utc)
+    error = HttpError(429, {"Retry-After": "Fri, 17 Jul 2026 08:00:05 GMT"})
+
+    assert retry_after_seconds(error, now=now) == 5.0
 
 
 def test_retry_attempts_are_bounded() -> None:

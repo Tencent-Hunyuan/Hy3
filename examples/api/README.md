@@ -8,6 +8,8 @@
 
 ## 先运行基础对话
 
+以下命令均在仓库根目录执行，需要 Python 3.10 或更新版本。
+
 ```powershell
 python -m pip install -r examples/api/requirements.txt
 python examples/api/01_basic_chat.py

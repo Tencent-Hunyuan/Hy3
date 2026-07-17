@@ -26,7 +26,7 @@ def main() -> None:
     print("=== Single turn ===")
     single = create_chat_completion(
         client,
-        messages=[{"role": "user", "content": "用一句话介绍 Hy3。"}],
+        messages=[{"role": "user", "content": "用一句话解释什么是 API。"}],
         **shared,
     )
     print_response(single, secrets=[config.api_key])

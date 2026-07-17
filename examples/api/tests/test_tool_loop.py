@@ -24,11 +24,12 @@ def tool_response(
     arguments: str,
     *,
     reasoning: str = "preserve exactly",
+    content: str | None = None,
 ) -> SimpleNamespace:
     call = ns(id=call_id, type="function", function=ns(name=name, arguments=arguments))
     message = ns(
         role="assistant",
-        content="",
+        content=content,
         reasoning_content=reasoning,
         tool_calls=[call],
     )
@@ -86,6 +87,7 @@ def test_tool_loop_preserves_reasoning_and_returns_tool_result() -> None:
     )
 
     assistant = calls[1][1]
+    assert assistant["content"] is None
     assert assistant["reasoning_content"] == "preserve exactly"
     assert assistant["tool_calls"][0]["id"] == "call-1"  # type: ignore[index]
     assert calls[1][2] == {
@@ -95,6 +97,22 @@ def test_tool_loop_preserves_reasoning_and_returns_tool_result() -> None:
     }
     assert result.tool_rounds == 1
     assert result.messages[-1]["content"] == "20°C"
+
+
+def test_empty_choices_are_rejected_before_response_callback() -> None:
+    callbacks: list[int] = []
+
+    with pytest.raises(ToolLoopError, match="no choices"):
+        run_tool_loop(
+            lambda **_kwargs: ns(choices=[]),
+            messages=[{"role": "user", "content": "convert"}],
+            tools=TOOLS,
+            handlers={"convert_temperature": lambda value: value},
+            request_kwargs={"model": "hy3"},
+            on_response=lambda index, _response: callbacks.append(index),
+        )
+
+    assert callbacks == []
 
 
 @pytest.mark.parametrize("arguments", ["not-json", "[]", '{"value": "hot"}', "{}"])

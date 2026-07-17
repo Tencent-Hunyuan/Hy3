@@ -460,7 +460,7 @@ def assistant_message_dict(message: Any) -> dict[str, Any]:
 
     result: dict[str, Any] = {
         "role": get_field(message, "role", "assistant") or "assistant",
-        "content": get_field(message, "content") or "",
+        "content": get_field(message, "content"),
     }
     reasoning = get_field(message, "reasoning_content")
     if reasoning is not None:
@@ -550,12 +550,11 @@ def run_tool_loop(
             tools=list(tools),
             **dict(request_kwargs),
         )
-        if on_response is not None:
-            on_response(round_index, response)
-
         choices = get_field(response, "choices", []) or []
         if not choices:
             raise ToolLoopError("The model response contains no choices.")
+        if on_response is not None:
+            on_response(round_index, response)
         message = get_field(choices[0], "message")
         tool_calls = get_field(message, "tool_calls", []) or []
         if not tool_calls:

@@ -12,7 +12,7 @@
 single = create_chat_completion(
     client,
     model=config.model,
-    messages=[{"role": "user", "content": "用一句话介绍 Hy3。"}],
+    messages=[{"role": "user", "content": "用一句话解释什么是 API。"}],
     temperature=0.3,
     max_tokens=512,
     extra_body={"thinking": {"type": "disabled"}},
@@ -53,10 +53,10 @@ python examples/api/01_basic_chat.py
   "message": {
     "role": "assistant",
     "reasoning_content": null,
-    "content": "Hy3（混元大模型第三代）是腾讯研发的新一代大语言模型，具备更强的多模态理解与生成能力，支持复杂推理、代码编写及长文本处理等任务。",
+    "content": "API（应用程序编程接口）是一套预先定义的规则和工具，让不同的软件系统能够相互通信、交换数据或调用功能。",
     "tool_calls": null
   },
-  "usage": {"completion_tokens": 39, "prompt_tokens": 21, "total_tokens": 60}
+  "usage": {"completion_tokens": 28, "prompt_tokens": 21, "total_tokens": 49}
 }
 
 === Multi turn ===
@@ -66,10 +66,10 @@ python examples/api/01_basic_chat.py
   "message": {
     "role": "assistant",
     "reasoning_content": null,
-    "content": "```python\nevens = [x for x in range(10) if x % 2 == 0]\n# 结果：[0, 2, 4, 6, 8]\n```\n\n说明：  \n- `range(10)` 生成 `0~9`  \n- `if x % 2 == 0` 只保留偶数  \n- 最终得到只包含偶数的列表",
+    "content": "下面是一个**只保留偶数**的列表推导式例子：\n\n```python\nnumbers = [1, 2, 3, 4, 5, 6, 7, 8]\nevens = [x for x in numbers if x % 2 == 0]\n\nprint(evens)\n# 输出: [2, 4, 6, 8]\n```\n\n解释：\n- `for x in numbers`：遍历原列表\n- `if x % 2 == 0`：只保留能被 2 整除的数（偶数）\n- `x`：把满足条件的元素放进新列表",
     "tool_calls": null
   },
-  "usage": {"completion_tokens": 86, "prompt_tokens": 256, "total_tokens": 342}
+  "usage": {"completion_tokens": 131, "prompt_tokens": 376, "total_tokens": 507}
 }
 ```
 
