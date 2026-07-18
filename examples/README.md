@@ -41,12 +41,18 @@ python examples/en/01_basic_chat.py
 python examples/cn/01_basic_chat.py
 ```
 
-## Tests
+## Tests & lint
 
 ```bash
 pip install -r examples/requirements-dev.txt
-# Offline (no key):
+
+# Format + lint (ruff)
+ruff format --check examples
+ruff check examples
+
+# Offline unit tests (no API key):
 pytest examples/tests -q -k "not live"
+
 # Optional live smoke (TokenHub or local):
 # HY3_LIVE=1 HY3_BASE_URL=... HY3_API_KEY=... pytest examples/tests/test_live_smoke.py -q
 ```

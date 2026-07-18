@@ -22,9 +22,7 @@ from common import (  # noqa: E402
     make_client,
 )
 
-PROMPT = (
-    "小明有 5 个苹果，分给 3 个朋友每人 1 个，又买了 2 个，现在他还有几个苹果？请逐步分析。"
-)
+PROMPT = "小明有 5 个苹果，分给 3 个朋友每人 1 个，又买了 2 个，现在他还有几个苹果？请逐步分析。"
 
 MODES = (
     ("no_think", "Mode 1: Thinking off (no_think) — direct answer"),

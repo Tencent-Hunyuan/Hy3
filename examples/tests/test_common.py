@@ -332,9 +332,7 @@ def test_parse_retry_after_invalid():
 
 def test_run_tool_loop_single_then_answer():
     tool_msg = FakeMessage(
-        tool_calls=[
-            FakeToolCall("tc1", "get_weather", json.dumps({"city": "北京"}))
-        ]
+        tool_calls=[FakeToolCall("tc1", "get_weather", json.dumps({"city": "北京"}))]
     )
     final_msg = FakeMessage(content="北京今天晴，28°C。")
     client = FakeClient([FakeResponse(tool_msg), FakeResponse(final_msg)])
@@ -381,9 +379,7 @@ def test_run_tool_loop_single_then_answer():
 
 
 def test_run_tool_loop_unknown_tool():
-    tool_msg = FakeMessage(
-        tool_calls=[FakeToolCall("tc1", "missing_tool", "{}")]
-    )
+    tool_msg = FakeMessage(tool_calls=[FakeToolCall("tc1", "missing_tool", "{}")])
     final_msg = FakeMessage(content="cannot help")
     client = FakeClient([FakeResponse(tool_msg), FakeResponse(final_msg)])
 

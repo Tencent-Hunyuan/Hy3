@@ -11,7 +11,12 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from common import chat_completion, get_config, iter_stream_text, make_client  # noqa: E402
+from common import (  # noqa: E402
+    chat_completion,
+    get_config,
+    iter_stream_text,
+    make_client,
+)
 
 
 def main():
@@ -23,8 +28,7 @@ def main():
         {
             "role": "user",
             "content": (
-                "请用中文写一段关于「秋天的银杏林」的短文，"
-                "包含颜色、声音和心情的描写，至少三句话。"
+                "请用中文写一段关于「秋天的银杏林」的短文，包含颜色、声音和心情的描写，至少三句话。"
             ),
         },
     ]

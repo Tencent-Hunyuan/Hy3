@@ -15,7 +15,12 @@ import sys
 # Allow `python examples/en/01_basic_chat.py` from repo root
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from common import chat_completion, extract_reasoning_and_content, get_config, make_client  # noqa: E402
+from common import (
+    chat_completion,
+    extract_reasoning_and_content,
+    get_config,
+    make_client,
+)  # noqa: E402
 
 
 def single_turn(client):

@@ -2,13 +2,23 @@
 
 ## Introduction
 
-This example demonstrates error handling and **exponential-backoff retry** when calling Hy3 (OpenAI-compatible API), covering three typical scenarios:
+This example demonstrates **production-minded** error handling when calling Hy3 (OpenAI-compatible API):
 
-1. **Timeout (`APITimeoutError`)**: forced with a very short `timeout`; retries are exhausted and then it fails gracefully.
-2. **Rate limit (`RateLimitError`, HTTP 429)**: shows how to identify a 429 and back off according to a rate-limit policy.
-3. **Network error (`APIConnectionError`)**: forced with a wrong `base_url`; retries and then fails gracefully.
+1. **Timeout (`APITimeoutError`)** — forced short `timeout`; bounded retries then graceful failure.
+2. **Rate limit (`RateLimitError`, HTTP 429)** — identify 429, honor **`Retry-After`** (seconds or HTTP-date).
+3. **Network error (`APIConnectionError`)** — unreachable `base_url`; retries then fail gracefully.
+4. **Shared helper `call_with_retry`** — exponential backoff + **full jitter**, `max_attempts` and **`max_total_wait`** caps so clients never hang forever. Also retries selected 5xx / gateway statuses.
 
-Retry logic uses the `tenacity` library with exponential backoff against transient errors (timeout / rate limit / network error), up to 5 attempts. Each scenario is wrapped in `try/except`, and **the script runs safely standalone** — even without an Hy3 service, scenarios 1 and 3 trigger errors as expected.
+The helper lives in [`examples/common.py`](../common.py). SDK auto-retries are disabled (`max_retries=0`) so demo policy is explicit. **Scenarios 1 and 3 run without a live Hy3 service.**
+
+### Retry policy (summary)
+
+```text
+delay ≈ min(max_delay, base_delay * 2^(attempt-1))
+delay  = max(delay, Retry-After)   # if present
+delay  = uniform(delay*(1-jitter), delay)   # full jitter, default jitter=0.25
+stop when attempts exhausted OR max_total_wait exceeded
+```
 
 ---
 
@@ -16,16 +26,16 @@ Retry logic uses the `tenacity` library with exponential backoff against transie
 
 1. Install dependencies:
    ```bash
-   pip install tenacity openai
+   pip install -r examples/requirements.txt
    ```
 
-2. Configure connection info via environment variables (defaults suit a local deployment):
+2. Configure connection info via environment variables (defaults suit local deploy):
    ```bash
-   set HY3_BASE_URL=http://127.0.0.1:8000/v1
-   set HY3_API_KEY=EMPTY
+   export HY3_BASE_URL=http://127.0.0.1:8000/v1
+   export HY3_API_KEY=EMPTY
    ```
 
-3. To demonstrate the "normal call" path (the non-rate-limited branch of scenario 2), start the Hy3 service first (vLLM / SGLang). Scenarios 1 and 3 can trigger errors without any service.
+3. Scenario 2's "happy path" needs a reachable service (TokenHub or local). Scenarios 1 and 3 do not.
 
 ---
 

@@ -1,14 +1,24 @@
-# 06 错误处理与重试（Error Handling & Retry）
+# 06 错误处理与重试
 
 ## 简介
 
-本示例演示调用 Hy3（OpenAI 兼容 API）时对常见错误的处理与**指数退避重试**，覆盖三类典型场景：
+本示例演示调用 Hy3（OpenAI 兼容 API）时的**生产向**错误处理：
 
-1. **超时（`APITimeoutError`）**：用极短 `timeout` 强制触发，重试用尽后优雅失败。
-2. **限流（`RateLimitError`，HTTP 429）**：展示如何识别 429 并按限流策略退避处理。
-3. **网络错误（`APIConnectionError`）**：用错误 `base_url` 强制触发连接失败，重试后优雅处理。
+1. **超时（`APITimeoutError`）** — 极短 `timeout` 强制触发；有界重试后优雅失败。
+2. **限流（`RateLimitError`，HTTP 429）** — 识别 429，遵守 **`Retry-After`**（秒数或 HTTP-date）。
+3. **网络错误（`APIConnectionError`）** — 不可达 `base_url`；重试后失败。
+4. **共享工具 `call_with_retry`** — 指数退避 + **full jitter**，限制 `max_attempts` 与 **`max_total_wait`**，避免客户端无限挂起；并对部分 5xx / 网关状态码重试。
 
-重试逻辑使用 `tenacity` 库，对暂时性错误（超时/限流/网络错误）做指数退避重试，最多 5 次。每个场景都包裹在 `try/except` 中，**脚本可独立安全运行**——即使没有 Hy3 服务，场景一与场景三也会按预期触发错误。
+实现见 [`examples/common.py`](../common.py)。SDK 自动重试关闭（`max_retries=0`），示例策略显式可控。**场景 1、3 无需真实 Hy3 服务。**
+
+### 重试策略（摘要）
+
+```text
+delay ≈ min(max_delay, base_delay * 2^(attempt-1))
+delay  = max(delay, Retry-After)   # 若响应头存在
+delay  = uniform(delay*(1-jitter), delay)   # full jitter，默认 jitter=0.25
+达到 max_attempts 或 max_total_wait 后停止
+```
 
 ---
 
@@ -16,22 +26,20 @@
 
 1. 安装依赖：
    ```bash
-   pip install tenacity openai
+   pip install -r examples/requirements.txt
    ```
 
-2. 连接信息通过环境变量配置（默认值适用于本地部署）：
+2. 通过环境变量配置连接（默认适合本地部署）：
    ```bash
-   set HY3_BASE_URL=http://127.0.0.1:8000/v1
-   set HY3_API_KEY=EMPTY
+   export HY3_BASE_URL=http://127.0.0.1:8000/v1
+   export HY3_API_KEY=EMPTY
    ```
 
-3. 若要演示"正常调用"路径（场景二的非限流分支），需先启动 Hy3 服务（vLLM / SGLang）。场景一、三无需服务即可触发错误。
+3. 场景 2 的“正常成功”分支需要可达服务（TokenHub 或本地）；场景 1、3 不需要。
 
 ---
 
-## 完整请求
-
-> 完整可运行脚本位于 `../en/06_error_handling_retry.py`。
+## 完整请求代码
 
 ```python
 """Hy3 Example 06: Error handling & retry (timeout / 429 / network / 5xx).

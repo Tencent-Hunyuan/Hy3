@@ -91,9 +91,7 @@ def validate_config(
     base = (cfg.get("base_url") or "").strip()
     parsed = urlsplit(base)
     if parsed.scheme not in {"http", "https"} or not parsed.hostname:
-        raise ValueError(
-            f"HY3_BASE_URL must be an absolute http(s) URL, got: {base!r}"
-        )
+        raise ValueError(f"HY3_BASE_URL must be an absolute http(s) URL, got: {base!r}")
     host = (parsed.hostname or "").lower()
     local_hosts = {"127.0.0.1", "localhost", "::1"}
     if parsed.scheme == "http" and host not in local_hosts:
@@ -171,8 +169,7 @@ def build_extra_body(reasoning: str = "no_think", **extra: Any) -> Dict[str, Any
     mode = REASONING_MODES.get(reasoning)
     if mode is None:
         raise ValueError(
-            f"Unknown reasoning mode {reasoning!r}. "
-            f"Expected one of: {sorted(REASONING_MODES)}"
+            f"Unknown reasoning mode {reasoning!r}. Expected one of: {sorted(REASONING_MODES)}"
         )
     body: Dict[str, Any] = {
         "thinking": {"type": mode["thinking_type"]},
