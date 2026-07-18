@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "hy3-knowledge": {
+      "transport": {
+        "type": "stdio",
+        "command": "uvx",
+        "args": [
+          "--from",
+          "C:\\path\\to\\Hy3\\mcp_servers\\knowledge_base",
+          "hy3-knowledge-mcp"
+        ],
+        "cwd": "C:\\path\\to\\Hy3"
+      }
+    }
+  }
+}
