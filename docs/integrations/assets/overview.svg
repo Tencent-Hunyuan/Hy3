@@ -6,7 +6,7 @@
   <rect x="220" y="80" width="160" height="64" rx="10" fill="#1e293b" stroke="#38bdf8"/>
   <text x="300" y="118" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="14">Cursor</text>
   <rect x="400" y="80" width="160" height="64" rx="10" fill="#1e293b" stroke="#38bdf8"/>
-  <text x="480" y="118" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="14">Continue</text>
+  <text x="480" y="118" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="14">WorkBuddy</text>
   <rect x="580" y="80" width="160" height="64" rx="10" fill="#1e293b" stroke="#38bdf8"/>
   <text x="660" y="118" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="14">Codex CLI</text>
   <rect x="760" y="80" width="160" height="64" rx="10" fill="#1e293b" stroke="#38bdf8"/>

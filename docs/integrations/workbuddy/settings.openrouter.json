@@ -1,0 +1,12 @@
+{
+  "_comment": "WorkBuddy 自定义模型（OpenRouter）。模型名须带 tencent/ 前缀。",
+  "provider": "Custom",
+  "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+  "apiKey": "sk-xxxxxxxx",
+  "model": "tencent/hy3",
+  "advanced": {
+    "tool_calling": true,
+    "image_input": true,
+    "reasoning_mode": true
+  }
+}

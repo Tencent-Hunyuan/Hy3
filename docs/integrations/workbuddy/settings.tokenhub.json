@@ -1,0 +1,12 @@
+{
+  "_comment": "WorkBuddy → 设置 → 模型 → 自定义模型 → 添加。按字段填入 UI，勿提交真实 Key。",
+  "provider": "Custom",
+  "endpoint": "https://tokenhub.tencentmaas.com/v1/chat/completions",
+  "apiKey": "sk-xxxxxxxx",
+  "model": "hy3",
+  "advanced": {
+    "tool_calling": true,
+    "image_input": true,
+    "reasoning_mode": true
+  }
+}

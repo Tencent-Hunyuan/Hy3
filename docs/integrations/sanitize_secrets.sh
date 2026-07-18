@@ -19,14 +19,16 @@ redact_file() {
     -e 's/("openaiApiKey":[[:space:]]*")sk-[A-Za-z0-9_-]+/\1sk-xxxxxxxx/g' \
     -e 's/("api_key":[[:space:]]*")sk-or-[A-Za-z0-9_-]+/\1sk-or-v1-xxxxxxxx/g' \
     -e 's/("api_key":[[:space:]]*")sk-[A-Za-z0-9_-]+/\1sk-xxxxxxxx/g' \
+    -e 's/("apiKey":[[:space:]]*")sk-or-[A-Za-z0-9_-]+/\1sk-or-v1-xxxxxxxx/g' \
+    -e 's/("apiKey":[[:space:]]*")sk-[A-Za-z0-9_-]+/\1sk-xxxxxxxx/g' \
     "$f"
 }
 
 echo "Sanitizing tracked configs under docs/integrations ..."
 
 for f in \
-  "${ROOT}/continue/config.tokenhub.yaml" \
-  "${ROOT}/continue/config.openrouter.yaml" \
+  "${ROOT}/workbuddy/settings.tokenhub.json" \
+  "${ROOT}/workbuddy/settings.openrouter.json" \
   "${ROOT}/cursor/settings.openrouter.json" \
   "${ROOT}/cursor/settings.tokenhub.json" \
   "${ROOT}/dify/provider.tokenhub.json" \
@@ -38,7 +40,6 @@ do
   fi
 done
 
-# 扫描将入库的文本，排除 .env
 if grep -RInE 'sk-(or-v1-)?[A-Za-z0-9]{20,}' "$ROOT" \
   --exclude='sanitize_secrets.sh' \
   --exclude='sync_env.sh' \
@@ -54,4 +55,4 @@ fi
 echo
 echo "脱敏完成。.env 未改动（本地密钥保留）。"
 echo "  git add docs/integrations && git commit ..."
-echo "提交后若 Continue yaml 需要真 Key，再运行: bash docs/integrations/sync_env.sh"
+echo "提交后若需本地注入 Key，再运行: bash docs/integrations/sync_env.sh"

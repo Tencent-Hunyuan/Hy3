@@ -4,16 +4,13 @@
 > 对应犀牛鸟 Issue [#2](https://github.com/Tencent-Hunyuan/Hy3/issues/2)。  
 > **以下命令均以仓库根目录 `Hy3/` 为当前目录执行。**
 
-每个工具一个文件夹：指南 + **可直接使用的配置文件**（无 `.example` 后缀）。
+每个工具一个文件夹：指南 + **可直接使用的配置文件**。
 
 ### 密钥与同步
 
-1. 编辑本地 `docs/integrations/.env`（不入库），填入 Key：
-
 ```bash
-# 若文件不存在，运行 sync 会自动创建模板
 bash docs/integrations/sync_env.sh
-# 按提示编辑 docs/integrations/.env 后再跑一次 sync
+# 编辑 docs/integrations/.env 填入 Key 后再跑一次 sync
 ```
 
 `.env` 建议字段：
@@ -27,8 +24,8 @@ OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 OPENROUTER_MODEL=tencent/hy3
 ```
 
-2. `sync_env.sh`：把 Key 同步到各子目录 `.env`，并注入 Continue 等本地配置。  
-3. **提交前**运行脱敏（去掉入库文件里的真实 Key，保留本地 `.env`）：
+1. `sync_env.sh`：把 Key 同步到各子目录 `.env`，并注入 WorkBuddy 等本地对照配置。  
+2. **提交前**脱敏：
 
 ```bash
 bash docs/integrations/sanitize_secrets.sh
@@ -48,7 +45,8 @@ git commit -m "..."
 | [TokenHub](https://cloud.tencent.com/document/product/1823/132252) | `https://tokenhub.tencentmaas.com/v1` | `hy3` | TokenHub Key |
 | [OpenRouter](https://openrouter.ai/tencent/hy3) | `https://openrouter.ai/api/v1` | `tencent/hy3` | `sk-or-...` |
 
-> Cursor 走 OpenRouter 时 Base URL 常用 `https://openrouter.ai/api/v1/cursor`（见 [cursor/](./cursor/)）。
+> Cursor 走 OpenRouter 时 Base URL 常用 `https://openrouter.ai/api/v1/cursor`（见 [cursor/](./cursor/)）。  
+> WorkBuddy 自定义模型接口地址通常要写到 `/v1/chat/completions`（见 [workbuddy/](./workbuddy/)）。
 
 ## 工具索引
 
@@ -56,7 +54,7 @@ git commit -m "..."
 |---|------|------|----------|
 | 1 | OpenRouter | [openrouter/](./openrouter/) | `curl_chat.sh`、`chat.py` |
 | 2 | Cursor | [cursor/](./cursor/) | `settings.*.json` |
-| 3 | Continue | [continue/](./continue/) | `config.*.yaml` |
+| 3 | WorkBuddy | [workbuddy/](./workbuddy/) | `settings.*.json` |
 | 4 | Codex CLI | [codex-cli/](./codex-cli/) | `config.*.toml`、`run.sh` |
 | 5 | Dify | [dify/](./dify/) | `provider.*.json` |
 
@@ -68,7 +66,7 @@ git commit -m "..."
 
 1. [openrouter/](./openrouter/)  
 2. [cursor/](./cursor/)  
-3. [continue/](./continue/)  
+3. [workbuddy/](./workbuddy/)  
 4. [codex-cli/](./codex-cli/)  
 5. [dify/](./dify/)  
 
