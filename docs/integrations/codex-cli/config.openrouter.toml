@@ -1,0 +1,14 @@
+# Codex CLI — OpenRouter × Hy3
+# 在仓库根目录 Hy3/ 执行：
+#   bash docs/integrations/sync_env.sh
+#   set -a && source docs/integrations/codex-cli/.env && set +a
+#   cp docs/integrations/codex-cli/config.openrouter.toml ~/.codex/config.toml
+#   codex "用一句话介绍你自己"
+
+model = "tencent/hy3"
+model_provider = "openrouter"
+
+[model_providers.openrouter]
+name = "OpenRouter"
+base_url = "https://openrouter.ai/api/v1"
+env_key = "OPENROUTER_API_KEY"

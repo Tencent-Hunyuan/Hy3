@@ -8,3 +8,9 @@
 Thumbs.db
 __pycache__/
 *.pyc
+.env
+.venv/
+venv/
+# 本地密钥（提交前用 sanitize_secrets.sh；默认不跟踪 .env）
+docs/integrations/.env
+docs/integrations/**/.env

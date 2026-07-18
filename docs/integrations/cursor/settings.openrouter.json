@@ -1,0 +1,7 @@
+{
+  "_comment": "Cursor Settings → Models 参考值（OpenRouter）。请在 UI 中填写，勿把真实 Key 提交到 Git。",
+  "openaiApiKey": "sk-xxxxxxxx",
+  "overrideOpenAIBaseUrl": true,
+  "openAIBaseUrl": "https://openrouter.ai/api/v1/cursor",
+  "modelsToAdd": ["tencent/hy3"]
+}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="280" viewBox="0 0 960 280">
+  <rect width="960" height="280" fill="#0f172a"/>
+  <text x="40" y="48" fill="#e2e8f0" font-family="sans-serif" font-size="22">Hy3 Integrations Overview</text>
+  <rect x="40" y="80" width="160" height="64" rx="10" fill="#1e293b" stroke="#38bdf8"/>
+  <text x="120" y="118" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="14">OpenRouter</text>
+  <rect x="220" y="80" width="160" height="64" rx="10" fill="#1e293b" stroke="#38bdf8"/>
+  <text x="300" y="118" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="14">Cursor</text>
+  <rect x="400" y="80" width="160" height="64" rx="10" fill="#1e293b" stroke="#38bdf8"/>
+  <text x="480" y="118" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="14">WorkBuddy</text>
+  <rect x="580" y="80" width="160" height="64" rx="10" fill="#1e293b" stroke="#38bdf8"/>
+  <text x="660" y="118" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="14">Codex CLI</text>
+  <rect x="760" y="80" width="160" height="64" rx="10" fill="#1e293b" stroke="#38bdf8"/>
+  <text x="840" y="118" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="14">Dify</text>
+  <path d="M120 144 V180 H480 V200" stroke="#94a3b8" fill="none" stroke-width="2"/>
+  <path d="M300 144 V180" stroke="#94a3b8" fill="none" stroke-width="2"/>
+  <path d="M480 144 V180" stroke="#94a3b8" fill="none" stroke-width="2"/>
+  <path d="M660 144 V180" stroke="#94a3b8" fill="none" stroke-width="2"/>
+  <path d="M840 144 V180 H480" stroke="#94a3b8" fill="none" stroke-width="2"/>
+  <rect x="360" y="200" width="240" height="56" rx="10" fill="#0369a1"/>
+  <text x="480" y="234" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="16">Hy3 (TokenHub / OpenRouter)</text>
+</svg>

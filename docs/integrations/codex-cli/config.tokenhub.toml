@@ -1,0 +1,14 @@
+# Codex CLI — TokenHub × Hy3
+# 在仓库根目录 Hy3/ 执行：
+#   bash docs/integrations/sync_env.sh
+#   set -a && source docs/integrations/codex-cli/.env && set +a
+#   cp docs/integrations/codex-cli/config.tokenhub.toml ~/.codex/config.toml
+#   codex "用一句话介绍你自己"
+
+model = "hy3"
+model_provider = "tokenhub"
+
+[model_providers.tokenhub]
+name = "Tencent TokenHub"
+base_url = "https://tokenhub.tencentmaas.com/v1"
+env_key = "HY3_API_KEY"
