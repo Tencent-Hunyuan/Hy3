@@ -36,3 +36,8 @@ For development with auto-reload, use:
 ```bash
 uvicorn app:app --reload
 ```
+
+## Screenshots
+
+- Codex generating this demo: [`../../assets/codex1.png`](../../assets/codex1.png)
+- Running uvicorn + `/health`: [`../../assets/codex.png`](../../assets/codex.png)

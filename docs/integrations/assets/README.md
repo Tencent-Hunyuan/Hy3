@@ -1,18 +1,15 @@
-将本机真实界面截图（打码 Key）放到 `docs/integrations/assets/`，例如：
+# 截图清单
 
-- `docs/integrations/assets/openrouter-models.png`
-- `docs/integrations/assets/openrouter-chat-demo.png`
-- `docs/integrations/assets/cursor-settings.png`
-- `docs/integrations/assets/cursor-first-chat.png`
-- `docs/integrations/assets/cursor-agent-demo.gif`
-- `docs/integrations/assets/workbuddy-settings.png`
-- `docs/integrations/assets/workbuddy-first-chat.png`
-- `docs/integrations/assets/workbuddy-meeting-demo.png`
-- `docs/integrations/assets/codex-config.png`
-- `docs/integrations/assets/codex-first-chat.png`
-- `docs/integrations/assets/codex-fastapi-demo.png`
-- `docs/integrations/assets/dify-provider.png`
-- `docs/integrations/assets/dify-first-chat.png`
-- `docs/integrations/assets/dify-meeting-demo.png`
+本目录现有文件（相对仓库根目录 `Hy3/`）：
 
-`docs/integrations/assets/overview.svg` 为总览示意图，可不替换。
+| 文件 | 说明 |
+|------|------|
+| [`docs/integrations/assets/overview.svg`](./overview.svg) | 五工具总览示意图 |
+| [`docs/integrations/assets/openrouter.png`](./openrouter.png) | OpenRouter × Hy3 |
+| [`docs/integrations/assets/cursor.png`](./cursor.png) | Cursor × Hy3 |
+| [`docs/integrations/assets/workbuddy.png`](./workbuddy.png) | WorkBuddy × Hy3 对话 |
+| [`docs/integrations/assets/codex1.png`](./codex1.png) | Codex CLI 生成 FastAPI demo |
+| [`docs/integrations/assets/codex.png`](./codex.png) | Codex demo：uvicorn + `/health` |
+| [`docs/integrations/assets/dify.png`](./dify.png) | Dify × Hy3 |
+
+截图请打码 API Key 后再提交。

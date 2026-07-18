@@ -54,13 +54,13 @@ bash docs/integrations/sync_env.sh
 
 ## 第一次对话
 
-选择已添加的 Hy3，发送：`用三句话介绍你自己。`  
-截图：`docs/integrations/assets/workbuddy-first-chat.png`
+选择已添加的 Hy3，发送：`用三句话介绍你自己。`
+
+![WorkBuddy × Hy3](../assets/workbuddy.png)
 
 ## 端到端任务 Demo
 
-**任务：** 让 WorkBuddy 根据一段会议记录整理「决议 / 待办 / 风险」三条。  
-截图：`docs/integrations/assets/workbuddy-meeting-demo.png`
+**任务：** 让 WorkBuddy 根据一段会议记录整理「决议 / 待办 / 风险」三条。
 
 ## 注意事项
 
@@ -68,11 +68,3 @@ bash docs/integrations/sync_env.sh
 - 401：检查 Key；限定范围 Key 需包含 `hy3`。  
 - 404：检查接口是否带 `/v1/chat/completions`。  
 - 提交前运行：`bash docs/integrations/sanitize_secrets.sh`
-
-## 截图清单
-
-| 文件 | 内容 |
-|------|------|
-| `docs/integrations/assets/workbuddy-settings.png` | 自定义模型配置页（Key 打码） |
-| `docs/integrations/assets/workbuddy-first-chat.png` | 第一次对话 |
-| `docs/integrations/assets/workbuddy-meeting-demo.png` | 会议纪要任务 |

@@ -1,5 +1,5 @@
 {
-  "_comment": "Dify → 设置 → 模型供应商 → OpenAI-API-compatible（TokenHub）。按 UI 表单填写。",
+  "_comment": "Dify → 集成 → 模型供应商 → OpenAI-API-compatible（TokenHub）。按 UI 表单填写。",
   "provider": "openai_api_compatible",
   "name": "Hy3 TokenHub",
   "api_endpoint": "https://tokenhub.tencentmaas.com/v1",

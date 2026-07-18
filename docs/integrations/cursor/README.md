@@ -19,6 +19,6 @@ bash docs/integrations/sync_env.sh
 https://openrouter.ai/api/v1/cursor
 ```
 
-截图：`docs/integrations/assets/cursor-*.png`
+![Cursor × Hy3](../assets/cursor.png)
 
 提交前：`bash docs/integrations/sanitize_secrets.sh`

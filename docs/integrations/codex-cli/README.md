@@ -49,7 +49,15 @@ codex --version
 
 ## 端到端 Demo
 
-空目录生成最小 FastAPI `GET /health`。截图：`docs/integrations/assets/codex-fastapi-demo.png`。
+空目录生成最小 FastAPI `GET /health`（见 [`demo/`](./demo/)）。
+
+Codex 生成 demo：
+
+![Codex 生成 FastAPI demo](../assets/codex1.png)
+
+本地启动并验证 `/health`：
+
+![uvicorn + /health](../assets/codex.png)
 
 ## 提交前
 

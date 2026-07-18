@@ -60,7 +60,7 @@ git commit -m "..."
 
 ## 小作品（Part B）
 
-独立开源应用：**Hy3 Workbench** — <https://github.com/xianggkl/hy3-showcase>
+独立开源应用：**一分钟侦探** — <https://github.com/xianggkl/hy3-showcase>
 
 ## 建议阅读顺序
 
@@ -70,6 +70,16 @@ git commit -m "..."
 4. [codex-cli/](./codex-cli/)  
 5. [dify/](./dify/)  
 
-## 截图说明
+## 截图
 
-截图放入 [`docs/integrations/assets/`](./assets/)，文件名见各目录 README。
+![overview](./assets/overview.svg)
+
+| 工具 | 截图 |
+|------|------|
+| OpenRouter | [`assets/openrouter.png`](./assets/openrouter.png) |
+| Cursor | [`assets/cursor.png`](./assets/cursor.png) |
+| WorkBuddy | [`assets/workbuddy.png`](./assets/workbuddy.png) |
+| Codex CLI | [`assets/codex1.png`](./assets/codex1.png)、[`assets/codex.png`](./assets/codex.png) |
+| Dify | [`assets/dify.png`](./assets/dify.png) |
+
+完整说明见 [`assets/README.md`](./assets/README.md)。

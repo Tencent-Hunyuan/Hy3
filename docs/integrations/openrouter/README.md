@@ -27,7 +27,7 @@ python docs/integrations/openrouter/chat.py
 
 ## Demo / 截图
 
-`docs/integrations/assets/openrouter-chat-demo.png`
+![OpenRouter × Hy3](../assets/openrouter.png)
 
 ## 提交前
 
