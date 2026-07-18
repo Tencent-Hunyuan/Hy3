@@ -8,12 +8,14 @@
 |------|------|
 | [`config.openrouter.toml.example`](./config.openrouter.toml.example) | 复制为 `~/.codex/config.toml` |
 | [`config.tokenhub.toml.example`](./config.tokenhub.toml.example) | TokenHub 版 |
-| [`.env.example`](./.env.example) | API Key 环境变量 |
+| [`.env.example`](./.env.example) | 占位；真实值由上级 `../sync_env.sh` 生成 |
 
 ```bash
-cp config.tokenhub.toml.example ~/.codex/config.toml
-cp .env.example .env   # 填 HY3_API_KEY
-set -a && source .env && set +a
+cd docs/integrations
+cp .env.example .env && $EDITOR .env    # 填 HY3_API_KEY
+./sync_env.sh
+set -a && source codex-cli/.env && set +a
+cp codex-cli/config.tokenhub.toml ~/.codex/config.toml
 codex "用一句话介绍你自己，并说明当前是 Hy3。"
 ```
 
