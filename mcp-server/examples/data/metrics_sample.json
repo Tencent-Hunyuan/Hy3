@@ -1,0 +1,10 @@
+[
+  {"service": "gateway", "day": "2026-07-01", "p50_ms": 12.5, "p95_ms": 48.0, "error_rate": 0.002},
+  {"service": "gateway", "day": "2026-07-02", "p50_ms": 13.1, "p95_ms": 51.2, "error_rate": 0.004},
+  {"service": "auth", "day": "2026-07-01", "p50_ms": 8.4, "p95_ms": 21.0, "error_rate": 0.001},
+  {"service": "auth", "day": "2026-07-02", "p50_ms": 9.0, "p95_ms": null, "error_rate": 0.001},
+  {"service": "billing", "day": "2026-07-01", "p50_ms": 22.8, "p95_ms": 80.5, "error_rate": 0.011},
+  {"service": "billing", "day": "2026-07-02", "p50_ms": 21.4, "p95_ms": 76.3, "error_rate": 0.009},
+  {"service": "search", "day": "2026-07-01", "p50_ms": 31.0, "p95_ms": 120.7, "error_rate": 0.006},
+  {"service": "search", "day": "2026-07-02", "p50_ms": 29.6, "p95_ms": 118.9, "error_rate": 0.005}
+]

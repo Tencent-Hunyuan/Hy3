@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "hy3": {
+      "command": "uvx",
+      "args": ["--from", "/ABS/PATH/TO/Hy3/mcp-server", "hy3-mcp"],
+      "env": {
+        "HY3_API_BASE": "http://127.0.0.1:8000/v1",
+        "HY3_API_KEY": "${env:HY3_API_KEY}",
+        "HY3_MODEL": "hy3",
+        "HY3_MCP_ROOT": "${workspaceFolder}"
+      }
+    },
+    "hy3-offline-demo": {
+      "command": "uvx",
+      "args": ["--from", "/ABS/PATH/TO/Hy3/mcp-server", "hy3-mcp"],
+      "env": {
+        "HY3_MCP_OFFLINE": "1",
+        "HY3_MCP_ROOT": "${workspaceFolder}"
+      }
+    }
+  }
+}

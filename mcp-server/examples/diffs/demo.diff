@@ -1,0 +1,27 @@
+diff --git a/app/config.py b/app/config.py
+index 3f1c2aa..9b4e7cd 100644
+--- a/app/config.py
++++ b/app/config.py
+@@ -8,6 +8,10 @@ import os
+
+
+ def load_config():
+     cfg = read_defaults()
+-    cfg["timeout"] = 30
++    cfg["timeout"] = int(os.environ.get("APP_TIMEOUT", "30"))
++    cfg["db_password"] = "hunter2"
++    cfg["debug"] = eval(os.environ.get("DEBUG_EXPR", "False"))
++    # TODO: validate the config schema before returning it to callers
++    cfg["banner"] = "Welcome to the demo application, this banner line is intentionally made much longer than one hundred and twenty characters."
+     return cfg
+diff --git a/app/utils.py b/app/utils.py
+index 1a2b3c4..5d6e7f8 100644
+--- a/app/utils.py
++++ b/app/utils.py
+@@ -1,2 +1,5 @@
+ def get_user(session, user_id):
+-    return session.query(User).get(user_id)
++    user = session.query(User).get(user_id)
++    if user == None:
++        return None
++    return user
