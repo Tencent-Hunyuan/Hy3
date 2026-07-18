@@ -37,3 +37,7 @@ cd backend && ..\.venv\Scripts\python.exe -m uvicorn main:app --host 0.0.0.0 --p
   原因：pdfplumber 在部分 PDF（实测 `考点汇总.pdf`）上会**原生段错误（segfault，无 Python traceback，直接崩进程）**，不能作为主解析器。
 - **Git 仓库历史**：`hy3-rag/.git` 历史上曾被腾讯模型仓库覆盖，`rhinobird2026` 分支已重置为 **orphan（无模型仓库历史）**，仅含 RAG 源码。
   提交前确认 `git status -sb` 显示 `## rhinobird2026`（**无 upstream**）；若显示跟踪 `upstream/rhinobird2026` 说明被模型仓库配置污染，需 `git branch --unset-upstream` 防止误推到模型仓库。
+- **文件夹删除 bug（已修）**：`FolderManager.delete()` 原调用 `doc_memory.remove_folder()`，但 `remove_folder` 是用 `_patch_doc_memory()` **monkeypatch 到 `FolderManager` 类**上的普通函数（只接 1 个参数）。
+  原写法 `doc_memory.remove_folder(...)` → `AttributeError`（doc_memory 无此方法），导致：①文档 `folder_id` 永远不重置（变成指向已删文件夹的孤儿，从"全部"视图消失）；②文件夹删除不持久化。
+  已改为 `type(self).remove_folder(folder_id)`（类直接调用、不传隐式 self）。**验证**：删文件夹后文档 `folder_id` 归零、文件夹列表持久为空。
+- **前端文件夹 UI（已实现）**：侧边栏「+ 文件夹」按钮新建 → 每文档行下拉框「未分类」移入/移出 → 文件夹标签筛选文档并限定 QA 检索范围（QA 请求带 `folder_id`，后端 `_resolve_source_filters` 转成文档名列表 → `vector_store.query(where={"doc_name": {"$in": ...}})`）。
