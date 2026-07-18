@@ -24,7 +24,6 @@
         menuBtn: $("#menuBtn"),
         menuModal: $("#menuModal"),
         menuClose: $("#menuClose"),
-        newFolderBtn: $("#newFolderBtn"),
         menuDocMgmt: $("#menuDocMgmt"),
         menuConvMgmt: $("#menuConvMgmt"),
         convModal: $("#convModal"),
@@ -96,7 +95,7 @@
         try {
             const url = activeFolderId
                 ? `/api/documents?folder_id=${encodeURIComponent(activeFolderId)}`
-                : "/api/documents";
+                : "/api/documents?include_all=true";
             const r = await fetch(url);
             const d = await r.json();
             docs = d.documents || [];
@@ -153,8 +152,8 @@
         }
     };
 
-    // Create a new folder
-    async function createFolder() {
+    // Create a new folder; onDone() is called after success (e.g. to refresh the modal)
+    async function createFolder(onDone) {
         const name = prompt("请输入文件夹名称：");
         if (!name) return;
         try {
@@ -165,6 +164,7 @@
             });
             if (r.ok) {
                 await loadFolders();
+                if (typeof onDone === "function") onDone();
             } else {
                 alert("创建文件夹失败");
             }
@@ -251,15 +251,17 @@
         loadDocuments();
     });
 
-    // New folder button
-    if (refs.newFolderBtn) refs.newFolderBtn.addEventListener("click", createFolder);
+    // New folder button (now lives inside the 文档管理 modal)
 
     // Move document to folder via per-row <select>
     refs.docList.addEventListener("change", (e) => {
         const sel = e.target.closest(".doc-folder-select");
         if (!sel) return;
         const filename = sel.dataset.filename;
-        window.moveDocumentToFolder(filename, sel.value);
+        window.moveDocumentToFolder(filename, sel.value).then(() => {
+            loadFolders();
+            loadDocuments();
+        });
     });
 
     // ── Context chips (drag doc into input) ───────────────
@@ -516,13 +518,87 @@
     refs.menuConvMgmt.addEventListener("click", () => { closeModal(refs.menuModal); openConvModal(); });
 
     async function openDocModal() {
-        await loadDocuments();
-        const list = docs.length
-            ? docs.map((d) => `<div class="mgmt-row"><span class="mgmt-title">${escapeHtml(d.filename)}</span>
-                <button class="mgmt-del" onclick="deleteDocument('${escapeJs(d.filename)}')">&times;</button></div>`).join("")
-            : `<div class="doc-meta">暂无文档</div>`;
-        refs.docModalList.innerHTML = list;
+        // Fetch all documents (regardless of the active sidebar folder) so the
+        // management view always shows the complete library.
+        await loadFolders();
+        const rd = await fetch("/api/documents?include_all=true");
+        const dd = await rd.json();
+        const modalDocs = dd.documents || [];
+        const countIn = (fid) => modalDocs.filter((d) => d.folder_id === fid).length;
+
+        const folderSection = `
+            <div class="mgmt-section">
+                <div class="mgmt-section-head">
+                    <span class="mgmt-section-title">文件夹</span>
+                    <button class="mini-btn" id="modalNewFolderBtn">+ 文件夹</button>
+                </div>
+                <div class="mgmt-folder-list" id="modalFolderList">
+                    ${folders.length ? folders.map((f) => `
+                        <div class="mgmt-folder-row">
+                            <span class="mgmt-folder-name">📁 ${escapeHtml(f.name)}</span>
+                            <span class="mgmt-folder-count">${countIn(f.id)} 篇</span>
+                            <button class="mgmt-folder-del" data-del-folder="${f.id}" title="删除文件夹">&times;</button>
+                        </div>`).join("") : `<div class="doc-meta" style="padding:6px 2px">暂无文件夹，点「+ 文件夹」新建</div>`}
+                </div>
+            </div>
+            <div class="mgmt-section">
+                <div class="mgmt-section-head"><span class="mgmt-section-title">文档 · 编辑组别</span></div>
+                <div class="mgmt-doc-list">
+                    ${modalDocs.length ? modalDocs.map((d) => `
+                        <div class="mgmt-doc-row">
+                            <span class="mgmt-doc-icon ${getDocIconClass(d.filename)}">${getDocIconLetter(d.filename)}</span>
+                            <span class="mgmt-doc-name" title="${escapeHtml(d.filename)}">${escapeHtml(d.filename)}</span>
+                            <select class="mgmt-doc-folder" data-filename="${escapeHtml(d.filename)}" title="选择组别（文件夹）">
+                                <option value="none" ${!d.folder_id ? "selected" : ""}>未分类</option>
+                                ${folders.map((f) => `<option value="${f.id}" ${d.folder_id === f.id ? "selected" : ""}>📁 ${escapeHtml(f.name)}</option>`).join("")}
+                            </select>
+                            <button class="mgmt-del" data-del-doc="${escapeJs(d.filename)}" title="删除文档">&times;</button>
+                        </div>`).join("") : `<div class="doc-meta" style="padding:6px 2px">暂无文档</div>`}
+                </div>
+            </div>
+        `;
+        refs.docModalList.innerHTML = folderSection;
         openModal(refs.docModal);
+
+        // ── Wire up the management controls ──
+        const newBtn = $("#modalNewFolderBtn");
+        if (newBtn) newBtn.addEventListener("click", () => createFolder(() => openDocModal()));
+
+        Array.from(refs.docModalList.querySelectorAll(".mgmt-folder-del")).forEach((b) => {
+            b.addEventListener("click", async () => {
+                const fid = b.dataset.delFolder;
+                const f = folders.find((x) => x.id === fid);
+                if (!confirm(`确定删除文件夹「${f ? f.name : fid}」？文件夹内的文档会变为未分类。`)) return;
+                await fetch(`/api/folders/${encodeURIComponent(fid)}`, { method: "DELETE" });
+                if (activeFolderId === fid) activeFolderId = null;
+                await loadFolders();
+                await loadDocuments();
+                openDocModal();
+            });
+        });
+
+        Array.from(refs.docModalList.querySelectorAll(".mgmt-doc-folder")).forEach((sel) => {
+            sel.addEventListener("change", async () => {
+                const filename = sel.dataset.filename;
+                const folderId = sel.value; // "none" or a folder id
+                await window.moveDocumentToFolder(filename, folderId);
+                await loadFolders();
+                await loadDocuments();
+                openDocModal();
+            });
+        });
+
+        Array.from(refs.docModalList.querySelectorAll(".mgmt-del[data-del-doc]")).forEach((b) => {
+            b.addEventListener("click", async () => {
+                const fn = b.dataset.delDoc;
+                if (!confirm(`确定删除文档「${fn}」？`)) return;
+                await fetch(`/api/documents/${encodeURIComponent(fn)}`, { method: "DELETE" });
+                selectedDocs = selectedDocs.filter((x) => x !== fn);
+                renderContextInline();
+                await loadDocuments();
+                openDocModal();
+            });
+        });
     }
 
     async function openConvModal() {

@@ -133,8 +133,11 @@ async def upload_document(file: UploadFile = File(...)):
 
 
 @app.get("/api/documents")
-async def list_documents(folder_id: Optional[str] = None):
-    docs = doc_memory.get_by_folder(folder_id)
+async def list_documents(folder_id: Optional[str] = None, include_all: bool = False):
+    if include_all:
+        docs = doc_memory.get_all()
+    else:
+        docs = doc_memory.get_by_folder(folder_id)
     return {"documents": docs, "total": len(docs)}
 
 

@@ -342,6 +342,56 @@ body {
 }
 .mgmt-row .mgmt-del:hover { background: var(--error-soft); color: var(--error); }
 
+/* ── Document management modal: folders + group editing ── */
+.mgmt-section { margin-bottom: 18px; }
+.mgmt-section:last-child { margin-bottom: 0; }
+.mgmt-section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border);
+}
+.mgmt-section-title {
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+.mgmt-folder-list { display: flex; flex-direction: column; gap: 4px; }
+.mgmt-folder-row {
+    display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+    border-radius: var(--radius-sm); transition: var(--transition);
+}
+.mgmt-folder-row:hover { background: var(--surface-hover); }
+.mgmt-folder-name { flex: 1; min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mgmt-folder-count { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.mgmt-folder-del {
+    border: none; background: transparent; color: var(--text-muted); cursor: pointer;
+    font-size: 14px; padding: 2px 6px; border-radius: 6px; flex-shrink: 0;
+}
+.mgmt-folder-del:hover { background: var(--error-soft); color: var(--error); }
+
+.mgmt-doc-list { display: flex; flex-direction: column; gap: 4px; }
+.mgmt-doc-row {
+    display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+    border-radius: var(--radius-sm); transition: var(--transition);
+}
+.mgmt-doc-row:hover { background: var(--surface-hover); }
+.mgmt-doc-icon {
+    width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff;
+}
+.mgmt-doc-icon.pdf { background: var(--error); }
+.mgmt-doc-icon.docx, .mgmt-doc-icon.doc { background: var(--primary); }
+.mgmt-doc-icon.txt { background: var(--text-muted); }
+.mgmt-doc-icon.md { background: var(--success); }
+.mgmt-doc-icon.other { background: var(--text-secondary); }
+.mgmt-doc-name {
+    flex: 1; min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mgmt-doc-folder {
+    flex-shrink: 0; max-width: 120px; font-size: 12px; padding: 3px 6px;
+    border: 1px solid var(--border); border-radius: 6px; background: var(--surface);
+    color: var(--text-secondary); cursor: pointer; transition: var(--transition);
+}
+.mgmt-doc-folder:focus { outline: none; border-color: var(--primary); }
+
 /* Typing indicator */
 .typing { display: inline-flex; gap: 3px; }
 .typing span {
