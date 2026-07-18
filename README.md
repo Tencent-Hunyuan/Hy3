@@ -81,10 +81,11 @@ python run.py
 ```
 
 服务默认运行在 `http://localhost:8766`，启动后会自动打开浏览器。
-也可直接使用 uvicorn：
+也可手动用 uvicorn（注意：backend/ 下是扁平导入，必须 `cd backend/` 后用 `main:app`，而非 `backend.main:app`）：
 
 ```bash
-.venv/Scripts/python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8766
+cd backend
+..\.venv\Scripts\python.exe -m uvicorn main:app --host 0.0.0.0 --port 8766
 ```
 
 ---

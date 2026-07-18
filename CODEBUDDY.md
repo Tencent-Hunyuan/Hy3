@@ -10,10 +10,10 @@
 ## 运行
 ```bash
 .venv/Scripts/python.exe run.py
-# 或
-.venv/Scripts/python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8766
+# 或手动（注意：backend/ 下是扁平导入，必须 cd 到 backend/ 再启动，且用 main:app 而非 backend.main:app）
+cd backend && ..\.venv\Scripts\python.exe -m uvicorn main:app --host 0.0.0.0 --port 8766
 ```
-前端为纯静态 `frontend/index.html`，由 FastAPI 在 `/` 托管；改完前端需刷新并忽略缓存（URL 带 `?v=6` 版本号）。
+前端为纯静态 `frontend/index.html`，由 FastAPI 在 `/` 托管；静态资源挂在 `/static`（`/static/app.js`、`/static/styles.css`），改完前端需刷新并忽略缓存（URL 带 `?v=6` 版本号）。
 
 ## 依赖约束（重要）
 - **嵌入模型**：`paraphrase-multilingual-MiniLM-L12-v2`，用 **ONNX Runtime + tokenizers** 推理，

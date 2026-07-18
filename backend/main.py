@@ -290,4 +290,7 @@ async def index():
     return FileResponse(config.FRONTEND_DIR / "index.html")
 
 
-app.mount("/", StaticFiles(directory=str(config.FRONTEND_DIR), html=True), name="static")
+# Serve the static frontend assets. index.html references /static/app.js and
+# /static/styles.css, so mount the frontend directory at /static (not at /,
+# otherwise /static/* would resolve to frontend/static/* which does not exist).
+app.mount("/static", StaticFiles(directory=str(config.FRONTEND_DIR)), name="static")
