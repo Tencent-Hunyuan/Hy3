@@ -1,0 +1,7 @@
+{
+  "_comment": "Cursor Settings → Models 参考值（TokenHub 直连）。部分 Cursor 功能仍可能走内置模型。",
+  "openaiApiKey": "sk-xxxxxxxx",
+  "overrideOpenAIBaseUrl": true,
+  "openAIBaseUrl": "https://tokenhub.tencentmaas.com/v1",
+  "modelsToAdd": ["hy3"]
+}

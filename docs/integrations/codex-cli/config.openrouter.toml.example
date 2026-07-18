@@ -1,0 +1,16 @@
+# Codex CLI — OpenRouter × Hy3
+# 用法：
+#   cp config.openrouter.toml.example ~/.codex/config.toml
+#   cp .env.example .env && 编辑 Key
+#   set -a && source .env && set +a
+#   codex "用一句话介绍你自己"
+#
+# 字段名以本机 Codex 版本为准；若不同请对照官方文档微调。
+
+model = "tencent/hy3"
+model_provider = "openrouter"
+
+[model_providers.openrouter]
+name = "OpenRouter"
+base_url = "https://openrouter.ai/api/v1"
+env_key = "OPENROUTER_API_KEY"

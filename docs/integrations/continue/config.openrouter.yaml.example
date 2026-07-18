@@ -1,0 +1,14 @@
+# Continue (~/.continue/config.yaml) — OpenRouter × Hy3
+# 用法：合并进你的 config.yaml，或备份原文件后替换对应 models 段。
+# 把 apiKey 换成真实值，或改用环境变量（若你的 Continue 版本支持）。
+
+name: Hy3 Continue (OpenRouter)
+version: 0.0.1
+schema: v1
+
+models:
+  - name: Hy3 (OpenRouter)
+    provider: openai
+    model: tencent/hy3
+    apiBase: https://openrouter.ai/api/v1
+    apiKey: sk-or-v1-xxxxxxxx

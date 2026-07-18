@@ -1,0 +1,13 @@
+# Codex CLI — TokenHub × Hy3
+# 用法：
+#   cp config.tokenhub.toml.example ~/.codex/config.toml
+#   export HY3_API_KEY='sk-...'
+#   codex "用一句话介绍你自己"
+
+model = "hy3"
+model_provider = "tokenhub"
+
+[model_providers.tokenhub]
+name = "Tencent TokenHub"
+base_url = "https://tokenhub.tencentmaas.com/v1"
+env_key = "HY3_API_KEY"
