@@ -37,6 +37,7 @@
 - [News](#news)
 - [Model Links](#model-links)
 - [Quickstart](#quickstart)
+- [Integrations](#integrations)
 - [Deployment](#deployment)
   - [vLLM](#vllm)
   - [SGLang](#sglang)
@@ -136,6 +137,10 @@ print(response.choices[0].message.content)
 > **Reasoning mode**: Set `reasoning_effort` to `"high"` for complex tasks (math, coding, reasoning) or `"no_think"` for direct responses.
 
 See the [Deployment](#deployment) section below for how to start the API server.
+
+## Integrations
+
+Guides for using Hy3 inside popular AI tools: [docs/integrations/](./docs/integrations/).
 
 ## Deployment
 
