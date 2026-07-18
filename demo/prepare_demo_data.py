@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""为录制 demo 准备样例文档：复制到 data/uploads/ 并通过 API 入库。
+"""为录制 demo 准备简易样例文档：复制到 data/uploads/ 并通过 API 入库。
 
 用法（在 hy3-rag 根目录、且应用已启动的前提下执行）:
     .venv/Scripts/python.exe demo/prepare_demo_data.py
@@ -7,18 +7,17 @@
 前置：先启动应用  ->  .venv\\Scripts\\python.exe run.py  (http://127.0.0.1:8766)
 说明：应用只在「上传」时入库，不会自动扫描 data/uploads/ 里的文件，
       所以本脚本在复制文件后，会逐个调用 /api/documents/upload 真正入库。
+样例文档位于 demo/sample/（Hy3模型简介.md、Hy3常见问题.md），简洁适合演示。
 """
 from pathlib import Path
 import shutil
 import sys
 import urllib.request
 
-BACKUP_DIR = Path(r"E:\code\2026.07\HY3\hy3-rag-data-backup")
+# 简易演示文档所在目录（随仓库提交，随时可取用）
+SAMPLE_DIR = Path(__file__).resolve().parent / "sample"
 UPLOADS_DIR = Path(__file__).resolve().parent.parent / "data" / "uploads"
 API_BASE = "http://127.0.0.1:8766"
-
-# 适合演示的文档（文件名片段匹配，不区分大小写）
-PICKS = ["ai_overview.md", "rag_comparison.md", "数据库系统"]
 
 
 def _server_up() -> bool:
@@ -53,23 +52,21 @@ def _upload_via_api(path: Path) -> bool:
 
 
 def main() -> None:
-    if not BACKUP_DIR.exists():
-        print(f"[跳过] 备份目录不存在: {BACKUP_DIR}")
+    if not SAMPLE_DIR.exists():
+        print(f"[跳过] 样例目录不存在: {SAMPLE_DIR}")
         return
     UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # 1) 复制
+    # 1) 复制 demo/sample/ 下全部文档
     targets = []
-    for src in sorted(BACKUP_DIR.iterdir()):
+    for src in sorted(SAMPLE_DIR.iterdir()):
         if not src.is_file():
             continue
-        name_lower = src.name.lower()
-        if any(p.lower() in name_lower for p in PICKS):
-            dst = UPLOADS_DIR / src.name
-            if not dst.exists():
-                shutil.copy2(src, dst)
-                print(f"[复制]   {src.name} -> data/uploads/")
-            targets.append(dst)
+        dst = UPLOADS_DIR / src.name
+        if not dst.exists():
+            shutil.copy2(src, dst)
+            print(f"[复制]   {src.name} -> data/uploads/")
+        targets.append(dst)
 
     if not targets:
         print("没有匹配的演示文档。")
