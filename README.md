@@ -155,7 +155,7 @@ cd backend
 1. **上传 → 检索 → 问答**：上传一份文档（PDF / Markdown 等）→ 自动分块入库 → 输入问题 → 流式返回带引用来源的回答。
 2. **文件夹限定 + 多轮记忆**：将文档归入文件夹 → 限定仅在该文件夹内检索 → 连续多轮追问 → 重新打开会话恢复历史记忆。
 
-> 录制提示：启动 `python run.py`，用 OBS / ShareX / 浏览器录屏扩展录制上述流程，单文件 ≤2min，输出如 `demo/demo1-upload-qa.gif`、`demo/demo2-folder-memory.gif`。
+> 录制提示：启动 `python run.py`，用 OBS / ShareX / 浏览器录屏扩展录制上述流程，单文件 ≤2min，输出如 `demo/demo1-upload-qa.mp4`、`demo/demo2-folder-memory.mp4`（已录制，见 `demo/` 目录）。
 
 ---
 

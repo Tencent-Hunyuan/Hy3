@@ -23,8 +23,8 @@
 - 流式回答 + 引用来源展示；纯前端单页应用（上传 / 检索 / 记忆）
 
 ## 端到端 Demo（≤2min）
-1. **上传 → 检索 → 问答**：`demo/demo1-upload-qa.gif`
-2. **文件夹限定 + 多轮记忆**：`demo/demo2-folder-memory.gif`
+1. **上传 → 检索 → 问答**：`demo/demo1-upload-qa.mp4`
+2. **文件夹限定 + 多轮记忆**：`demo/demo2-folder-memory.mp4`
 
 ## CodeBuddy / WorkBuddy 协作说明
 - 后端全部模块由 CodeBuddy 基于需求协作重建与联调；前端由 WorkBuddy 从零生成；
