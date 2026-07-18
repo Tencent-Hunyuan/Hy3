@@ -1,20 +1,18 @@
-# 截图占位说明
+将本机真实界面截图（打码 Key）放到本目录 `docs/integrations/assets/`，文件名与各指南「截图清单」一致，例如：
 
-请将本机真实界面截图（打码 Key）放到本目录，文件名与各指南「截图清单」一致，例如：
+- `docs/integrations/assets/openrouter-models.png`
+- `docs/integrations/assets/openrouter-chat-demo.png`
+- `docs/integrations/assets/cursor-settings.png`
+- `docs/integrations/assets/cursor-first-chat.png`
+- `docs/integrations/assets/cursor-agent-demo.gif`
+- `docs/integrations/assets/continue-config.png`
+- `docs/integrations/assets/continue-first-chat.png`
+- `docs/integrations/assets/continue-edit-demo.png`
+- `docs/integrations/assets/codex-config.png`
+- `docs/integrations/assets/codex-first-chat.png`
+- `docs/integrations/assets/codex-fastapi-demo.png`
+- `docs/integrations/assets/dify-provider.png`
+- `docs/integrations/assets/dify-first-chat.png`
+- `docs/integrations/assets/dify-meeting-demo.png`
 
-- `openrouter-models.png`
-- `openrouter-chat-demo.png`
-- `cursor-settings.png`
-- `cursor-first-chat.png`
-- `cursor-agent-demo.gif`
-- `continue-config.png`
-- `continue-first-chat.png`
-- `continue-edit-demo.png`
-- `codex-config.png`
-- `codex-first-chat.png`
-- `codex-fastapi-demo.png`
-- `dify-provider.png`
-- `dify-first-chat.png`
-- `dify-meeting-demo.png`
-
-`overview.svg` 为总览示意图，可不替换。
+`docs/integrations/assets/overview.svg` 为总览示意图，可不替换。

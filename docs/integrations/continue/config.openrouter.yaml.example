@@ -1,6 +1,9 @@
 # Continue (~/.continue/config.yaml) — OpenRouter × Hy3
-# 用法：合并进你的 config.yaml，或备份原文件后替换对应 models 段。
-# 把 apiKey 换成真实值，或改用环境变量（若你的 Continue 版本支持）。
+# 在仓库根目录 Hy3/：
+#   bash docs/integrations/sync_env.sh
+#   cp docs/integrations/continue/config.openrouter.yaml ~/.continue/config.yaml
+# 或合并 docs/integrations/continue/config.openrouter.yaml.example 中的 models 段。
+# 不要提交真实 Key。
 
 name: Hy3 Continue (OpenRouter)
 version: 0.0.1

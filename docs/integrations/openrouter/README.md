@@ -1,21 +1,25 @@
 # OpenRouter × Hy3
 
-在 [OpenRouter](https://openrouter.ai) 上选用腾讯 Hy3，一套 Key 可给 Cursor、Continue、Codex CLI 等多款工具复用。
+在 [OpenRouter](https://openrouter.ai) 上选用腾讯 Hy3。  
+**以下命令均以仓库根目录 `Hy3/` 为当前目录执行。**
 
 ## 本目录文件
 
 | 文件 | 用途 |
 |------|------|
-| [`.env.example`](./.env.example) | （可选）本地覆盖；推荐改用上级统一 `.env` + `../sync_env.sh` |
-| [`curl_chat.sh`](./curl_chat.sh) | 一键 curl 最小对话 |
-| [`chat_example.py`](./chat_example.py) | Python OpenAI SDK 示例 |
-| [`requirements.txt`](./requirements.txt) | Python 依赖 |
+| [`docs/integrations/openrouter/.env.example`](./.env.example) | 占位；推荐改用统一 `.env` + sync |
+| [`docs/integrations/openrouter/curl_chat.sh`](./curl_chat.sh) | 一键 curl 最小对话 |
+| [`docs/integrations/openrouter/chat_example.py`](./chat_example.py) | Python OpenAI SDK 示例 |
+| [`docs/integrations/openrouter/requirements.txt`](./requirements.txt) | Python 依赖 |
 
 ```bash
-cd docs/integrations
-cp .env.example .env && $EDITOR .env
-./sync_env.sh
-bash openrouter/curl_chat.sh
+cp docs/integrations/.env.example docs/integrations/.env
+# 编辑 docs/integrations/.env
+bash docs/integrations/sync_env.sh
+bash docs/integrations/openrouter/curl_chat.sh
+# 或
+pip install -r docs/integrations/openrouter/requirements.txt
+python docs/integrations/openrouter/chat_example.py
 ```
 
 ## 安装与版本
@@ -39,7 +43,7 @@ bash openrouter/curl_chat.sh
 
 ## 端到端任务 Demo
 
-让 Hy3 实现 `top_k_frequent` 并附 3 行复杂度说明；截图存 `../assets/openrouter-chat-demo.png`。
+让 Hy3 实现 `top_k_frequent` 并附 3 行复杂度说明；截图存 `docs/integrations/assets/openrouter-chat-demo.png`。
 
 ## 注意事项
 
@@ -50,5 +54,5 @@ bash openrouter/curl_chat.sh
 
 | 文件 | 内容 |
 |------|------|
-| `../assets/openrouter-models.png` | 模型页选中 Hy3 |
-| `../assets/openrouter-chat-demo.png` | 编码任务对话 |
+| `docs/integrations/assets/openrouter-models.png` | 模型页选中 Hy3 |
+| `docs/integrations/assets/openrouter-chat-demo.png` | 编码任务对话 |

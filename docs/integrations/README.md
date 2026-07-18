@@ -1,7 +1,8 @@
 # Hy3 主流工具接入指南
 
 > 面向终端用户：在常用 AI 产品里把 **Hy3** 用起来。  
-> 对应犀牛鸟 Issue [#2](https://github.com/Tencent-Hunyuan/Hy3/issues/2)。
+> 对应犀牛鸟 Issue [#2](https://github.com/Tencent-Hunyuan/Hy3/issues/2)。  
+> **以下命令均以仓库根目录 `Hy3/` 为当前目录执行。**
 
 每个工具是一个**独立文件夹**：内含指南 `README.md` + 配置样例。
 
@@ -10,16 +11,16 @@
 只需维护 **一个** `docs/integrations/.env`，再同步到各子目录：
 
 ```bash
-cd docs/integrations
-cp .env.example .env          # 填入 HY3_API_KEY / OPENROUTER_API_KEY
-./sync_env.sh                 # 自动写入 openrouter|cursor|continue|codex-cli|dify 下的 .env
+cp docs/integrations/.env.example docs/integrations/.env
+# 编辑 docs/integrations/.env，填入 HY3_API_KEY / OPENROUTER_API_KEY
+bash docs/integrations/sync_env.sh
 ```
 
 | 文件 | 说明 |
 |------|------|
-| [`.env.example`](./.env.example) | 模板（可提交） |
-| `.env` | 真实密钥（已 gitignore，勿提交） |
-| [`sync_env.sh`](./sync_env.sh) | 同步脚本 |
+| [`docs/integrations/.env.example`](./.env.example) | 模板（可提交） |
+| `docs/integrations/.env` | 真实密钥（已 gitignore，勿提交） |
+| [`docs/integrations/sync_env.sh`](./sync_env.sh) | 同步脚本 |
 
 后端可选：
 
@@ -58,4 +59,4 @@ cp .env.example .env          # 填入 HY3_API_KEY / OPENROUTER_API_KEY
 
 ## 截图说明
 
-示意图见 [assets/](./assets/)。请用本机真实界面截图（Key 打码）按各目录 README「截图清单」命名后放入 `assets/`。
+示意图见 [`docs/integrations/assets/`](./assets/)。请用本机真实界面截图（Key 打码）按各目录 README「截图清单」命名后放入该目录。

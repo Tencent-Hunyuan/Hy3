@@ -1,7 +1,8 @@
 # Codex CLI — TokenHub × Hy3
-# 用法：
-#   cp config.tokenhub.toml.example ~/.codex/config.toml
-#   export HY3_API_KEY='sk-...'
+# 在仓库根目录 Hy3/ 执行：
+#   bash docs/integrations/sync_env.sh
+#   set -a && source docs/integrations/codex-cli/.env && set +a
+#   cp docs/integrations/codex-cli/config.tokenhub.toml ~/.codex/config.toml
 #   codex "用一句话介绍你自己"
 
 model = "hy3"

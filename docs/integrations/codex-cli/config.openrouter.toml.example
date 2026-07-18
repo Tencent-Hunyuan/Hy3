@@ -1,11 +1,9 @@
 # Codex CLI — OpenRouter × Hy3
-# 用法：
-#   cp config.openrouter.toml.example ~/.codex/config.toml
-#   cp .env.example .env && 编辑 Key
-#   set -a && source .env && set +a
+# 在仓库根目录 Hy3/ 执行：
+#   bash docs/integrations/sync_env.sh
+#   set -a && source docs/integrations/codex-cli/.env && set +a
+#   cp docs/integrations/codex-cli/config.openrouter.toml ~/.codex/config.toml
 #   codex "用一句话介绍你自己"
-#
-# 字段名以本机 Codex 版本为准；若不同请对照官方文档微调。
 
 model = "tencent/hy3"
 model_provider = "openrouter"

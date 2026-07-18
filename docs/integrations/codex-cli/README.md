@@ -1,21 +1,23 @@
 # Codex CLI × Hy3
 
-终端 Coding Agent，通过自定义 provider 使用 Hy3。
+终端 Coding Agent，通过自定义 provider 使用 Hy3。  
+**以下命令均以仓库根目录 `Hy3/` 为当前目录执行。**
 
 ## 本目录文件
 
 | 文件 | 用途 |
 |------|------|
-| [`config.openrouter.toml.example`](./config.openrouter.toml.example) | 复制为 `~/.codex/config.toml` |
-| [`config.tokenhub.toml.example`](./config.tokenhub.toml.example) | TokenHub 版 |
-| [`.env.example`](./.env.example) | 占位；真实值由上级 `../sync_env.sh` 生成 |
+| [`docs/integrations/codex-cli/config.openrouter.toml.example`](./config.openrouter.toml.example) | 复制为 `~/.codex/config.toml` |
+| [`docs/integrations/codex-cli/config.tokenhub.toml.example`](./config.tokenhub.toml.example) | TokenHub 版 |
+| [`docs/integrations/codex-cli/.env.example`](./.env.example) | 占位；真实值由 sync 生成 |
 
 ```bash
-cd docs/integrations
-cp .env.example .env && $EDITOR .env    # 填 HY3_API_KEY
-./sync_env.sh
-set -a && source codex-cli/.env && set +a
-cp codex-cli/config.tokenhub.toml ~/.codex/config.toml
+cp docs/integrations/.env.example docs/integrations/.env
+# 编辑 docs/integrations/.env，填入 HY3_API_KEY
+bash docs/integrations/sync_env.sh
+
+set -a && source docs/integrations/codex-cli/.env && set +a
+cp docs/integrations/codex-cli/config.tokenhub.toml ~/.codex/config.toml
 codex "用一句话介绍你自己，并说明当前是 Hy3。"
 ```
 
@@ -36,7 +38,8 @@ codex --version
 
 ## 端到端 Demo
 
-空目录让 Codex 生成最小 FastAPI `GET /health`。截图：`../assets/codex-fastapi-demo.png`。
+空目录让 Codex 生成最小 FastAPI `GET /health`。  
+截图：`docs/integrations/assets/codex-fastapi-demo.png`。
 
 ## 注意事项
 
