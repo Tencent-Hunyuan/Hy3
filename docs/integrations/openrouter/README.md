@@ -1,34 +1,22 @@
 # OpenRouter × Hy3
 
-在 [OpenRouter](https://openrouter.ai) 上选用腾讯 Hy3。  
 **以下命令均以仓库根目录 `Hy3/` 为当前目录执行。**
 
 ## 本目录文件
 
 | 文件 | 用途 |
 |------|------|
-| [`docs/integrations/openrouter/.env.example`](./.env.example) | 占位；推荐改用统一 `.env` + sync |
-| [`docs/integrations/openrouter/curl_chat.sh`](./curl_chat.sh) | 一键 curl 最小对话 |
-| [`docs/integrations/openrouter/chat_example.py`](./chat_example.py) | Python OpenAI SDK 示例 |
-| [`docs/integrations/openrouter/requirements.txt`](./requirements.txt) | Python 依赖 |
+| [`docs/integrations/openrouter/curl_chat.sh`](./curl_chat.sh) | curl 最小对话 |
+| [`docs/integrations/openrouter/chat.py`](./chat.py) | Python SDK 示例 |
+| [`docs/integrations/openrouter/requirements.txt`](./requirements.txt) | 依赖 |
 
 ```bash
-cp docs/integrations/.env.example docs/integrations/.env
-# 编辑 docs/integrations/.env
 bash docs/integrations/sync_env.sh
 bash docs/integrations/openrouter/curl_chat.sh
 # 或
 pip install -r docs/integrations/openrouter/requirements.txt
-python docs/integrations/openrouter/chat_example.py
+python docs/integrations/openrouter/chat.py
 ```
-
-## 安装与版本
-
-| 项 | 要求 |
-|----|------|
-| 账号 | [openrouter.ai](https://openrouter.ai) 注册 |
-| API | OpenAI 兼容；SDK 建议 `openai >= 1.40` |
-| 模型页 | [tencent/hy3](https://openrouter.ai/tencent/hy3) |
 
 ## 配置项
 
@@ -36,23 +24,13 @@ python docs/integrations/openrouter/chat_example.py
 |------|-----|
 | Base URL | `https://openrouter.ai/api/v1` |
 | Model | `tencent/hy3` |
-| Auth | `Authorization: Bearer sk-or-...` |
-| 协议 | OpenAI Chat Completions |
 
-也可在 OpenRouter 网页 Chat 中直接选择 **Tencent: Hy3**。
+## Demo / 截图
 
-## 端到端任务 Demo
+`docs/integrations/assets/openrouter-chat-demo.png`
 
-让 Hy3 实现 `top_k_frequent` 并附 3 行复杂度说明；截图存 `docs/integrations/assets/openrouter-chat-demo.png`。
+## 提交前
 
-## 注意事项
-
-- Key 前缀 `sk-or-`；模型名必须是 `tencent/hy3`。
-- 只提交 `.env.example`，不要提交真实 `.env`。
-
-## 截图清单
-
-| 文件 | 内容 |
-|------|------|
-| `docs/integrations/assets/openrouter-models.png` | 模型页选中 Hy3 |
-| `docs/integrations/assets/openrouter-chat-demo.png` | 编码任务对话 |
+```bash
+bash docs/integrations/sanitize_secrets.sh
+```

@@ -11,10 +11,6 @@ __pycache__/
 .env
 .venv/
 venv/
-# integrations：统一密钥与同步产物
+# 本地密钥（提交前用 sanitize_secrets.sh；默认不跟踪 .env）
 docs/integrations/.env
 docs/integrations/**/.env
-docs/integrations/continue/config.openrouter.yaml
-docs/integrations/continue/config.tokenhub.yaml
-docs/integrations/codex-cli/config.openrouter.toml
-docs/integrations/codex-cli/config.tokenhub.toml

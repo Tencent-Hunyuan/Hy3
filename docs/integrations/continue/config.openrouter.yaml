@@ -14,4 +14,4 @@ models:
     provider: openai
     model: tencent/hy3
     apiBase: https://openrouter.ai/api/v1
-    apiKey: sk-or-v1-xxxxxxxx
+    apiKey: sk-xxxxxxxx

@@ -1,42 +1,39 @@
 #!/usr/bin/env bash
-# 将 docs/integrations/.env 同步到各工具子目录的 .env
-# 用法（在仓库根目录 Hy3/ 下执行）：
-#   cp docs/integrations/.env.example docs/integrations/.env
+# 将 docs/integrations/.env 同步到各工具子目录，并按需注入本地配置中的 Key。
+# 用法（仓库根目录 Hy3/）：
+#   # 若尚无 .env，先创建并填写 Key
 #   bash docs/integrations/sync_env.sh
+#
+# 提交前请运行：bash docs/integrations/sanitize_secrets.sh
 
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 SRC="${ROOT}/.env"
 
 if [[ ! -f "$SRC" ]]; then
-  echo "缺少 ${SRC}"
-  echo "请先（在 Hy3 根目录）: cp docs/integrations/.env.example docs/integrations/.env"
-  echo "填入真实 Key 后: bash docs/integrations/sync_env.sh"
+  cat >"$SRC" <<'EOF'
+# 本地密钥（勿提交；commit 前运行 sanitize_secrets.sh）
+HY3_API_KEY=sk-xxxxxxxx
+HY3_BASE_URL=https://tokenhub.tencentmaas.com/v1
+HY3_MODEL=hy3
+OPENROUTER_API_KEY=sk-or-v1-xxxxxxxx
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+OPENROUTER_MODEL=tencent/hy3
+EOF
+  echo "已创建 ${SRC}，请填入真实 Key 后重新运行本脚本。"
   exit 1
 fi
 
-# shellcheck disable=SC1090
 set -a
+# shellcheck disable=SC1090
 source "$SRC"
 set +a
-
-require() {
-  local name="$1"
-  if [[ -z "${!name:-}" ]]; then
-    echo "警告: ${name} 未设置"
-  fi
-}
-
-require HY3_API_KEY
-require OPENROUTER_API_KEY
 
 write_env() {
   local dest="$1"
   shift
-  mkdir -p "$(dirname "$dest")"
   {
-    echo "# 由 docs/integrations/sync_env.sh 自动生成 — 勿手改后期望持久化"
-    echo "# 请编辑 docs/integrations/.env 后重新运行: bash docs/integrations/sync_env.sh"
+    echo "# 由 sync_env.sh 生成。提交前请运行: bash docs/integrations/sanitize_secrets.sh"
     echo "#"
     local key
     for key in "$@"; do
@@ -63,27 +60,21 @@ write_env "${ROOT}/codex-cli/.env" \
 write_env "${ROOT}/dify/.env" \
   HY3_API_KEY OPENROUTER_API_KEY
 
+# 注入 Continue yaml 中的 apiKey（本地使用；提交前会被 sanitize 还原）
 if [[ -n "${HY3_API_KEY:-}" && "${HY3_API_KEY}" != sk-xxxxxxxx ]]; then
-  sed "s|apiKey: sk-xxxxxxxx|apiKey: ${HY3_API_KEY}|" \
-    "${ROOT}/continue/config.tokenhub.yaml.example" \
-    >"${ROOT}/continue/config.tokenhub.yaml"
-  echo "wrote ${ROOT}/continue/config.tokenhub.yaml"
+  sed -i "s|^\\([[:space:]]*apiKey: \\).*|\\1${HY3_API_KEY}|" \
+    "${ROOT}/continue/config.tokenhub.yaml"
+  echo "updated ${ROOT}/continue/config.tokenhub.yaml (local key)"
 fi
 
 if [[ -n "${OPENROUTER_API_KEY:-}" && "${OPENROUTER_API_KEY}" != sk-or-v1-xxxxxxxx ]]; then
-  sed "s|apiKey: sk-or-v1-xxxxxxxx|apiKey: ${OPENROUTER_API_KEY}|" \
-    "${ROOT}/continue/config.openrouter.yaml.example" \
-    >"${ROOT}/continue/config.openrouter.yaml"
-  echo "wrote ${ROOT}/continue/config.openrouter.yaml"
+  sed -i "s|^\\([[:space:]]*apiKey: \\).*|\\1${OPENROUTER_API_KEY}|" \
+    "${ROOT}/continue/config.openrouter.yaml"
+  echo "updated ${ROOT}/continue/config.openrouter.yaml (local key)"
 fi
 
-cp "${ROOT}/codex-cli/config.tokenhub.toml.example" "${ROOT}/codex-cli/config.tokenhub.toml"
-cp "${ROOT}/codex-cli/config.openrouter.toml.example" "${ROOT}/codex-cli/config.openrouter.toml"
-echo "wrote ${ROOT}/codex-cli/config.tokenhub.toml"
-echo "wrote ${ROOT}/codex-cli/config.openrouter.toml"
-
 echo
-echo "完成。各子目录 .env 已与 ${SRC} 对齐。"
-echo "Codex 示例（在 Hy3 根目录）:"
+echo "完成。Codex（在 Hy3 根目录）:"
 echo "  set -a && source docs/integrations/codex-cli/.env && set +a"
 echo "  cp docs/integrations/codex-cli/config.tokenhub.toml ~/.codex/config.toml"
+echo "  bash docs/integrations/codex-cli/run.sh \"你的问题\""

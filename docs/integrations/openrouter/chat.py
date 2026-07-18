@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""最小 OpenRouter × Hy3 调用。优先读本目录 .env，否则读上级统一 .env。"""
+"""最小 OpenRouter × Hy3 调用。读本目录或上级 .env。"""
 
 from __future__ import annotations
 

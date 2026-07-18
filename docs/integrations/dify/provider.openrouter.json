@@ -3,7 +3,7 @@
   "provider": "openai_api_compatible",
   "name": "Hy3 OpenRouter",
   "api_endpoint": "https://openrouter.ai/api/v1",
-  "api_key": "sk-or-v1-xxxxxxxx",
+  "api_key": "sk-xxxxxxxx",
   "model_name": "tencent/hy3",
   "completion_mode": "chat"
 }

@@ -4,23 +4,42 @@
 > 对应犀牛鸟 Issue [#2](https://github.com/Tencent-Hunyuan/Hy3/issues/2)。  
 > **以下命令均以仓库根目录 `Hy3/` 为当前目录执行。**
 
-每个工具是一个**独立文件夹**：内含指南 `README.md` + 配置样例。
+每个工具一个文件夹：指南 + **可直接使用的配置文件**（无 `.example` 后缀）。
 
-### 统一填写 Key（推荐）
+### 密钥与同步
 
-只需维护 **一个** `docs/integrations/.env`，再同步到各子目录：
+1. 编辑本地 `docs/integrations/.env`（不入库），填入 Key：
 
 ```bash
-cp docs/integrations/.env.example docs/integrations/.env
-# 编辑 docs/integrations/.env，填入 HY3_API_KEY / OPENROUTER_API_KEY
+# 若文件不存在，运行 sync 会自动创建模板
 bash docs/integrations/sync_env.sh
+# 按提示编辑 docs/integrations/.env 后再跑一次 sync
 ```
 
-| 文件 | 说明 |
+`.env` 建议字段：
+
+```bash
+HY3_API_KEY=...
+HY3_BASE_URL=https://tokenhub.tencentmaas.com/v1
+HY3_MODEL=hy3
+OPENROUTER_API_KEY=...
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+OPENROUTER_MODEL=tencent/hy3
+```
+
+2. `sync_env.sh`：把 Key 同步到各子目录 `.env`，并注入 Continue 等本地配置。  
+3. **提交前**运行脱敏（去掉入库文件里的真实 Key，保留本地 `.env`）：
+
+```bash
+bash docs/integrations/sanitize_secrets.sh
+git add docs/integrations
+git commit -m "..."
+```
+
+| 脚本 | 作用 |
 |------|------|
-| [`docs/integrations/.env.example`](./.env.example) | 模板（可提交） |
-| `docs/integrations/.env` | 真实密钥（已 gitignore，勿提交） |
-| [`docs/integrations/sync_env.sh`](./sync_env.sh) | 同步脚本 |
+| [`docs/integrations/sync_env.sh`](./sync_env.sh) | 本地：分发 Key |
+| [`docs/integrations/sanitize_secrets.sh`](./sanitize_secrets.sh) | 提交前：去除隐私 |
 
 后端可选：
 
@@ -29,34 +48,30 @@ bash docs/integrations/sync_env.sh
 | [TokenHub](https://cloud.tencent.com/document/product/1823/132252) | `https://tokenhub.tencentmaas.com/v1` | `hy3` | TokenHub Key |
 | [OpenRouter](https://openrouter.ai/tencent/hy3) | `https://openrouter.ai/api/v1` | `tencent/hy3` | `sk-or-...` |
 
-> Cursor 走 OpenRouter 时，Base URL 常用 `https://openrouter.ai/api/v1/cursor`（见 [cursor/](./cursor/)）。
+> Cursor 走 OpenRouter 时 Base URL 常用 `https://openrouter.ai/api/v1/cursor`（见 [cursor/](./cursor/)）。
 
 ## 工具索引
 
-| # | 工具 | 类型 | 目录 | 配置样例 |
-|---|------|------|------|----------|
-| 1 | OpenRouter | 聚合 API / 网页 | [openrouter/](./openrouter/) | `.env.example`、`curl_chat.sh`、`chat_example.py` |
-| 2 | Cursor | AI IDE | [cursor/](./cursor/) | `settings.*.example.json` |
-| 3 | Continue | VS Code / JetBrains | [continue/](./continue/) | `config.*.yaml.example` |
-| 4 | Codex CLI | 终端 Agent | [codex-cli/](./codex-cli/) | `config.*.toml.example`、`.env.example` |
-| 5 | Dify | 低代码 / Agent | [dify/](./dify/) | `provider.*.example.json`、`.env.example` |
+| # | 工具 | 目录 | 主要配置 |
+|---|------|------|----------|
+| 1 | OpenRouter | [openrouter/](./openrouter/) | `curl_chat.sh`、`chat.py` |
+| 2 | Cursor | [cursor/](./cursor/) | `settings.*.json` |
+| 3 | Continue | [continue/](./continue/) | `config.*.yaml` |
+| 4 | Codex CLI | [codex-cli/](./codex-cli/) | `config.*.toml`、`run.sh` |
+| 5 | Dify | [dify/](./dify/) | `provider.*.json` |
 
 ## 小作品（Part B）
 
-独立开源应用：**Hy3 Workbench**（网页 Agent 工作台，支持思考模式 + 工具调用）
-
-- 仓库：<https://github.com/xianggkl/hy3-showcase>（推送后更新为你的实际地址）
-- 能力：推理（`thinking` / `reasoning_effort`）、Function Calling、多轮工具回填
-- 本地启动见该仓库 README；演示 GIF/视频放在仓库 `docs/demo.gif`
+独立开源应用：**Hy3 Workbench** — <https://github.com/xianggkl/hy3-showcase>
 
 ## 建议阅读顺序
 
-1. [openrouter/](./openrouter/) — 先拿到一把通用 Key  
-2. [cursor/](./cursor/) — IDE 里写代码  
-3. [continue/](./continue/) — VS Code 轻量接入  
-4. [codex-cli/](./codex-cli/) — 终端 Agent  
-5. [dify/](./dify/) — 无代码搭 Agent  
+1. [openrouter/](./openrouter/)  
+2. [cursor/](./cursor/)  
+3. [continue/](./continue/)  
+4. [codex-cli/](./codex-cli/)  
+5. [dify/](./dify/)  
 
 ## 截图说明
 
-示意图见 [`docs/integrations/assets/`](./assets/)。请用本机真实界面截图（Key 打码）按各目录 README「截图清单」命名后放入该目录。
+截图放入 [`docs/integrations/assets/`](./assets/)，文件名见各目录 README。
