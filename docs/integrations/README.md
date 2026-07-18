@@ -3,24 +3,26 @@
 > 面向终端用户：在常用 AI 产品里把 **Hy3** 用起来。  
 > 对应犀牛鸟 Issue [#2](https://github.com/Tencent-Hunyuan/Hy3/issues/2)。
 
-本目录提供 **配置 → 第一次对话 → 真实任务** 的实战流程。后端可选：
+每个工具是一个**独立文件夹**：内含指南 `README.md` + **可直接复制的配置样例**（`.env` / `config.toml` / `config.yaml` / JSON 等）。
+
+后端可选：
 
 | 后端 | Base URL | Model | API Key |
 |------|----------|-------|---------|
 | [TokenHub](https://cloud.tencent.com/document/product/1823/132252) | `https://tokenhub.tencentmaas.com/v1` | `hy3` | TokenHub Key |
 | [OpenRouter](https://openrouter.ai/tencent/hy3) | `https://openrouter.ai/api/v1` | `tencent/hy3` | `sk-or-...` |
 
-> Cursor 走 OpenRouter 时，Base URL 常需使用专用地址 `https://openrouter.ai/api/v1/cursor`（见 [Cursor 指南](./cursor.md)）。
+> Cursor 走 OpenRouter 时，Base URL 常用 `https://openrouter.ai/api/v1/cursor`（见 [cursor/](./cursor/)）。
 
 ## 工具索引
 
-| # | 工具 | 类型 | 指南 |
-|---|------|------|------|
-| 1 | OpenRouter | 聚合 API / 网页 | [openrouter.md](./openrouter.md) |
-| 2 | Cursor | AI IDE | [cursor.md](./cursor.md) |
-| 3 | Continue | VS Code / JetBrains 插件 | [continue.md](./continue.md) |
-| 4 | Codex CLI | 终端 Agent | [codex-cli.md](./codex-cli.md) |
-| 5 | Dify | 低代码 / Agent 平台 | [dify.md](./dify.md) |
+| # | 工具 | 类型 | 目录 | 配置样例 |
+|---|------|------|------|----------|
+| 1 | OpenRouter | 聚合 API / 网页 | [openrouter/](./openrouter/) | `.env.example`、`curl_chat.sh`、`chat_example.py` |
+| 2 | Cursor | AI IDE | [cursor/](./cursor/) | `settings.*.example.json` |
+| 3 | Continue | VS Code / JetBrains | [continue/](./continue/) | `config.*.yaml.example` |
+| 4 | Codex CLI | 终端 Agent | [codex-cli/](./codex-cli/) | `config.*.toml.example`、`.env.example` |
+| 5 | Dify | 低代码 / Agent | [dify/](./dify/) | `provider.*.example.json`、`.env.example` |
 
 ## 小作品（Part B）
 
@@ -32,12 +34,12 @@
 
 ## 建议阅读顺序
 
-1. [OpenRouter](./openrouter.md) — 先拿到一把通用 Key  
-2. [Cursor](./cursor.md) — IDE 里写代码  
-3. [Continue](./continue.md) — VS Code 轻量接入  
-4. [Codex CLI](./codex-cli.md) — 终端 Agent  
-5. [Dify](./dify.md) — 无代码搭 Agent  
+1. [openrouter/](./openrouter/) — 先拿到一把通用 Key  
+2. [cursor/](./cursor/) — IDE 里写代码  
+3. [continue/](./continue/) — VS Code 轻量接入  
+4. [codex-cli/](./codex-cli/) — 终端 Agent  
+5. [dify/](./dify/) — 无代码搭 Agent  
 
 ## 截图说明
 
-各指南 `assets/` 下的示意图用于说明配置路径；**请用你本机真实配置界面截图替换** `docs/integrations/assets/*-screenshot.png` 占位说明（见各文档「截图清单」），再提交 PR。
+示意图见 [assets/](./assets/)。请用本机真实界面截图（Key 打码）按各目录 README「截图清单」命名后放入 `assets/`。
