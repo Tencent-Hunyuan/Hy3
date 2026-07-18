@@ -37,6 +37,7 @@
 - [News](#news)
 - [Model Links](#model-links)
 - [Quickstart](#quickstart)
+- [Hosted API Quickstart](#hosted-api-quickstart)
 - [Deployment](#deployment)
   - [vLLM](#vllm)
   - [SGLang](#sglang)
@@ -136,6 +137,13 @@ print(response.choices[0].message.content)
 > **Reasoning mode**: Set `reasoning_effort` to `"high"` for complex tasks (math, coding, reasoning) or `"no_think"` for direct responses.
 
 See the [Deployment](#deployment) section below for how to start the API server.
+
+## Hosted API Quickstart
+
+Using Tencent Cloud TokenHub (no local GPU required)? See:
+
+- [quickstart.md](./quickstart.md) — first call in ~5 minutes
+- [examples/api/](./examples/api/) — chat / streaming / latency / tools / reasoning / retries
 
 ## Deployment
 

@@ -37,6 +37,7 @@
 - [新闻](#新闻)
 - [模型链接](#模型链接)
 - [快速开始](#快速开始)
+- [托管 API Quickstart](#托管-api-quickstart)
 - [推理和部署](#推理和部署)
   - [vLLM](#使用-vllm-推理)
   - [SGLang](#使用-sglang-推理)
@@ -133,6 +134,13 @@ print(response.choices[0].message.content)
 > **推理模式**：复杂任务（数学、编程、推理）建议设置 `reasoning_effort="high"`，日常对话可使用默认的 `"no_think"` 直接回复。
 
 具体部署方式请参考下方[推理和部署](#推理和部署)章节。
+
+## 托管 API Quickstart
+
+若使用腾讯云 TokenHub 托管 API（无需本地 GPU），请参阅：
+
+- [quickstart.md](./quickstart.md) — 5 分钟跑通第一次调用
+- [examples/api/](./examples/api/) — 对话 / 流式 / 时延 / 工具调用 / 思考模式 / 错误重试
 
 ## 推理和部署
 
