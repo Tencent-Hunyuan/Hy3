@@ -1,0 +1,6 @@
+If SQLite reports that FTS5 or the trigram tokenizer is unavailable, stop indexing and
+report the missing capability. Do not silently fall back to an unbounded full scan.
+Exact two-word action: Stop indexing.
+
+If the Hy3 endpoint returns HTTP 429, wait at least 60 seconds before retrying remote
+generation. Local hy3_kb_search and hy3_kb_list_sources remain available.

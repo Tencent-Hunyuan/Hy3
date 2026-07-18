@@ -1,0 +1,53 @@
+<evaluation>
+  <qa_pair>
+    <question>The milestone that requires verification in two named clients is also the production launch. What is its date? Respond with only YYYY-MM-DD.</question>
+    <answer>2025-11-18</answer>
+    <source>roadmap.md</source>
+  </qa_pair>
+  <qa_pair>
+    <question>Which component sends selected evidence to the remote model after local retrieval? Respond with only the component name.</question>
+    <answer>Answer Engine</answer>
+    <source>architecture.md</source>
+  </qa_pair>
+  <qa_pair>
+    <question>中文“退款”短查询事故持续了多少分钟？仅回复整数。</question>
+    <answer>27</answer>
+    <source>incident-review.md</source>
+  </qa_pair>
+  <qa_pair>
+    <question>What exact fallback addresses the trigram limitation for short terms? Respond with only the two-word mechanism.</question>
+    <answer>LIKE fallback</answer>
+    <source>architecture.md</source>
+  </qa_pair>
+  <qa_pair>
+    <question>Which document classification is prohibited from entering the index at all? Respond with only the classification.</question>
+    <answer>Restricted</answer>
+    <source>security-policy.rst</source>
+  </qa_pair>
+  <qa_pair>
+    <question>When remote generation is rate-limited, which MCP tool remains available for local evidence lookup? Respond with only the tool name.</question>
+    <answer>hy3_kb_search</answer>
+    <source>runbook.txt</source>
+  </qa_pair>
+  <qa_pair>
+    <question>On what date did page-cited PDF ingestion become a roadmap deliverable? Respond with only YYYY-MM-DD.</question>
+    <answer>2025-09-15</answer>
+    <source>roadmap.md</source>
+  </qa_pair>
+  <qa_pair>
+    <question>哪个架构组件读取四种支持的源文件格式并保持原文件不变？仅回复组件名。</question>
+    <answer>Ingestor</answer>
+    <source>architecture.md</source>
+  </qa_pair>
+  <qa_pair>
+    <question>Who sponsors the project whose final milestone requires Cline and TRAE verification? Respond with only the person's name.</question>
+    <answer>Mei Lin</answer>
+    <source>charter.md</source>
+    <source>roadmap.md</source>
+  </qa_pair>
+  <qa_pair>
+    <question>If the required SQLite tokenizer is unavailable, what must the server do instead of performing an unbounded scan? Respond with only the two-word action.</question>
+    <answer>Stop indexing</answer>
+    <source>runbook.txt</source>
+  </qa_pair>
+</evaluation>

@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "hy3-knowledge": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "C:\\path\\to\\Hy3\\mcp_servers\\knowledge_base",
+        "hy3-knowledge-mcp"
+      ],
+      "env": {
+        "HY3_BASE_URL": "https://openrouter.ai/api/v1",
+        "HY3_MODEL": "tencent/hy3:free",
+        "HY3_ENDPOINT_PROFILE": "openrouter",
+        "HY3_REASONING_EFFORT": "none",
+        "HY3_KB_ROOTS": "C:\\path\\to\\Hy3\\mcp_servers\\knowledge_base\\examples\\knowledge_base"
+      }
+    }
+  }
+}
