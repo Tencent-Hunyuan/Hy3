@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import random
 import sys
 import types
 from pathlib import Path
@@ -10,7 +11,6 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
-# examples/ on sys.path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
@@ -23,14 +23,12 @@ from common import (  # noqa: E402
     get_config,
     iter_stream_text,
     parse_retry_after,
+    redact_data,
+    redact_text,
     redacted_preview,
     run_tool_loop,
+    validate_config,
 )
-
-
-# ---------------------------------------------------------------------------
-# Fixtures / fakes
-# ---------------------------------------------------------------------------
 
 
 class FakeDelta:
@@ -83,8 +81,6 @@ class FakeResponse:
 
 
 class FakeClient:
-    """Minimal stand-in for OpenAI client used by run_tool_loop / chat_completion paths."""
-
     def __init__(self, responses: List[FakeResponse]):
         self._responses = list(responses)
         self.calls: List[Dict[str, Any]] = []
@@ -105,11 +101,6 @@ class FakeHTTPError(Exception):
             headers["Retry-After"] = str(retry_after)
         self.response = types.SimpleNamespace(status_code=status_code, headers=headers)
         self.status_code = status_code
-
-
-# ---------------------------------------------------------------------------
-# Config / extra_body
-# ---------------------------------------------------------------------------
 
 
 def test_get_config_defaults(monkeypatch):
@@ -133,6 +124,43 @@ def test_get_config_from_env(monkeypatch):
     assert cfg["base_url"].startswith("https://tokenhub")
     assert cfg["api_key"] == "sk-test"
     assert cfg["timeout"] == 30.0
+
+
+def test_validate_config_rejects_remote_http():
+    with pytest.raises(ValueError, match="HTTPS"):
+        validate_config(
+            {
+                "base_url": "http://example.com/v1",
+                "api_key": "sk-x",
+                "model": "hy3",
+                "timeout": 10,
+            }
+        )
+
+
+def test_validate_config_allows_local_http():
+    cfg = validate_config(
+        {
+            "base_url": "http://127.0.0.1:8000/v1",
+            "api_key": "EMPTY",
+            "model": "hy3",
+            "timeout": 10,
+        }
+    )
+    assert cfg["base_url"].endswith("/v1")
+
+
+def test_validate_config_require_api_key():
+    with pytest.raises(ValueError, match="HY3_API_KEY"):
+        validate_config(
+            {
+                "base_url": "https://tokenhub.tencentmaas.com/v1",
+                "api_key": "EMPTY",
+                "model": "hy3",
+                "timeout": 10,
+            },
+            require_api_key=True,
+        )
 
 
 def test_build_extra_body_dual_compat():
@@ -164,15 +192,9 @@ def test_build_extra_body_unknown():
 
 
 def test_reasoning_modes_cover_issue_levels():
-    # Issue asks for thinking on/off; we also expose low/high as recommended values
     assert "no_think" in REASONING_MODES
     assert "low" in REASONING_MODES
     assert "high" in REASONING_MODES
-
-
-# ---------------------------------------------------------------------------
-# Streaming
-# ---------------------------------------------------------------------------
 
 
 def test_iter_stream_text_skips_empty():
@@ -205,11 +227,6 @@ def test_collect_stream_empty():
     assert total >= 0
 
 
-# ---------------------------------------------------------------------------
-# Reasoning extract
-# ---------------------------------------------------------------------------
-
-
 def test_extract_reasoning_and_content():
     msg = FakeMessage(content="answer", reasoning_content="step1")
     r, c = extract_reasoning_and_content(msg)
@@ -222,14 +239,9 @@ def test_extract_reasoning_and_content():
     assert c2 == "only"
 
 
-# ---------------------------------------------------------------------------
-# Retry
-# ---------------------------------------------------------------------------
-
-
 def test_call_with_retry_success_first_try():
     sleeps = []
-    result = call_with_retry(lambda: 42, sleep_fn=sleeps.append)
+    result = call_with_retry(lambda: 42, sleep_fn=sleeps.append, jitter=0)
     assert result == 42
     assert sleeps == []
 
@@ -254,6 +266,7 @@ def test_call_with_retry_recovers_after_failures():
             max_delay=0.05,
             max_total_wait=1.0,
             sleep_fn=sleeps.append,
+            jitter=0,
         )
         == "ok"
     )
@@ -275,30 +288,38 @@ def test_call_with_retry_exhausts():
             max_delay=0.02,
             max_total_wait=1.0,
             sleep_fn=lambda _: None,
+            jitter=0,
         )
 
 
-def test_call_with_retry_honors_retry_after():
-    from openai import RateLimitError
+def test_call_with_retry_jitter_deterministic():
+    from openai import APIConnectionError
 
-    # Build a RateLimitError-like object with Retry-After header is hard without httpx;
-    # instead unit-test parse_retry_after and ensure delay uses it via a custom exception
-    # that call_with_retry treats as retryable.
-    class RateLimitLike(RateLimitError):
-        def __init__(self):
-            # RateLimitError signature varies; construct carefully
-            Exception.__init__(self, "rate limited")
-            self.response = types.SimpleNamespace(
-                status_code=429, headers={"Retry-After": "3.5"}
-            )
-            self.status_code = 429
-            self.body = None
-            self.message = "rate limited"
-            self.request = None
-            self.code = None
-            self.param = None
+    state = {"n": 0}
 
-    # Simpler: test parse_retry_after directly
+    def flaky():
+        state["n"] += 1
+        if state["n"] < 2:
+            raise APIConnectionError(request=None)
+        return "ok"
+
+    sleeps = []
+    call_with_retry(
+        flaky,
+        max_attempts=3,
+        base_delay=1.0,
+        max_delay=10.0,
+        max_total_wait=60.0,
+        jitter=0.5,
+        sleep_fn=sleeps.append,
+        rng=random.Random(0),
+    )
+    assert len(sleeps) == 1
+    # With seed 0 and jitter 0.5, delay is in [0.5, 1.0]
+    assert 0.5 <= sleeps[0] <= 1.0
+
+
+def test_parse_retry_after_numeric():
     err = FakeHTTPError(429, retry_after=3.5)
     assert parse_retry_after(err) == 3.5
     assert parse_retry_after(Exception("x")) is None
@@ -307,11 +328,6 @@ def test_call_with_retry_honors_retry_after():
 def test_parse_retry_after_invalid():
     err = FakeHTTPError(429, retry_after="soon")
     assert parse_retry_after(err) is None
-
-
-# ---------------------------------------------------------------------------
-# Tool loop
-# ---------------------------------------------------------------------------
 
 
 def test_run_tool_loop_single_then_answer():
@@ -332,19 +348,12 @@ def test_run_tool_loop_single_then_answer():
     def on_tool(tc, result):
         seen.append((tc.function.name, result))
 
-    # Monkeypatch chat_completion path: run_tool_loop calls chat_completion which
-    # uses client.chat.completions.create — our FakeClient exposes create on .chat.completions
-    # but chat_completion builds its own call. Patch via wrapping:
     import common as common_mod
 
     original = common_mod.chat_completion
 
     def fake_chat_completion(client, messages, **kwargs):
         return client.chat.completions.create(messages=messages, **kwargs)
-
-    # FakeClient: client.chat.completions is self, and create exists
-    # But structure is client.chat.completions.create — we set client.chat = SimpleNamespace(completions=self)
-    # and self.create works. Good.
 
     common_mod.chat_completion = fake_chat_completion  # type: ignore
     try:
@@ -362,7 +371,6 @@ def test_run_tool_loop_single_then_answer():
     assert final is not None
     assert final.content == "北京今天晴，28°C。"
     assert seen == [("get_weather", "北京: sunny mock")]
-    # history should contain assistant tool_calls + tool result + final assistant
     roles = []
     for m in messages:
         if isinstance(m, dict):
@@ -406,7 +414,6 @@ def test_run_tool_loop_unknown_tool():
 
 
 def test_run_tool_loop_max_iterations():
-    # Always returns tool_calls -> hits max_iterations
     always_tool = FakeMessage(
         tool_calls=[FakeToolCall("tc", "get_weather", json.dumps({"city": "上海"}))]
     )
@@ -433,25 +440,35 @@ def test_run_tool_loop_max_iterations():
         common_mod.chat_completion = original  # type: ignore
 
     assert final is not None
-    assert final.tool_calls  # last message still had tool_calls
+    assert final.tool_calls
     assert len(client.calls) == 3
-
-
-# ---------------------------------------------------------------------------
-# Redaction
-# ---------------------------------------------------------------------------
 
 
 def test_redacted_preview():
     assert redacted_preview("hello world") == "hello world"
-    assert redacted_preview("sk-secret-key-here") == "[redacted]"
+    assert "redacted" in redacted_preview("sk-secretkeyvaluehere")
     assert redacted_preview("a" * 100, max_len=20).endswith("...")
     assert redacted_preview(None) == ""
 
 
-# ---------------------------------------------------------------------------
-# Example scripts are importable / compile
-# ---------------------------------------------------------------------------
+def test_redact_text_bearer():
+    s = redact_text("Authorization: Bearer abcdEFGH1234_+/=")
+    assert "Bearer [redacted]" in s
+    assert "abcdEFGH" not in s
+
+
+def test_redact_data_nested():
+    data = {
+        "api_key": "sk-should-hide",
+        "nested": {"authorization": "Bearer xyz", "ok": "value"},
+        "items": ["sk-abcdefghi", "plain"],
+    }
+    out = redact_data(data)
+    assert out["api_key"] == "[redacted]"
+    assert out["nested"]["authorization"] == "[redacted]"
+    assert out["nested"]["ok"] == "value"
+    assert "redacted" in out["items"][0]
+    assert out["items"][1] == "plain"
 
 
 def test_example_scripts_compile():

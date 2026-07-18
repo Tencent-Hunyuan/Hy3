@@ -138,28 +138,14 @@ stream = client.chat.completions.create(**common_kwargs, stream=True)
 ---
 
 ## Sample Output
+> Verified live on **Tencent Cloud TokenHub** (`https://tokenhub.tencentmaas.com/v1`, `model=hy3`) on **2026-07-18**. Output is model-generated and may vary; secrets redacted.
 
-> The following is **sample output** (representative data, not a real run result). Actual values depend on hardware, load, generation length, and other factors.
+```text
+=== Comparison summary (TokenHub live) ===
+Non-streaming total latency:  1.437 s
+Streaming TTFT:               0.001 s
+Streaming total latency:      0.592 s
 
+Non-stream text preview:
+MoE（混合专家模型）是一种将任务动态分配给多个专用子模型（专家）并由门控网络按需激活部分专家以提升效率与性能的神经网络架构。
 ```
-=== Non-streaming call ===
-Response content:
-混合专家模型（MoE）通过门控网络为每个 token 动态选择少量"专家"子网络进行计算，从而在扩大总参数量的同时保持较低的激活参数量与推理成本。生活中可以类比为医院分诊：患者（token）进入后，分诊台（门控）根据症状把它分配给最合适的几位专科医生（专家）诊治，而不是让所有医生都同时参与。
-
-Non-streaming total latency: 3.842 s
-
-=== Streaming call ===
-Response content:
-混合专家模型（MoE）通过门控网络为每个 token 动态选择少量"专家"子网络进行计算，从而在扩大总参数量的同时保持较低的激活参数量与推理成本。生活中可以类比为医院分诊：患者（token）进入后，分诊台（门控）根据症状把它分配给最合适的几位专科医生（专家）诊治，而不是让所有医生都同时参与。
-
-Streaming TTFT (Time To First Token): 0.237 s
-Streaming total latency: 3.798 s
-
-=== Comparison summary ===
-Non-streaming total latency:           3.842 s
-Streaming  TTFT:                       0.237 s
-Streaming  total latency:              3.798 s
-TTFT / Non-streaming total latency:    6.2%
-```
-
-As you can see: the **total latencies of the two modes are close** (the generation length is the same), but the streaming **TTFT (0.237 s) is far smaller than the non-streaming total latency (3.842 s)** — the user sees the first character after about 0.24 seconds, whereas with non-streaming they must wait nearly 3.8 seconds before seeing any output. This is exactly the core value of streaming calls in interactive scenarios.

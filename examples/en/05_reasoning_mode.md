@@ -211,70 +211,12 @@ This example uses `temperature=0.9` and `top_p=1.0` (officially recommended para
 ---
 
 ## Sample Output
-
-> The following is sample output (not a real run result) to illustrate the print layout and differences between the two modes.
+> Verified live on **Tencent Cloud TokenHub** (`https://tokenhub.tencentmaas.com/v1`, `model=hy3`) on **2026-07-18**. Output is model-generated and may vary; secrets redacted.
 
 ```text
-======================================================================
-Mode 1: Thinking disabled (thinking: disabled / reasoning_effort: no_think)
-======================================================================
-[User Question]
-小明有 5 个苹果，分给 3 个朋友每人 1 个，又买了 2 个，现在他还有几个苹果？请逐步分析。
-
-[Chain-of-thought reasoning_content] (none; thinking disabled or server did not enable a reasoning parser)
-
-[Final answer content]
-我们一步一步来分析：
-
-1. **原有苹果数量**：小明一开始有 **5 个苹果**。
-2. **分给朋友**：他分给 3 个朋友，每人 1 个，共分出 3 × 1 = 3 个苹果。
-   此时小明剩下：5 - 3 = 2 个苹果。
-3. **又买了苹果**：他又买了 2 个苹果，所以现在共有：2 + 2 = 4 个苹果。
-
-**结论**：小明现在还有 **4 个苹果**。
-
-======================================================================
-Mode 2: Thinking enabled (thinking: enabled / reasoning_effort: high)
-======================================================================
-[User Question]
-小明有 5 个苹果，分给 3 个朋友每人 1 个，又买了 2 个，现在他还有几个苹果？请逐步分析。
-
-[Chain-of-thought reasoning_content]
-用户问：小明有 5 个苹果，分给 3 个朋友每人 1 个，又买了 2 个，现在他还有几个苹果？请逐步分析。
-
-我们需要计算一下：
-初始：5个苹果
-分给3个朋友每人1个：分出去3个，剩下 5 - 3 = 2 个
-又买了2个：2 + 2 = 4 个
-
-所以现在他有4个苹果。
-
-逐步分析：
-1. 初始状态：小明有 5 个苹果。
-2. 分配过程：分给 3 个朋友，每人 1 个，共分出 3 × 1 = 3 个苹果。小明剩下的苹果数 = 5 - 3 = 2 个。
-3. 购买过程：小明又买了 2 个苹果，此时苹果数 = 2 + 2 = 4 个。
-4. 结论：小明现在还有 4 个苹果。
-
-[Final answer content]
-我们可以一步一步来分析这道题：
-
-1. **初始数量**：小明最开始有 **5 个苹果**。
-2. **分出去的数量**：小明分给 3 个朋友，每人 1 个，也就是分出去了 3 × 1 = **3 个苹果**。
-   分完后，小明剩下的苹果数量是：5 - 3 = **2 个苹果**。
-3. **新买的数量**：之后小明又买了 **2 个苹果**，这些苹果加到他剩下的苹果中。
-   现在小明拥有的苹果数量是：2 + 2 = **4 个苹果**。
-
-**结论**：经过分出去和重新购买后，小明现在还有 **4 个苹果**。
-
-======================================================================
-[Comparison summary]
-======================================================================
-Thinking disabled: gives the answer directly with no chain-of-thought; fast response, suitable for everyday chat.
-Thinking enabled: outputs step-by-step reasoning (reasoning_content) first, then the final answer,
-          suitable for math/code/complex logic reasoning tasks.
-
-Tip: If reasoning_content is still empty when thinking is enabled, please verify:
-  - Cloud TokenHub API: use the thinking parameter (already included in this example)
-  - Local vLLM:   add --reasoning-parser hy_v3 at startup
-  - Local SGLang: add --reasoning-parser hunyuan at startup
+Mode: high (thinking enabled)
+Final answer content: 4
+reasoning_content present: True (len=89)
+reasoning_content preview:
+小明有5个苹果。 分给3个朋友每人1个，分出去3个，剩下 5 - 3 = 2 个。 又买了2个，现在有 2 + 2 = 4 个。 题目问还有几个，只给数字答案。 所以答案是 4。
 ```

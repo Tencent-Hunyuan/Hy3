@@ -22,7 +22,11 @@ def test_required_files_exist():
     assert (REPO / "quickstart_CN.md").is_file()
     assert (ROOT / "common.py").is_file()
     assert (ROOT / "requirements.txt").is_file()
+    assert (ROOT / "requirements-dev.txt").is_file()
     assert (ROOT / ".env.example").is_file()
+    assert (ROOT / "README.md").is_file()
+    assert (ROOT / "tests" / "test_common.py").is_file()
+    assert (ROOT / "tests" / "test_live_smoke.py").is_file()
 
     for lang in ("en", "cn"):
         assert (ROOT / lang / "README.md").is_file()

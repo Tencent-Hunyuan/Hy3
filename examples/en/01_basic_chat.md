@@ -156,22 +156,13 @@ response
 ```
 
 ## Sample Output
-
-> The following is a representative sample output, not a real run result. Actual content depends on what the model returns.
+> Verified live on **Tencent Cloud TokenHub** (`https://tokenhub.tencentmaas.com/v1`, `model=hy3`) on **2026-07-18**. Output is model-generated and may vary; secrets redacted.
 
 ```text
 ============================================================
 [Single-turn Chat]
 ============================================================
 User: 用一句话介绍腾讯混元 Hy3 模型。
-Assistant: Hy3 是腾讯混元团队推出的 295B 参数 MoE 大模型，激活参数约 21B，支持 256K 上下文。
-
-============================================================
-[Multi-turn Chat]
-============================================================
-system: 你是一个简洁友好的中文助手。
-user: Hy3 的上下文长度是多少？
-assistant: Hy3 的上下文长度为 256K tokens。
-user: 那它的激活参数量是多少？
-assistant: Hy3 的激活参数量约为 21B。
+Assistant: 腾讯混元Hy3是腾讯推出的新一代大语言模型，具备更强的推理、多模态理解与内容生成能力，支持复杂任务处理与高效落地应用。
+Usage: prompt=26 completion=34 total=60
 ```

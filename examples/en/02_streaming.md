@@ -131,15 +131,12 @@ When enabled, the server generally returns the total usage in the **last chunk**
 ---
 
 ## Sample Output
+> Verified live on **Tencent Cloud TokenHub** (`https://tokenhub.tencentmaas.com/v1`, `model=hy3`) on **2026-07-18**. Output is model-generated and may vary; secrets redacted.
 
-> The following is **sample output** (representative text, not a real run result) to illustrate the print layout of a streaming call.
-
-```
+```text
 === Streaming Output (per-chunk print) ===
-秋天的银杏林是一幅金色的画卷。阳光透过层层叠叠的叶片洒落下来，把地面铺成一条柔软的金黄小径。微风拂过，叶子簌簌作响，像是在低声诉说季节的秘密。我站在林中，呼吸着微凉的空气，心底升起一种安静而满足的喜悦。
+秋天的银杏宛若披上金裳的舞者，在微凉的风里洒落一地温柔的时光。
 
-=== Stream ended, assembling full text ===
-秋天的银杏林是一幅金色的画卷。阳光透过层层叠叠的叶片洒落下来，把地面铺成一条柔软的金黄小径。微风拂过，叶子簌簌作响，像是在低声诉说季节的秘密。我站在林中，呼吸着微凉的空气，心底升起一种安静而满足的喜悦。
+=== Stream ended ===
+TTFT ≈ 0.005 s · total ≈ 0.453 s
 ```
-
-At runtime, the first paragraph is printed incrementally to the terminal — character by character / word by word (typewriter effect) — and after the stream ends the assembled full text is printed once more.

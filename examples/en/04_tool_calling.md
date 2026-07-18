@@ -234,29 +234,12 @@ This loop structure can handle complex scenarios such as "the model calls severa
 ---
 
 ## Sample Output
-
-> The following is sample output (not a real run result) to illustrate the print layout of each step of the script.
+> Verified live on **Tencent Cloud TokenHub** (`https://tokenhub.tencentmaas.com/v1`, `model=hy3`) on **2026-07-18**. Output is model-generated and may vary; secrets redacted.
 
 ```text
-======================================================================
-[User Question]
-北京今天天气怎么样？
-======================================================================
-
------ Round 1: calling model -----
-
-[Tool call received]
-  tool_call_id : call_0a1b2c3d
-  function     : get_weather
-  arguments    : {"city": "北京"}
-
-[Executing local function get_weather]
-  Result: 晴，气温 28°C，湿度 45%，西北风 3 级
-
------ Round 2: calling model -----
-
-[Final Answer]
-北京今天天气晴朗，气温 28°C，湿度 45%，西北风 3 级，整体比较舒适。
-外出可以不用带伞，但气温略高，注意防晒和补水。
-======================================================================
+[User Question] 北京今天天气怎么样？
+[Tool call] get_weather({"city": "北京"})
+[Tool result] 北京：晴，28°C（mock）
+[Final Answer] 北京今天天气是：**晴**，气温 **28°C**。
+(tool_calls path used: True)
 ```

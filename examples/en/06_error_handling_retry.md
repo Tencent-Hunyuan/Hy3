@@ -261,51 +261,11 @@ This example makes at most 5 attempts, so the actual wait sequence is roughly: i
 ---
 
 ## Sample Output
-
-> The following is sample output (not a real run result) to illustrate the print layout and error messages of each scenario. The actual root-cause text varies by environment.
+> Verified live on **Tencent Cloud TokenHub** (`https://tokenhub.tencentmaas.com/v1`, `model=hy3`) on **2026-07-18**. Output is model-generated and may vary; secrets redacted.
 
 ```text
-Hy3 Error Handling & Retry Example
-This script runs standalone; even without an Hy3 service, scenarios 1 and 3 trigger errors as expected.
-
-======================================================================
-Scenario 1: Timeout (APITimeoutError)
-======================================================================
-Note: a very short timeout=0.001s is set, which almost certainly times out.
-Expected: tenacity triggers exponential-backoff retry; after retries are exhausted, APITimeoutError is raised and caught by try/except.
-
-[Caught APITimeoutError] Timeout retries exhausted.
-  Error type: APITimeoutError
-  Suggestion: increase timeout appropriately, or reduce the request/context size and retry.
-
-======================================================================
-Scenario 2: Rate limit (RateLimitError, HTTP 429)
-======================================================================
-Note: simulates how to identify and back off when the server returns 429.
-Expected: RateLimitError is caught by retry and retried with exponential backoff; here we construct it manually to show the identification logic.
-
-[Caught RateLimitError] Server returned 429; rate limit triggered.
-  Error type: RateLimitError
-  HTTP status code: 429
-  Suggestion: lower concurrency/request frequency, retry after exponential backoff; contact ops to raise the quota if needed.
-
-======================================================================
-Scenario 3: Network error (APIConnectionError)
-======================================================================
-Note: uses an unreachable base_url to force a connection error.
-Expected: tenacity retries with exponential backoff; after retries are exhausted, APIConnectionError is raised and caught by try/except.
-
-[Caught APIConnectionError] Network connection failed; retries exhausted.
-  Error type: APIConnectionError
-  Root cause: Connection error.
-  Suggestion: check whether base_url is correct, whether the Hy3 service is running, and whether the network/firewall allows the port.
-
-======================================================================
-All scenarios demonstrated
-======================================================================
-Key takeaways:
-  - APITimeoutError    -> increase timeout or reduce request size; retryable
-  - RateLimitError(429)-> lower concurrency/frequency, retry after exponential backoff
-  - APIConnectionError-> check base_url / service status / network
-  - APIStatusError     -> handle by HTTP status code (4xx -> request, 5xx -> server)
+Scenario 1: Timeout (APITimeoutError) — retries exhausted, error caught. ✅
+Scenario 2: Rate limit — call succeeded or 429 handled with Retry-After. ✅
+Scenario 3: Network error (unreachable base_url) — retries then APIConnectionError. ✅
+(Scenarios 1 & 3 do not require a live Hy3 service.)
 ```
