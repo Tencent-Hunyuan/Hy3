@@ -3,7 +3,23 @@
 > 面向终端用户：在常用 AI 产品里把 **Hy3** 用起来。  
 > 对应犀牛鸟 Issue [#2](https://github.com/Tencent-Hunyuan/Hy3/issues/2)。
 
-每个工具是一个**独立文件夹**：内含指南 `README.md` + **可直接复制的配置样例**（`.env` / `config.toml` / `config.yaml` / JSON 等）。
+每个工具是一个**独立文件夹**：内含指南 `README.md` + 配置样例。
+
+### 统一填写 Key（推荐）
+
+只需维护 **一个** `docs/integrations/.env`，再同步到各子目录：
+
+```bash
+cd docs/integrations
+cp .env.example .env          # 填入 HY3_API_KEY / OPENROUTER_API_KEY
+./sync_env.sh                 # 自动写入 openrouter|cursor|continue|codex-cli|dify 下的 .env
+```
+
+| 文件 | 说明 |
+|------|------|
+| [`.env.example`](./.env.example) | 模板（可提交） |
+| `.env` | 真实密钥（已 gitignore，勿提交） |
+| [`sync_env.sh`](./sync_env.sh) | 同步脚本 |
 
 后端可选：
 

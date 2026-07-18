@@ -6,18 +6,16 @@
 
 | 文件 | 用途 |
 |------|------|
-| [`.env.example`](./.env.example) | Key / Base URL / Model |
+| [`.env.example`](./.env.example) | （可选）本地覆盖；推荐改用上级统一 `.env` + `../sync_env.sh` |
 | [`curl_chat.sh`](./curl_chat.sh) | 一键 curl 最小对话 |
 | [`chat_example.py`](./chat_example.py) | Python OpenAI SDK 示例 |
 | [`requirements.txt`](./requirements.txt) | Python 依赖 |
 
 ```bash
-cd docs/integrations/openrouter
-cp .env.example .env          # 填入 OPENROUTER_API_KEY
-set -a && source .env && set +a
-bash curl_chat.sh
-# 或
-pip install -r requirements.txt && python chat_example.py
+cd docs/integrations
+cp .env.example .env && $EDITOR .env
+./sync_env.sh
+bash openrouter/curl_chat.sh
 ```
 
 ## 安装与版本
