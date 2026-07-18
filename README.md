@@ -127,6 +127,38 @@ cd backend
 
 ---
 
+## 🤖 Hy3 在系统中的角色
+
+**Hy3 是本应用唯一的大模型推理来源，全程通过 API 调用，不做训练 / 微调 / 本地推理部署**（符合活动约束）。
+
+- **调用方式**：OpenAI 兼容接口 `https://tokenhub.tencentmaas.com/v1`，模型 `hy3`；通过 `extra_body={"reasoning_effort": "low"}` 控制推理强度。
+- **承担职责**：RAG 流水线第 4 步的**回答生成**——将检索到的上下文拼接进系统提示词，调用 Hy3 流式生成带引用的回答（基于 SSE 逐字输出）。
+- **重要澄清**：文档的**嵌入（向量化）使用本地 ONNX 多语言模型** `paraphrase-multilingual-MiniLM-L12-v2`，**不经过 Hy3**，也不属于"本地部署 Hy3 推理"。Hy3 仅以 API 形式参与生成环节，满足"全程通过 API 调用 Hy3"的要求。
+
+---
+
+## 🛠️ CodeBuddy / WorkBuddy 协作说明
+
+本项目由作者与 CodeBuddy / WorkBuddy 协作完成（活动鼓励记录协作部分）：
+
+- **后端全部模块**（`config` / `hy3_client` / `document_parser` / `text_chunker` / `embedder` / `vector_store` / `rag_engine` / `memory_manager` / `main`）由 CodeBuddy 基于需求描述协作重建与联调。
+- **前端**（`index.html` / `app.js` / `styles.css`）由 WorkBuddy 从零生成。
+- **关键问题修复**（ChromaDB 1.5.9 嵌入接口适配、`pdfplumber` 原生段错误规避、前端静态资源挂载）由 AI 协作定位并修复。
+- 更完整的协作笔记见 [CODEBUDDY.md](./CODEBUDDY.md)。
+
+---
+
+## 🎬 Demo（端到端流程）
+
+应用已跑通至少 **2 个端到端 demo 流程**（建议录制 ≤2min 视频 / GIF 放入 `demo/` 目录并在 PR 中附链接）：
+
+1. **上传 → 检索 → 问答**：上传一份文档（PDF / Markdown 等）→ 自动分块入库 → 输入问题 → 流式返回带引用来源的回答。
+2. **文件夹限定 + 多轮记忆**：将文档归入文件夹 → 限定仅在该文件夹内检索 → 连续多轮追问 → 重新打开会话恢复历史记忆。
+
+> 录制提示：启动 `python run.py`，用 OBS / ShareX / 浏览器录屏扩展录制上述流程，单文件 ≤2min，输出如 `demo/demo1-upload-qa.gif`、`demo/demo2-folder-memory.gif`。
+
+---
+
 ## 📝 许可
 
 [MIT License](./LICENSE)
