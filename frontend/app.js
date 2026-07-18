@@ -24,6 +24,7 @@
         menuBtn: $("#menuBtn"),
         menuModal: $("#menuModal"),
         menuClose: $("#menuClose"),
+        newFolderBtn: $("#newFolderBtn"),
         menuDocMgmt: $("#menuDocMgmt"),
         menuConvMgmt: $("#menuConvMgmt"),
         convModal: $("#convModal"),
@@ -117,6 +118,10 @@
                     <div class="doc-name" title="${escapeHtml(d.filename)}">${escapeHtml(d.filename)}</div>
                     <div class="doc-meta">${d.chunk_count} 个片段 · ${d.file_type || ""}</div>
                 </div>
+                <select class="doc-folder-select" data-filename="${escapeHtml(d.filename)}" title="移入文件夹">
+                    <option value="">未分类</option>
+                    ${folders.map((f) => `<option value="${escapeHtml(f.id)}" ${d.folder_id === f.id ? "selected" : ""}>📁 ${escapeHtml(f.name)}</option>`).join("")}
+                </select>
                 <button class="doc-delete" onclick="deleteDocument('${escapeJs(d.filename)}')" title="删除">&times;</button>
             </div>
         `).join("");
@@ -129,6 +134,44 @@
         renderContextInline();
         loadDocuments();
     };
+
+    // Move a document into / out of a folder
+    window.moveDocumentToFolder = async function (filename, folderId) {
+        const target = folderId || "none";   // "none" = 未分类
+        try {
+            const r = await fetch(`/api/folders/${encodeURIComponent(target)}/documents`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ filename }),
+            });
+            if (!r.ok) {
+                const err = await r.json().catch(() => ({}));
+                alert("移动失败: " + (err.detail || r.status));
+            }
+        } catch (e) {
+            alert("移动失败: " + e.message);
+        }
+    };
+
+    // Create a new folder
+    async function createFolder() {
+        const name = prompt("请输入文件夹名称：");
+        if (!name) return;
+        try {
+            const r = await fetch("/api/folders", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ name }),
+            });
+            if (r.ok) {
+                await loadFolders();
+            } else {
+                alert("创建文件夹失败");
+            }
+        } catch (e) {
+            alert("创建文件夹失败: " + e.message);
+        }
+    }
 
     // Upload
     refs.fileInput.addEventListener("change", (e) => handleFiles(e.target.files));
@@ -177,18 +220,46 @@
         let html = `<button class="folder-tab ${activeFolderId === null ? "active" : ""}" data-folder-id="">全部</button>`;
         for (const f of folders) {
             const isActive = activeFolderId === f.id;
-            html += `<button class="folder-tab ${isActive ? "active" : ""}" data-folder-id="${f.id}">📁 ${escapeHtml(f.name)}</button>`;
+            html += `<span class="folder-tab-wrap">
+                <button class="folder-tab ${isActive ? "active" : ""}" data-folder-id="${f.id}">📁 ${escapeHtml(f.name)}</button>
+                <span class="folder-del" data-del-folder="${f.id}" title="删除文件夹">&times;</span>
+            </span>`;
         }
         refs.folderTabs.innerHTML = html;
     }
 
     refs.folderTabs.addEventListener("click", (e) => {
+        const del = e.target.closest(".folder-del");
+        if (del) {
+            e.stopPropagation();
+            const fid = del.dataset.delFolder;
+            const f = folders.find((x) => x.id === fid);
+            if (!confirm(`确定删除文件夹「${f ? f.name : fid}」？文件夹内的文档会变为未分类。`)) return;
+            fetch(`/api/folders/${encodeURIComponent(fid)}`, { method: "DELETE" })
+                .then(() => {
+                    if (activeFolderId === fid) activeFolderId = null;
+                    loadFolders();
+                    loadDocuments();
+                });
+            return;
+        }
         const tab = e.target.closest(".folder-tab");
         if (!tab) return;
         const id = tab.dataset.folderId;
         activeFolderId = id === "" ? null : id;
         renderFolderTabs();
         loadDocuments();
+    });
+
+    // New folder button
+    if (refs.newFolderBtn) refs.newFolderBtn.addEventListener("click", createFolder);
+
+    // Move document to folder via per-row <select>
+    refs.docList.addEventListener("change", (e) => {
+        const sel = e.target.closest(".doc-folder-select");
+        if (!sel) return;
+        const filename = sel.dataset.filename;
+        window.moveDocumentToFolder(filename, sel.value);
     });
 
     // ── Context chips (drag doc into input) ───────────────

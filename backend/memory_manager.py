@@ -133,8 +133,10 @@ class FolderManager:
 
     def delete(self, folder_id: str):
         self._folders = [f for f in self._folders if f["id"] != folder_id]
-        # Unassign documents that were in this folder
-        doc_memory.remove_folder(folder_id)
+        # Unassign documents that were in this folder.
+        # remove_folder is monkeypatched onto FolderManager (see _patch_doc_memory) as a
+        # plain function taking (folder_id); call it unbound (no implicit self).
+        type(self).remove_folder(folder_id)
         self._save()
 
     def rename(self, folder_id: str, name: str):

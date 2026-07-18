@@ -105,6 +105,34 @@ body {
 .folder-tab:hover { border-color: var(--primary); }
 .folder-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
+/* doc section title with new-folder button */
+.docs-title { display: flex; align-items: center; justify-content: space-between; padding-right: 4px; }
+.mini-btn {
+    border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary);
+    font-size: 11px; padding: 2px 8px; border-radius: 12px; cursor: pointer; transition: var(--transition);
+    white-space: nowrap;
+}
+.mini-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+/* folder tab with delete */
+.folder-tab-wrap { display: inline-flex; align-items: center; position: relative; flex-shrink: 0; }
+.folder-del {
+    margin-left: -8px; margin-right: 4px; cursor: pointer; color: var(--text-muted);
+    font-size: 13px; line-height: 1; opacity: 0; transition: var(--transition); z-index: 1;
+}
+.folder-tab-wrap:hover .folder-del { opacity: 1; }
+.folder-del:hover { color: var(--error); }
+
+/* per-doc folder selector */
+.doc-folder-select {
+    flex-shrink: 0; max-width: 84px; font-size: 11px; padding: 2px 4px;
+    border: 1px solid var(--border); border-radius: 6px; background: var(--surface);
+    color: var(--text-secondary); cursor: pointer; opacity: 0; transition: var(--transition);
+}
+.doc-item:hover .doc-folder-select { opacity: 1; }
+.doc-folder-select:focus { opacity: 1; outline: none; border-color: var(--primary); }
+
+
 .doc-list {
     flex: 1; min-height: 0; overflow-y: auto;
     display: flex; flex-direction: column; gap: 4px; padding-bottom: 8px;
