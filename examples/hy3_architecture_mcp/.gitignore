@@ -1,0 +1,23 @@
+# Python build / cache artefacts (the root .gitignore already covers
+# __pycache__/ and *.pyc; this catches the rest so they never sneak in).
+*.egg-info/
+*.egg-link
+build/
+dist/
+.eggs/
+
+# Test / lint caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+
+# Local virtualenvs
+.venv/
+venv/
+env/
+
+# Local secrets / overrides — never commit a real key
+.env
+.env.*
+!.env.example
