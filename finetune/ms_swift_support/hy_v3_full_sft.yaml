@@ -1,0 +1,115 @@
+# ============================================================================
+# ms-swift SFT config for HYV3 Full-parameter Fine-tuning
+#
+# Usage:
+#   YAML_FILE=hy_v3_full_sft.yaml bash sft_train.sh
+#
+# or directly:
+#   swift sft --config hy_v3_full_sft.yaml
+#
+# Model: Tencent-Hunyuan/Hy3
+# Template: hy_v3 (natively supported in ms-swift 4.2.2)
+# ============================================================================
+
+# ---- Model Settings ----
+model: Tencent-Hunyuan/Hy3
+# model: /path/to/local/Hy3  # use local path if needed
+model_type: hy_v3
+template: hy_v3
+torch_dtype: bfloat16
+attn_impl: flash_attn
+# experts_impl: auto  # let ms-swift choose the best MoE expert implementation
+
+# ---- Training Method ----
+# Full-parameter SFT: no LoRA settings needed
+# For LoRA, uncomment below:
+# tuner_backend: peft
+# tuner_type: lora
+# lora_rank: 8
+# lora_alpha: 16
+# lora_dropout: 0.05
+# target_modules:
+#   - q_proj
+#   - k_proj
+#   - v_proj
+#   - o_proj
+#   - gate_proj
+#   - up_proj
+#   - down_proj
+
+# ---- Dataset Settings ----
+# Option 1: Use dataset registered in dataset_info.json
+# dataset:
+#   - hy_v3_demo
+# dataset_dir: .  # path to dataset_info.json
+
+# Option 2: Use local jsonl file directly (RECOMMENDED)
+# ms-swift supports sharegpt-format jsonl directly:
+dataset:
+  - ../data/example_data.jsonl
+
+max_length: 4096  # HYV3 supports up to 262k context
+truncation_strategy: delete  # or "truncation_left"
+lazy_tokenize: true
+preprocess_num_proc: 4
+
+# ---- Output Settings ----
+output_dir: saves/hy_v3/full/sft
+save_steps: 500
+save_strategy: steps
+save_total_limit: 3
+save_only_model: false
+logging_steps: 10
+report_to: none  # choices: [none, wandb, tensorboard, swanlab, mlflow]
+
+# ---- Training Hyperparameters ----
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 1.0e-5
+num_train_epochs: 3.0
+max_steps: -1  # set to >0 to override num_train_epochs
+warmup_ratio: 0.1
+lr_scheduler_type: cosine
+# lr_scheduler_kwargs:
+#   min_lr_rate: 0.1  # min_lr / learning_rate
+bf16: true
+# fp16: false
+
+# ---- DeepSpeed / Optimization ----
+deepspeed: zero3_offload  # options: zero0, zero2, zero2_offload, zero3, zero3_offload
+# You can also specify a custom deepspeed config file:
+# deepspeed: /path/to/ds_config.json
+gradient_checkpointing: true
+# gradient_checkpointing_kwargs:
+#   use_reentrant: true  # may be needed for ZeRO-3, test first
+max_grad_norm: 1.0
+weight_decay: 0.1
+adam_beta1: 0.9
+adam_beta2: 0.95
+optim: adamw_torch
+
+# ---- Distributed Training ----
+ddp_timeout: 180000000
+# packing: true  # enable sequence packing for efficiency
+# packing_length: 4096
+
+# ---- Evaluation (optional) ----
+# eval_strategy: steps
+# eval_steps: 500
+# eval_dataset:
+#   - hy_v3_eval
+# per_device_eval_batch_size: 1
+# eval_use_evalscope: false
+
+# ---- Generation Settings (for inference during/after training) ----
+max_new_tokens: 2048
+temperature: 0.7
+top_p: 0.9
+# stop_words:
+#   - "</s>"
+#   - "<|im_end|>"
+
+# ---- Misc ----
+seed: 42
+ignore_data_skip: true
+resume_from_checkpoint: null  # set to checkpoint path to resume
