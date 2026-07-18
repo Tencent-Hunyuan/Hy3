@@ -205,6 +205,10 @@ python3 -m sglang.launch_server \
 
 Hy3 提供了完整的模型微调流程，详细的微调文档请参考：[模型微调指南](./finetune/README_CN.md)
 
+## MCP：深度研究助手
+
+基于 Model Context Protocol 的深度研究 MCP Server（搜索 + 读页 + Hy3 分析），见：[mcp/hy3-deep-research](./mcp/hy3-deep-research/README.md)（对应犀牛鸟 Issue #3）。
+
 ## 量化工具
 
 我们提供了 [AngelSlim](https://github.com/tencent/AngelSlim)——一套易用、全面、高效的大模型压缩工具包，涵盖常用量化算法、低比特量化和投机采样等能力。

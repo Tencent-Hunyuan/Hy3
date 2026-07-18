@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "hy3-deep-research": {
+      "command": "python",
+      "args": ["${workspaceFolder}/mcp/hy3-deep-research/server.py"],
+      "env": {
+        "HY3_API_KEY": "sk-xxxxxxxx",
+        "HY3_BASE_URL": "https://tokenhub.tencentmaas.com/v1",
+        "HY3_MODEL": "hy3"
+      }
+    }
+  }
+}
