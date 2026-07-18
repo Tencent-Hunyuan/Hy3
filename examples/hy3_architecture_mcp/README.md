@@ -432,11 +432,21 @@ python scripts/probe_stdio.py
 
 ## Demo 视频 / GIF
 
-> 录制位（占位）：完成在 CodeBuddy / Cursor 中的真实录制后，将 60–90 秒 GIF/视频链接替换本节。
->
-> 录制要求：展示 `clarify_requirements → generate_technical_proposal →
-> review_technical_proposal → create_implementation_plan` 全流程，并在第二个客户端至少成功调用
-> 一个核心 Tool；画面中 API Key、用户名、敏感本地路径必须打码。
+### 1. CodeBuddy —— 完整 4 步流水线
+
+展示 `clarify_requirements → generate_technical_proposal → review_technical_proposal →
+create_implementation_plan` 全流程，项目级 `.mcp.json` 接入。
+
+https://github.com/user-attachments/assets/5bfbac80-2c76-45cd-beb6-b2c150fe4fbc
+
+### 2. WorkBuddy —— 核心 Tool 调用
+
+在第二个 MCP 客户端中成功调用核心 Tool，验证跨客户端即插即用。
+
+https://github.com/user-attachments/assets/855e69fc-b935-46ae-9e4b-43e3b4d1a671
+
+> 录制要求：展示全流程 + 第二个客户端至少成功调用一个核心 Tool；画面中 API Key、用户名、
+> 敏感本地路径已打码（mock 模式下 API Key 为 `EMPTY`）。
 
 `scripts/probe_stdio.py` 与 `examples/demo_workflow.py --mock` 可作为录制脚本：前者证明 stdio
 启动与 Tool 发现，后者演示完整流水线的结构化输出。
