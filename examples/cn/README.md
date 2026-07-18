@@ -1,63 +1,65 @@
-# Hy3 示例代码（中文文档）
+# Hy3 示例代码（中文）
 
-本目录提供一组可直接运行的 Python 示例的**中文说明文档**，演示如何通过 OpenAI 兼容 API 调用本地部署的腾讯混元 Hy3 模型（vLLM / SGLang）。
+通过 OpenAI 兼容 API 调用腾讯混元 **Hy3** 的可运行示例集合。
 
-> 说明：本目录（`examples/cn/`）只包含中文 `.md` 文档，**不包含 `.py` 脚本**。可运行的 Python 代码统一放在 `examples/en/` 目录下（代码逻辑不分语言，中英文共用同一份脚本）。下文运行命令均通过相对路径 `../en/xxx.py` 引用对应脚本。
+支持：
 
-所有示例均通过环境变量读取连接信息，默认指向本地服务 `http://127.0.0.1:8000/v1`，模型名固定为 `hy3`。
+- **腾讯云 TokenHub** — 设置 `HY3_BASE_URL=https://tokenhub.tencentmaas.com/v1` 与 API Key
+- **本地 vLLM / SGLang** — 默认 `http://127.0.0.1:8000/v1`，`api_key=EMPTY`
+
+每个示例均提供 **`.py` + `.md` + `.ipynb`**。共享工具见 [`../common.py`](../common.py)。英文版：[`../en/`](../en/)。
 
 ## 示例列表
 
-| 示例 | 说明 | 文档 | 脚本 |
-| --- | --- | --- | --- |
-| 01 | 单轮 / 多轮对话 | [01_basic_chat.md](01_basic_chat.md) | `../en/01_basic_chat.py` |
-| 02 | 流式请求 + 逐 chunk 解析 | [02_streaming.md](02_streaming.md) | `../en/02_streaming.py` |
-| 03 | 非流式 vs 流式对比（首 token 时延 / 总耗时） | [03_nonstream_vs_stream.md](03_nonstream_vs_stream.md) | `../en/03_nonstream_vs_stream.py` |
-| 04 | 一次工具调用 + 多轮工具循环 | [04_tool_calling.md](04_tool_calling.md) | `../en/04_tool_calling.py` |
-| 05 | 思考过程开 / 关对比 | [05_reasoning_mode.md](05_reasoning_mode.md) | `../en/05_reasoning_mode.py` |
-| 06 | 超时 / 限流 / 网络错误的重试与退避 | [06_error_handling_retry.md](06_error_handling_retry.md) | `../en/06_error_handling_retry.py` |
+| 示例 | 说明 | 文件 |
+| --- | --- | --- |
+| `01_basic_chat` | 单轮 / 多轮对话 | [py](01_basic_chat.py) · [md](01_basic_chat.md) · [ipynb](01_basic_chat.ipynb) |
+| `02_streaming` | 流式请求 + 逐 chunk 解析 | [py](02_streaming.py) · [md](02_streaming.md) · [ipynb](02_streaming.ipynb) |
+| `03_nonstream_vs_stream` | 首 token 时延 / 总耗时对比 | [py](03_nonstream_vs_stream.py) · [md](03_nonstream_vs_stream.md) · [ipynb](03_nonstream_vs_stream.ipynb) |
+| `04_tool_calling` | 一次工具调用 + 有界多轮工具循环 | [py](04_tool_calling.py) · [md](04_tool_calling.md) · [ipynb](04_tool_calling.ipynb) |
+| `05_reasoning_mode` | `no_think` / `low` / `high` 对比 | [py](05_reasoning_mode.py) · [md](05_reasoning_mode.md) · [ipynb](05_reasoning_mode.ipynb) |
+| `06_error_handling_retry` | 超时 / 429 / 网络错误重试与退避 | [py](06_error_handling_retry.py) · [md](06_error_handling_retry.md) · [ipynb](06_error_handling_retry.ipynb) |
 
-每篇 `.md` 文档均包含三要素：**完整请求代码** + **完整 response 解析** + **一段示例输出**。
+每篇 `.md` 均包含：**完整请求代码** + **完整 response 解析** + **一段示例输出**。
 
 ## 前置条件
 
-- Python 3.8+
-- 安装 OpenAI SDK：
+```bash
+pip install -r examples/requirements.txt
+```
 
-  ```bash
-  pip install openai
-  ```
+离线单元测试（无需 API Key）：
 
-- 运行 `06_error_handling_retry` 示例还需安装 `tenacity`：
+```bash
+pip install -r examples/requirements-dev.txt
+pytest examples/tests -q
+```
 
-  ```bash
-  pip install tenacity
-  ```
+- **TokenHub：** 创建 API Key 即可，无需 GPU。
+- **本地：** 先按根目录 [README 部署](../../README_CN.md#推理和部署) 启动 Hy3。工具调用 / 思考字段需开启 quickstart 中说明的解析器。
 
-- **必须先启动一个运行中的 Hy3 服务**（vLLM 或 SGLang）。服务部署方式请参考仓库根目录 README 的 [Deployment](../../README.md#deployment) 章节（vLLM / SGLang 启动命令）。默认服务地址为 `http://127.0.0.1:8000/v1`。
-
-## 环境变量配置
-
-所有示例通过以下环境变量读取连接信息，未设置时使用默认值：
+## 环境变量
 
 | 环境变量 | 默认值 | 说明 |
 | --- | --- | --- |
-| `HY3_BASE_URL` | `http://127.0.0.1:8000/v1` | Hy3 服务的 OpenAI 兼容 API 地址 |
-| `HY3_API_KEY` | `EMPTY` | API Key，本地部署任意值均可 |
+| `HY3_BASE_URL` | `http://127.0.0.1:8000/v1` | OpenAI 兼容 API 地址 |
+| `HY3_API_KEY` | `EMPTY` | API Key |
+| `HY3_MODEL` | `hy3` | 模型名 |
+| `HY3_TIMEOUT` | `120` | 客户端超时（秒） |
 
-Bash 示例（Linux / macOS）：
+模板：[`../.env.example`](../.env.example)。
 
 ```bash
-# 使用默认本地服务
+# 本地
 export HY3_BASE_URL="http://127.0.0.1:8000/v1"
 export HY3_API_KEY="EMPTY"
 
-# 如需指向远端或自定义端口
-# export HY3_BASE_URL="http://10.0.0.10:8000/v1"
-# export HY3_API_KEY="sk-xxxxxx"
+# TokenHub
+# export HY3_BASE_URL="https://tokenhub.tencentmaas.com/v1"
+# export HY3_API_KEY="sk-xxxxxxxx"
 ```
 
-Windows PowerShell 示例：
+Windows PowerShell：
 
 ```powershell
 $env:HY3_BASE_URL = "http://127.0.0.1:8000/v1"
@@ -66,19 +68,23 @@ $env:HY3_API_KEY = "EMPTY"
 
 ## 运行方式
 
-由于 `.py` 脚本位于 `examples/en/` 目录，请在 `examples/cn/` 目录下执行以下命令运行对应脚本：
+在仓库根目录执行：
 
 ```bash
-python ../en/01_basic_chat.py
-python ../en/02_streaming.py
-python ../en/03_nonstream_vs_stream.py
-python ../en/04_tool_calling.py
-python ../en/05_reasoning_mode.py
-python ../en/06_error_handling_retry.py
+python examples/cn/01_basic_chat.py
+python examples/cn/02_streaming.py
+python examples/cn/03_nonstream_vs_stream.py
+python examples/cn/04_tool_calling.py
+python examples/cn/05_reasoning_mode.py
+python examples/cn/06_error_handling_retry.py
 ```
 
-也可在仓库根目录下用完整路径运行，例如：
+也可在 Jupyter / VS Code 中打开对应 `.ipynb`。
 
-```bash
-python examples/en/01_basic_chat.py
-```
+## 设计说明
+
+- **双端兼容思考开关：** 示例同时发送 TokenHub 的 `thinking` 与本地的 `chat_template_kwargs.reasoning_effort`（见 `common.build_extra_body`）。
+- **有界工具循环与重试：** 限制最大轮数 / 最大尝试次数 / 总等待时间，避免演示脚本挂死。
+- **仓库不含密钥：** Key 仅通过环境变量注入；示例输出为代表性或脱敏文本。
+
+另见：[quickstart_CN.md](../../quickstart_CN.md)。

@@ -134,6 +134,11 @@ print(response.choices[0].message.content)
 
 具体部署方式请参考下方[推理和部署](#推理和部署)章节。
 
+**开发者指南与可运行示例**（TokenHub + 本地，中英双语，py/md/ipynb）：
+
+- [快速开始（中文）](./quickstart_CN.md) · [API Quickstart (EN)](./quickstart.md)
+- [示例（中文）](./examples/cn/) · [Examples (EN)](./examples/en/)
+
 ## 推理和部署
 
 Hy3 总参数量为 295B，当使用 8 张 GPU 时，建议使用 H20-3e 或其他有更大显存的卡型。

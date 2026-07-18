@@ -1,70 +1,74 @@
 # Hy3 Example Code (English)
 
-This directory provides a set of ready-to-run Python examples that demonstrate how to call a locally deployed Tencent Hunyuan Hy3 model (vLLM / SGLang) via the OpenAI-compatible API.
+Ready-to-run examples for calling Tencent Hunyuan **Hy3** via the OpenAI-compatible API.
 
-This is the English edition of the examples. The code logic, variable names, and model-facing prompts are kept identical to the Chinese edition under `examples/`; only the comments, docstrings, terminal-print labels, and documentation prose are translated into English.
+Works with:
 
-All examples read connection info from environment variables, default to the local service `http://127.0.0.1:8000/v1`, and use the fixed model name `hy3`.
+- **Tencent Cloud TokenHub** — set `HY3_BASE_URL=https://tokenhub.tencentmaas.com/v1` and your API key
+- **Local vLLM / SGLang** — defaults to `http://127.0.0.1:8000/v1`, `api_key=EMPTY`
 
-## Example List
+Each example ships as **`.py` + `.md` + `.ipynb`**. Shared helpers live in [`../common.py`](../common.py). Chinese docs/scripts: [`../cn/`](../cn/).
 
-| Example | Description |
-| --- | --- |
-| `01_basic_chat` | Single-turn / multi-turn chat |
-| `02_streaming` | Streaming request + per-chunk parsing |
-| `03_nonstream_vs_stream` | Non-streaming vs streaming comparison (TTFT / total latency) |
-| `04_tool_calling` | One tool call + multi-turn tool loop |
-| `05_reasoning_mode` | Reasoning on / off comparison |
-| `06_error_handling_retry` | Retry and backoff for timeout / rate limit / network errors |
+## Example list
+
+| Example | Description | Files |
+| --- | --- | --- |
+| `01_basic_chat` | Single-turn / multi-turn chat | [py](01_basic_chat.py) · [md](01_basic_chat.md) · [ipynb](01_basic_chat.ipynb) |
+| `02_streaming` | Streaming + per-chunk parse | [py](02_streaming.py) · [md](02_streaming.md) · [ipynb](02_streaming.ipynb) |
+| `03_nonstream_vs_stream` | TTFT / total latency comparison | [py](03_nonstream_vs_stream.py) · [md](03_nonstream_vs_stream.md) · [ipynb](03_nonstream_vs_stream.ipynb) |
+| `04_tool_calling` | One tool call + bounded multi-turn loop | [py](04_tool_calling.py) · [md](04_tool_calling.md) · [ipynb](04_tool_calling.ipynb) |
+| `05_reasoning_mode` | `no_think` / `low` / `high` comparison | [py](05_reasoning_mode.py) · [md](05_reasoning_mode.md) · [ipynb](05_reasoning_mode.ipynb) |
+| `06_error_handling_retry` | Timeout / 429 / network retry + backoff | [py](06_error_handling_retry.py) · [md](06_error_handling_retry.md) · [ipynb](06_error_handling_retry.ipynb) |
+
+Every `.md` includes: **full request code** + **response parsing** + **sample output**.
 
 ## Prerequisites
 
-- Python 3.8+
-- Install the OpenAI SDK:
+```bash
+pip install -r examples/requirements.txt
+```
 
-  ```bash
-  pip install openai
-  ```
-
-- Running `06_error_handling_retry` also requires `tenacity`:
-
-  ```bash
-  pip install tenacity
-  ```
-
-- **A running Hy3 service must be started first** (vLLM or SGLang). For deployment instructions, see the [Deployment](../../README.md#deployment) section of the root README (vLLM / SGLang launch commands). The default service address is `http://127.0.0.1:8000/v1`.
-
-## Environment Variables
-
-All examples read connection info from the following environment variables, falling back to defaults when unset:
-
-| Environment variable | Default | Description |
-| --- | --- | --- |
-| `HY3_BASE_URL` | `http://127.0.0.1:8000/v1` | OpenAI-compatible API address of the Hy3 service |
-| `HY3_API_KEY` | `EMPTY` | API key; any value works for a local deployment |
-
-Bash example (Linux / macOS):
+For offline unit tests (no API key):
 
 ```bash
-# Use the default local service
+pip install -r examples/requirements-dev.txt
+pytest examples/tests -q
+```
+
+- **TokenHub:** create an API key; no GPU required.
+- **Local:** start Hy3 with vLLM or SGLang first (see root [README Deployment](../../README.md#deployment)). For tool calling / reasoning fields, enable the parsers noted in the quickstart.
+
+## Environment variables
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `HY3_BASE_URL` | `http://127.0.0.1:8000/v1` | OpenAI-compatible API base |
+| `HY3_API_KEY` | `EMPTY` | API key |
+| `HY3_MODEL` | `hy3` | Model name |
+| `HY3_TIMEOUT` | `120` | Client timeout (seconds) |
+
+Template: [`../.env.example`](../.env.example).
+
+```bash
+# Local
 export HY3_BASE_URL="http://127.0.0.1:8000/v1"
 export HY3_API_KEY="EMPTY"
 
-# To point to a remote host or a custom port
-# export HY3_BASE_URL="http://10.0.0.10:8000/v1"
-# export HY3_API_KEY="sk-xxxxxx"
+# TokenHub
+# export HY3_BASE_URL="https://tokenhub.tencentmaas.com/v1"
+# export HY3_API_KEY="sk-xxxxxxxx"
 ```
 
-Windows PowerShell example:
+Windows PowerShell:
 
 ```powershell
 $env:HY3_BASE_URL = "http://127.0.0.1:8000/v1"
 $env:HY3_API_KEY = "EMPTY"
 ```
 
-## How to Run
+## How to run
 
-Run from the repository root (recommended), or from inside the `examples/` directory:
+From the repository root:
 
 ```bash
 python examples/en/01_basic_chat.py
@@ -75,4 +79,12 @@ python examples/en/05_reasoning_mode.py
 python examples/en/06_error_handling_retry.py
 ```
 
-Each example is accompanied by a `.md` doc of the same name (English), containing the complete request code, response parsing, and a sample output.
+Or open the matching `.ipynb` in Jupyter / VS Code.
+
+## Design notes
+
+- **Dual-compatible thinking switch:** examples send both TokenHub `thinking` and local `chat_template_kwargs.reasoning_effort` (via `common.build_extra_body`).
+- **Bounded tool loop & retries:** max iterations / max attempts / max total wait so demos never hang.
+- **No secrets in repo:** keys only via env; sample outputs are representative / redacted.
+
+See also: [quickstart.md](../../quickstart.md).

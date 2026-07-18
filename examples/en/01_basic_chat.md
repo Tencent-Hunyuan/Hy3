@@ -17,40 +17,25 @@ The following code is identical to `01_basic_chat.py`:
 ```python
 """Hy3 Example 01: Single-turn / Multi-turn Chat.
 
-Calls a locally deployed Hy3 model via the OpenAI-compatible API. Demonstrates:
+Demonstrates:
 1. Single-turn chat: send one user message and print the reply.
-2. Multi-turn chat: pass a system / user / assistant / user history and call again,
-   showing how context carries over to the next turn.
+2. Multi-turn chat: pass a system / user / assistant / user history and call again.
 
-Connection info is read from environment variables, falling back to the default
-local service address when unset.
+Works with local vLLM/SGLang or cloud TokenHub (set HY3_BASE_URL / HY3_API_KEY).
 """
 
+from __future__ import annotations
+
 import os
+import sys
 
-from openai import OpenAI
+# Allow `python examples/en/01_basic_chat.py` from repo root
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-client = OpenAI(
-    base_url=os.environ.get("HY3_BASE_URL", "http://127.0.0.1:8000/v1"),
-    api_key=os.environ.get("HY3_API_KEY", "EMPTY"),
-)
-
-MODEL = "hy3"
+from common import chat_completion, extract_reasoning_and_content, get_config, make_client  # noqa: E402
 
 
-def chat(messages):
-    """Wrap a single chat request with the recommended params and thinking disabled."""
-    return client.chat.completions.create(
-        model=MODEL,
-        messages=messages,
-        temperature=0.9,
-        top_p=1.0,
-        extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
-    )
-
-
-def single_turn():
-    """Single-turn chat: contains only one user message."""
+def single_turn(client):
     print("=" * 60)
     print("[Single-turn Chat]")
     print("=" * 60)
@@ -58,15 +43,21 @@ def single_turn():
     messages = [
         {"role": "user", "content": "用一句话介绍腾讯混元 Hy3 模型。"},
     ]
-    response = chat(messages)
+    response = chat_completion(client, messages, reasoning="no_think")
+    _, content = extract_reasoning_and_content(response.choices[0].message)
 
     print(f"User: {messages[0]['content']}")
-    print(f"Assistant: {response.choices[0].message.content}")
+    print(f"Assistant: {content}")
+    if response.usage:
+        print(
+            f"Usage: prompt={response.usage.prompt_tokens} "
+            f"completion={response.usage.completion_tokens} "
+            f"total={response.usage.total_tokens}"
+        )
     print()
 
 
-def multi_turn():
-    """Multi-turn chat: append the previous assistant reply to messages and call again."""
+def multi_turn(client):
     print("=" * 60)
     print("[Multi-turn Chat]")
     print("=" * 60)
@@ -77,17 +68,25 @@ def multi_turn():
         {"role": "assistant", "content": "Hy3 的上下文长度为 256K tokens。"},
         {"role": "user", "content": "那它的激活参数量是多少？"},
     ]
-    response = chat(messages)
+    response = chat_completion(client, messages, reasoning="no_think")
+    _, content = extract_reasoning_and_content(response.choices[0].message)
 
     for msg in messages:
         print(f"{msg['role']}: {msg['content']}")
-    print(f"assistant: {response.choices[0].message.content}")
+    print(f"assistant: {content}")
     print()
 
 
+def main():
+    cfg = get_config()
+    print(f"Connecting to {cfg['base_url']}  model={cfg['model']}")
+    client = make_client()
+    single_turn(client)
+    multi_turn(client)
+
+
 if __name__ == "__main__":
-    single_turn()
-    multi_turn()
+    main()
 ```
 
 ## Complete Response Parsing

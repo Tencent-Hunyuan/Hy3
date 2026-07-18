@@ -32,219 +32,138 @@ Retry logic uses the `tenacity` library with exponential backoff against transie
 ## Complete Request
 
 ```python
+"""Hy3 Example 06: Error handling & retry (timeout / 429 / network / 5xx).
+
+Demonstrates:
+  1. Timeout (APITimeoutError) with forced short timeout + bounded retry
+  2. Rate limit (429 / RateLimitError) including Retry-After handling
+  3. Network error (APIConnectionError) against an unreachable base_url
+  4. Shared call_with_retry helper (exponential backoff, total wait cap)
+
+Scenarios 1 and 3 work even without a live Hy3 service.
 """
-Hy3 Error Handling & Retry Example
-==================================
 
-Demonstrates common error handling and exponential-backoff retry when calling Hy3
-(OpenAI-compatible API), covering three scenarios:
-  1. Timeout (APITimeoutError): forced with a very short timeout; retry; on persistent failure, handle gracefully.
-  2. Rate limit (RateLimitError, HTTP 429): shows how to catch and back off on 429.
-  3. Network error (APIConnectionError): forced with a wrong base_url; retry; fail gracefully.
-
-Retry logic uses the tenacity library with exponential backoff against
-APITimeoutError / RateLimitError / APIConnectionError (up to 5 attempts).
-Every scenario is wrapped in try/except so the script runs safely standalone
-(even without an Hy3 service, the error scenarios trigger as expected).
-
-Dependencies: pip install tenacity openai
-
-Connection info is configured via environment variables (with defaults):
-  HY3_BASE_URL  default http://127.0.0.1:8000/v1
-  HY3_API_KEY   default EMPTY
-"""
+from __future__ import annotations
 
 import os
+import sys
 
-from openai import (
-    OpenAI,
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from openai import (  # noqa: E402
     APIConnectionError,
-    RateLimitError,
-    APITimeoutError,
     APIStatusError,
-)
-from tenacity import (
-    retry,
-    stop_after_attempt,
-    wait_exponential,
-    retry_if_exception_type,
+    APITimeoutError,
+    RateLimitError,
 )
 
-MODEL = "hy3"
-
-# Initialize the client via environment variables (with defaults) for easy deployment switching
-client = OpenAI(
-    base_url=os.environ.get("HY3_BASE_URL", "http://127.0.0.1:8000/v1"),
-    api_key=os.environ.get("HY3_API_KEY", "EMPTY"),
+from common import (  # noqa: E402
+    call_with_retry,
+    chat_completion,
+    get_config,
+    make_client,
+    parse_retry_after,
 )
 
 
-# ---------------------------------------------------------------------------
-# 1. Define a call wrapper with exponential-backoff retry
-# ---------------------------------------------------------------------------
-# Retry policy:
-#   - Only retry APITimeoutError / RateLimitError / APIConnectionError
-#     (these are typically transient errors where retrying makes sense)
-#   - wait_exponential: exponential backoff, wait time = min(max, multiplier * 2^(attempt-1))
-#                       here multiplier=1, min=1, max=10
-#                       i.e. 1s, 2s, 4s, 8s, 10s (capped by max) ...
-#   - stop_after_attempt(5): retry at most 5 times
-#   - APIStatusError (other HTTP errors, e.g. 400/500) is NOT retried; it is raised directly
-@retry(
-    retry=retry_if_exception_type(
-        (APITimeoutError, RateLimitError, APIConnectionError)
-    ),
-    wait=wait_exponential(multiplier=1, min=1, max=10),
-    stop=stop_after_attempt(5),
-    reraise=True,
-)
-def chat_with_retry(messages, **kwargs):
-    """Chat completion call with exponential-backoff retry."""
-    return client.chat.completions.create(
-        model=MODEL,
-        messages=messages,
-        temperature=0.9,
-        top_p=1.0,
-        extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
-        **kwargs,
-    )
-
-
-def header(title):
+def header(title: str) -> None:
     print("\n" + "=" * 70)
     print(title)
     print("=" * 70)
 
 
-# ---------------------------------------------------------------------------
-# 2. Scenario 1: Timeout (APITimeoutError)
-# ---------------------------------------------------------------------------
 def scenario_timeout():
     header("Scenario 1: Timeout (APITimeoutError)")
-    print("Note: a very short timeout=0.001s is set, which almost certainly times out.")
-    print("Expected: tenacity triggers exponential-backoff retry; after retries are exhausted, APITimeoutError is raised and caught by try/except.\n")
+    print("Note: timeout=0.001s almost always times out.")
+    print("Expected: call_with_retry backs off, then raises APITimeoutError.\n")
 
-    # Use a separate client to force a very short timeout (without affecting the global client)
-    short_timeout_client = OpenAI(
-        base_url=os.environ.get("HY3_BASE_URL", "http://127.0.0.1:8000/v1"),
-        api_key=os.environ.get("HY3_API_KEY", "EMPTY"),
-        timeout=0.001,
-    )
+    short_client = make_client(timeout=0.001)
 
-    @retry(
-        retry=retry_if_exception_type(
-            (APITimeoutError, RateLimitError, APIConnectionError)
-        ),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
-        stop=stop_after_attempt(5),
-        reraise=True,
-    )
     def call():
-        return short_timeout_client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "user", "content": "你好"}],
-            temperature=0.9,
-            top_p=1.0,
-            extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
+        return chat_completion(
+            short_client,
+            [{"role": "user", "content": "你好"}],
+            reasoning="no_think",
         )
 
     try:
-        call()
+        # Keep demo snappy: few attempts, small delays
+        call_with_retry(call, max_attempts=3, base_delay=0.2, max_delay=0.5, max_total_wait=2.0)
         print("[Result] Call succeeded (timeout not triggered).")
     except APITimeoutError as e:
-        print(f"[Caught APITimeoutError] Timeout retries exhausted.")
+        print("[Caught APITimeoutError] Timeout retries exhausted.")
         print(f"  Error type: {type(e).__name__}")
-        print(f"  Suggestion: increase timeout appropriately, or reduce the request/context size and retry.")
+        print("  Suggestion: increase timeout, reduce context/max_tokens, or retry later.")
     except Exception as e:
         print(f"[Caught other exception] {type(e).__name__}: {e}")
 
 
-# ---------------------------------------------------------------------------
-# 3. Scenario 2: Rate limit (RateLimitError, HTTP 429)
-# ---------------------------------------------------------------------------
 def scenario_rate_limit():
     header("Scenario 2: Rate limit (RateLimitError, HTTP 429)")
-    print("Note: simulates how to identify and back off when the server returns 429.")
-    print("Expected: RateLimitError is caught by retry and retried with exponential backoff; here we construct it manually to show the identification logic.\n")
+    print("Note: shows identification + Retry-After aware backoff.")
+    print("If the live server is not rate-limiting, the call succeeds normally.\n")
 
-    # When a real 429 is returned by the server, the OpenAI SDK raises RateLimitError automatically.
-    # Here we use try/except to demonstrate how to identify and handle this exception type.
-    try:
-        # Attempt a normal call; if the server actually rate-limits, it raises RateLimitError
-        # (this is mainly to show the catch-and-handle logic)
-        response = client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "user", "content": "你好"}],
-            temperature=0.9,
-            top_p=1.0,
-            extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
+    client = make_client()
+
+    def call():
+        return chat_completion(
+            client,
+            [{"role": "user", "content": "你好"}],
+            reasoning="no_think",
         )
+
+    try:
+        response = call_with_retry(call, max_attempts=3, base_delay=0.5, max_delay=2.0)
         print("[Result] Call succeeded; rate limit not triggered.")
-        print(f"  Returned content: {response.choices[0].message.content[:50]} ...")
+        content = response.choices[0].message.content or ""
+        print(f"  Returned content: {content[:50]} ...")
     except RateLimitError as e:
-        print(f"[Caught RateLimitError] Server returned 429; rate limit triggered.")
+        retry_after = parse_retry_after(e)
+        print("[Caught RateLimitError] Server returned 429.")
         print(f"  Error type: {type(e).__name__}")
-        # HTTP 429 is the typical status code for rate limiting
         status = getattr(getattr(e, "response", None), "status_code", None)
         print(f"  HTTP status code: {status}")
-        print(f"  Suggestion: lower concurrency/request frequency, retry after exponential backoff; contact ops to raise the quota if needed.")
+        print(f"  Retry-After: {retry_after}")
+        print("  Suggestion: lower concurrency; respect Retry-After; request quota if needed.")
     except APIStatusError as e:
-        # Other HTTP errors (non-429) go here
-        print(f"[Caught APIStatusError] Non-429 HTTP error.")
-        print(f"  Error type: {type(e).__name__}")
-        print(f"  HTTP status code: {getattr(e, 'status_code', 'unknown')}")
-        print(f"  Suggestion: troubleshoot by status code (4xx -> check request, 5xx -> check server).")
+        print("[Caught APIStatusError] Non-429 HTTP error.")
+        print(f"  status_code: {getattr(e, 'status_code', 'unknown')}")
     except Exception as e:
         print(f"[Caught other exception] {type(e).__name__}: {e}")
 
 
-# ---------------------------------------------------------------------------
-# 4. Scenario 3: Network error (APIConnectionError)
-# ---------------------------------------------------------------------------
 def scenario_network_error():
     header("Scenario 3: Network error (APIConnectionError)")
-    print("Note: uses an unreachable base_url to force a connection error.")
-    print("Expected: tenacity retries with exponential backoff; after retries are exhausted, APIConnectionError is raised and caught by try/except.\n")
+    print("Note: uses unreachable base_url http://127.0.0.1:9/v1")
+    print("Expected: retries then APIConnectionError.\n")
 
-    # Build a client with an address that is definitely unreachable
-    bad_client = OpenAI(
-        base_url="http://127.0.0.1:9/v1",  # almost no service listens on port 9
-        api_key="EMPTY",
-    )
+    bad_client = make_client(base_url="http://127.0.0.1:9/v1", api_key="EMPTY", timeout=2.0)
 
-    @retry(
-        retry=retry_if_exception_type(
-            (APITimeoutError, RateLimitError, APIConnectionError)
-        ),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
-        stop=stop_after_attempt(5),
-        reraise=True,
-    )
     def call():
-        return bad_client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "user", "content": "你好"}],
-            temperature=0.9,
-            top_p=1.0,
-            extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
+        return chat_completion(
+            bad_client,
+            [{"role": "user", "content": "你好"}],
+            reasoning="no_think",
         )
 
     try:
-        call()
+        call_with_retry(call, max_attempts=3, base_delay=0.2, max_delay=0.5, max_total_wait=2.0)
         print("[Result] Call succeeded (network error not triggered).")
     except APIConnectionError as e:
-        print(f"[Caught APIConnectionError] Network connection failed; retries exhausted.")
+        print("[Caught APIConnectionError] Network connection failed; retries exhausted.")
         print(f"  Error type: {type(e).__name__}")
         cause = getattr(e, "__cause__", None) or e
         print(f"  Root cause: {cause}")
-        print(f"  Suggestion: check whether base_url is correct, whether the Hy3 service is running, and whether the network/firewall allows the port.")
+        print("  Suggestion: check base_url, service health, firewall/proxy.")
     except Exception as e:
         print(f"[Caught other exception] {type(e).__name__}: {e}")
 
 
 def main():
+    cfg = get_config()
     print("Hy3 Error Handling & Retry Example")
-    print("This script runs standalone; even without an Hy3 service, scenarios 1 and 3 trigger errors as expected.")
+    print(f"Default target: {cfg['base_url']}  model={cfg['model']}")
+    print("Scenarios 1 and 3 run without a live Hy3 service.")
 
     scenario_timeout()
     scenario_rate_limit()
@@ -252,10 +171,11 @@ def main():
 
     header("All scenarios demonstrated")
     print("Key takeaways:")
-    print("  - APITimeoutError    -> increase timeout or reduce request size; retryable")
-    print("  - RateLimitError(429)-> lower concurrency/frequency, retry after exponential backoff")
-    print("  - APIConnectionError-> check base_url / service status / network")
-    print("  - APIStatusError     -> handle by HTTP status code (4xx -> request, 5xx -> server)")
+    print("  - APITimeoutError    -> increase timeout / reduce request size; retryable")
+    print("  - RateLimitError(429)-> lower QPS, honor Retry-After, exponential backoff")
+    print("  - APIConnectionError -> check base_url / service / network")
+    print("  - 5xx APIStatusError -> retry with backoff; 4xx (except 429) usually not")
+    print("  - Always cap max_attempts and max_total_wait so clients never hang forever")
 
 
 if __name__ == "__main__":
