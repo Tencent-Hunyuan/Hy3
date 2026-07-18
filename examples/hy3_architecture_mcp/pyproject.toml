@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hy3-architecture-mcp"
+version = "0.1.0"
+description = "Hy3-powered technical-proposal review MCP Server (stdio)"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [{ name = "Hy3 Community" }]
+keywords = ["mcp", "hy3", "architecture", "review", "tencent-hunyuan"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development",
+]
+dependencies = [
+    "mcp>=1.27,<2",
+    "httpx[http2]>=0.27",
+    "pydantic>=2.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.5",
+]
+
+[project.scripts]
+hy3-architecture-mcp = "hy3_architecture_mcp.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/Tencent-Hunyuan/Hy3"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hy3_architecture_mcp"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/hy3_architecture_mcp/prompts" = "hy3_architecture_mcp/prompts"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]  # line length handled by formatter; keep readable long strings
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-q"
