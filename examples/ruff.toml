@@ -1,0 +1,17 @@
+# Lint/format config for Hy3 API examples (issue #1).
+line-length = 100
+target-version = "py39"
+extend-exclude = ["**/*.ipynb"]
+
+[lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[lint.per-file-ignores]
+# Example scripts insert sys.path before importing shared helpers.
+"en/*.py" = ["E402"]
+"cn/*.py" = ["E402"]
+"tests/*.py" = ["E402"]
+
+[format]
+quote-style = "double"

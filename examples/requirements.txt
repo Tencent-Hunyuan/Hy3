@@ -1,0 +1,2 @@
+openai>=1.40.0
+tenacity>=8.2.0

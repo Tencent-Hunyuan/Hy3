@@ -137,6 +137,11 @@ print(response.choices[0].message.content)
 
 See the [Deployment](#deployment) section below for how to start the API server.
 
+**Developer guide & runnable examples** (TokenHub + local, bilingual, py/md/ipynb):
+
+- [API Quickstart (EN)](./quickstart.md) · [快速开始（中文）](./quickstart_CN.md)
+- [Examples (EN)](./examples/en/) · [示例（中文）](./examples/cn/)
+
 ## Deployment
 
 Hy3 has 295B parameters in total. To serve it on 8 GPUs, we recommend using H20-3e or other GPUs with larger memory capacity.

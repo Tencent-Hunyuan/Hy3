@@ -1,0 +1,173 @@
+# 01_basic_chat — 单轮 / 多轮对话
+
+本示例演示如何通过 OpenAI 兼容 API 调用本地部署的腾讯混元 Hy3 模型，完成单轮与多轮对话。重点展示：
+
+- 通过环境变量初始化客户端；
+- 单轮对话：发送一条 `user` 消息并打印回复；
+- 多轮对话：在 `messages` 中携带 `system` / `user` / `assistant` / `user` 历史记录再次调用，体现上下文延续。
+
+## 简介
+
+Hy3 提供 OpenAI 兼容的 `/v1/chat/completions` 接口，可直接使用 `openai` SDK 调用。本示例固定使用推荐参数 `temperature=0.9`、`top_p=1.0`，并通过 `extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}}` 关闭思考过程，得到直接回答。
+
+## 完整请求代码
+
+以下代码与 `../en/01_basic_chat.py` 完全一致：
+
+```python
+"""Hy3 Example 01: Single-turn / Multi-turn Chat.
+
+Demonstrates:
+1. Single-turn chat: send one user message and print the reply.
+2. Multi-turn chat: pass a system / user / assistant / user history and call again.
+
+Works with local vLLM/SGLang or cloud TokenHub (set HY3_BASE_URL / HY3_API_KEY).
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+
+# Allow `python examples/en/01_basic_chat.py` from repo root
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from common import (
+    chat_completion,
+    extract_reasoning_and_content,
+    get_config,
+    make_client,
+)  # noqa: E402
+
+
+def single_turn(client):
+    print("=" * 60)
+    print("[Single-turn Chat]")
+    print("=" * 60)
+
+    messages = [
+        {"role": "user", "content": "用一句话介绍腾讯混元 Hy3 模型。"},
+    ]
+    response = chat_completion(client, messages, reasoning="no_think")
+    _, content = extract_reasoning_and_content(response.choices[0].message)
+
+    print(f"User: {messages[0]['content']}")
+    print(f"Assistant: {content}")
+    if response.usage:
+        print(
+            f"Usage: prompt={response.usage.prompt_tokens} "
+            f"completion={response.usage.completion_tokens} "
+            f"total={response.usage.total_tokens}"
+        )
+    print()
+
+
+def multi_turn(client):
+    print("=" * 60)
+    print("[Multi-turn Chat]")
+    print("=" * 60)
+
+    messages = [
+        {"role": "system", "content": "你是一个简洁友好的中文助手。"},
+        {"role": "user", "content": "Hy3 的上下文长度是多少？"},
+        {"role": "assistant", "content": "Hy3 的上下文长度为 256K tokens。"},
+        {"role": "user", "content": "那它的激活参数量是多少？"},
+    ]
+    response = chat_completion(client, messages, reasoning="no_think")
+    _, content = extract_reasoning_and_content(response.choices[0].message)
+
+    for msg in messages:
+        print(f"{msg['role']}: {msg['content']}")
+    print(f"assistant: {content}")
+    print()
+
+
+def main():
+    cfg = get_config()
+    print(f"Connecting to {cfg['base_url']}  model={cfg['model']}")
+    client = make_client()
+    single_turn(client)
+    multi_turn(client)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## 完整 response 解析
+
+`client.chat.completions.create(...)` 返回一个 `ChatCompletion` 对象，主要字段如下：
+
+### 1. `response.id`
+
+本次补全请求的唯一标识（字符串），例如 `chatcmpl-xxxx`。可用于日志追踪或问题排查。
+
+```python
+print(response.id)
+# 示例: chatcmpl-9f2c1a8b7e6d4...
+```
+
+### 2. `response.choices[0].message.role`
+
+模型本轮回复的角色，固定为 `"assistant"`。
+
+```python
+print(response.choices[0].message.role)
+# assistant
+```
+
+### 3. `response.choices[0].message.content`
+
+模型生成的文本内容，是日常使用中最常访问的字段。
+
+```python
+print(response.choices[0].message.content)
+# 例如: Hy3 是腾讯混元团队推出的 295B 参数 MoE 大模型，激活参数约 21B。
+```
+
+> `choices` 是一个列表（通常长度为 1，对应 `n=1`），通过 `response.choices[0]` 取第一个候选结果，再取其 `.message`。
+
+### 4. `response.usage`
+
+本次调用的 token 用量统计，包含三个整数字段：
+
+| 字段 | 含义 |
+| --- | --- |
+| `prompt_tokens` | 输入（含 system + 历史 + 本轮 user）的 token 数 |
+| `completion_tokens` | 模型生成的 token 数 |
+| `total_tokens` | 上述两者之和 |
+
+```python
+usage = response.usage
+print(usage.prompt_tokens)      # 输入 token 数
+print(usage.completion_tokens)  # 输出 token 数
+print(usage.total_tokens)       # 总 token 数
+```
+
+### 访问路径速查
+
+```
+response
+├── id                                # 请求 ID
+├── choices[0]
+│   ├── message
+│   │   ├── role                      # "assistant"
+│   │   └── content                   # 模型回复文本
+│   └── finish_reason                 # 结束原因，如 "stop"
+└── usage
+    ├── prompt_tokens                 # 输入 token 数
+    ├── completion_tokens             # 输出 token 数
+    └── total_tokens                  # 总 token 数
+```
+
+## 示例输出
+> 已于 **2026-07-18** 在腾讯云 **TokenHub** （`https://tokenhub.tencentmaas.com/v1`，`model=hy3`）实测。内容为模型生成，可能随调用变化；密钥已脱敏。
+
+```text
+============================================================
+[单轮对话]
+============================================================
+User: 用一句话介绍腾讯混元 Hy3 模型。
+Assistant: 腾讯混元Hy3是腾讯推出的新一代大语言模型，具备更强的推理、多模态理解与内容生成能力，支持复杂任务处理与高效落地应用。
+Usage: prompt=26 completion=34 total=60
+```

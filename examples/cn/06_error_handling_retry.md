@@ -1,0 +1,281 @@
+# 06 错误处理与重试
+
+## 简介
+
+本示例演示调用 Hy3（OpenAI 兼容 API）时的**生产向**错误处理：
+
+1. **超时（`APITimeoutError`）** — 极短 `timeout` 强制触发；有界重试后优雅失败。
+2. **限流（`RateLimitError`，HTTP 429）** — 识别 429，遵守 **`Retry-After`**（秒数或 HTTP-date）。
+3. **网络错误（`APIConnectionError`）** — 不可达 `base_url`；重试后失败。
+4. **共享工具 `call_with_retry`** — 指数退避 + **full jitter**，限制 `max_attempts` 与 **`max_total_wait`**，避免客户端无限挂起；并对部分 5xx / 网关状态码重试。
+
+实现见 [`examples/common.py`](../common.py)。SDK 自动重试关闭（`max_retries=0`），示例策略显式可控。**场景 1、3 无需真实 Hy3 服务。**
+
+### 重试策略（摘要）
+
+```text
+delay ≈ min(max_delay, base_delay * 2^(attempt-1))
+delay  = max(delay, Retry-After)   # 若响应头存在
+delay  = uniform(delay*(1-jitter), delay)   # full jitter，默认 jitter=0.25
+达到 max_attempts 或 max_total_wait 后停止
+```
+
+---
+
+## 前置条件
+
+1. 安装依赖：
+   ```bash
+   pip install -r examples/requirements.txt
+   ```
+
+2. 通过环境变量配置连接（默认适合本地部署）：
+   ```bash
+   export HY3_BASE_URL=http://127.0.0.1:8000/v1
+   export HY3_API_KEY=EMPTY
+   ```
+
+3. 场景 2 的“正常成功”分支需要可达服务（TokenHub 或本地）；场景 1、3 不需要。
+
+---
+
+## 完整请求代码
+
+```python
+"""Hy3 Example 06: Error handling & retry (timeout / 429 / network / 5xx).
+
+Demonstrates:
+  1. Timeout (APITimeoutError) with forced short timeout + bounded retry
+  2. Rate limit (429 / RateLimitError) including Retry-After handling
+  3. Network error (APIConnectionError) against an unreachable base_url
+  4. Shared call_with_retry helper (exponential backoff, total wait cap)
+
+Scenarios 1 and 3 work even without a live Hy3 service.
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from openai import (  # noqa: E402
+    APIConnectionError,
+    APIStatusError,
+    APITimeoutError,
+    RateLimitError,
+)
+
+from common import (  # noqa: E402
+    call_with_retry,
+    chat_completion,
+    get_config,
+    make_client,
+    parse_retry_after,
+)
+
+
+def header(title: str) -> None:
+    print("\n" + "=" * 70)
+    print(title)
+    print("=" * 70)
+
+
+def scenario_timeout():
+    header("Scenario 1: Timeout (APITimeoutError)")
+    print("Note: timeout=0.001s almost always times out.")
+    print("Expected: call_with_retry backs off, then raises APITimeoutError.\n")
+
+    short_client = make_client(timeout=0.001)
+
+    def call():
+        return chat_completion(
+            short_client,
+            [{"role": "user", "content": "你好"}],
+            reasoning="no_think",
+        )
+
+    try:
+        # Keep demo snappy: few attempts, small delays
+        call_with_retry(call, max_attempts=3, base_delay=0.2, max_delay=0.5, max_total_wait=2.0)
+        print("[Result] Call succeeded (timeout not triggered).")
+    except APITimeoutError as e:
+        print("[Caught APITimeoutError] Timeout retries exhausted.")
+        print(f"  Error type: {type(e).__name__}")
+        print("  Suggestion: increase timeout, reduce context/max_tokens, or retry later.")
+    except Exception as e:
+        print(f"[Caught other exception] {type(e).__name__}: {e}")
+
+
+def scenario_rate_limit():
+    header("Scenario 2: Rate limit (RateLimitError, HTTP 429)")
+    print("Note: shows identification + Retry-After aware backoff.")
+    print("If the live server is not rate-limiting, the call succeeds normally.\n")
+
+    client = make_client()
+
+    def call():
+        return chat_completion(
+            client,
+            [{"role": "user", "content": "你好"}],
+            reasoning="no_think",
+        )
+
+    try:
+        response = call_with_retry(call, max_attempts=3, base_delay=0.5, max_delay=2.0)
+        print("[Result] Call succeeded; rate limit not triggered.")
+        content = response.choices[0].message.content or ""
+        print(f"  Returned content: {content[:50]} ...")
+    except RateLimitError as e:
+        retry_after = parse_retry_after(e)
+        print("[Caught RateLimitError] Server returned 429.")
+        print(f"  Error type: {type(e).__name__}")
+        status = getattr(getattr(e, "response", None), "status_code", None)
+        print(f"  HTTP status code: {status}")
+        print(f"  Retry-After: {retry_after}")
+        print("  Suggestion: lower concurrency; respect Retry-After; request quota if needed.")
+    except APIStatusError as e:
+        print("[Caught APIStatusError] Non-429 HTTP error.")
+        print(f"  status_code: {getattr(e, 'status_code', 'unknown')}")
+    except Exception as e:
+        print(f"[Caught other exception] {type(e).__name__}: {e}")
+
+
+def scenario_network_error():
+    header("Scenario 3: Network error (APIConnectionError)")
+    print("Note: uses unreachable base_url http://127.0.0.1:9/v1")
+    print("Expected: retries then APIConnectionError.\n")
+
+    bad_client = make_client(base_url="http://127.0.0.1:9/v1", api_key="EMPTY", timeout=2.0)
+
+    def call():
+        return chat_completion(
+            bad_client,
+            [{"role": "user", "content": "你好"}],
+            reasoning="no_think",
+        )
+
+    try:
+        call_with_retry(call, max_attempts=3, base_delay=0.2, max_delay=0.5, max_total_wait=2.0)
+        print("[Result] Call succeeded (network error not triggered).")
+    except APIConnectionError as e:
+        print("[Caught APIConnectionError] Network connection failed; retries exhausted.")
+        print(f"  Error type: {type(e).__name__}")
+        cause = getattr(e, "__cause__", None) or e
+        print(f"  Root cause: {cause}")
+        print("  Suggestion: check base_url, service health, firewall/proxy.")
+    except Exception as e:
+        print(f"[Caught other exception] {type(e).__name__}: {e}")
+
+
+def main():
+    cfg = get_config()
+    print("Hy3 Error Handling & Retry Example")
+    print(f"Default target: {cfg['base_url']}  model={cfg['model']}")
+    print("Scenarios 1 and 3 run without a live Hy3 service.")
+
+    scenario_timeout()
+    scenario_rate_limit()
+    scenario_network_error()
+
+    header("All scenarios demonstrated")
+    print("Key takeaways:")
+    print("  - APITimeoutError    -> increase timeout / reduce request size; retryable")
+    print("  - RateLimitError(429)-> lower QPS, honor Retry-After, exponential backoff")
+    print("  - APIConnectionError -> check base_url / service / network")
+    print("  - 5xx APIStatusError -> retry with backoff; 4xx (except 429) usually not")
+    print("  - Always cap max_attempts and max_total_wait so clients never hang forever")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+## 完整 response 解析
+
+### 1. 错误类型说明
+
+OpenAI Python SDK 对 Hy3（OpenAI 兼容 API）调用时可能抛出以下异常：
+
+| 异常类型                | 触发场景                                   | 是否值得重试 |
+|:------------------------|:-------------------------------------------|:------------|
+| `APITimeoutError`       | 请求超时（超过设定的 `timeout`）            | 是          |
+| `RateLimitError`        | 服务端返回 HTTP **429**（请求过频/超配额）  | 是          |
+| `APIConnectionError`    | 网络层连接失败（DNS/拒绝连接/不可达等）      | 是          |
+| `APIStatusError`        | 其他 HTTP 错误（400 请求错误、500 服务端错误等） | 视情况，一般不重试 |
+
+> `APITimeoutError`、`RateLimitError`、`APIConnectionError` 属于**暂时性错误**，重试通常有意义；`APIStatusError`（如 400 参数错误）重试无意义，应直接排查请求。
+
+### 2. tenacity 重试策略
+
+本示例用 `tenacity` 的装饰器实现重试，关键配置：
+
+```python
+@retry(
+    retry=retry_if_exception_type(
+        (APITimeoutError, RateLimitError, APIConnectionError)
+    ),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    stop=stop_after_attempt(5),
+    reraise=True,
+)
+```
+
+- **`retry_if_exception_type`**：仅当抛出指定类型的异常时才重试。这里只对三种暂时性错误重试，`APIStatusError` 不会触发重试。
+- **`wait_exponential`**：指数退避，避免在服务端压力未恢复时密集重试。
+- **`stop_after_attempt(5)`**：最多尝试 5 次，防止无限重试。
+- **`reraise=True`**：重试用尽后重新抛出原始异常，便于上层 `try/except` 按类型分别处理。
+
+### 3. 指数退避公式
+
+`wait_exponential(multiplier=1, min=1, max=10)` 的等待时间计算：
+
+```
+wait = min(max, multiplier * 2^(attempt - 1))
+```
+
+各次重试的等待时间（`multiplier=1, min=1, max=10`）：
+
+| 第几次尝试 | 等待时间 |
+|:----------:|:--------:|
+| 1（首次）  | 0（立即） |
+| 2          | 1s        |
+| 3          | 2s        |
+| 4          | 4s        |
+| 5          | 8s        |
+| 6+         | 10s（被 max 截断） |
+
+本示例最多 5 次尝试，实际等待序列约为：立即 → 1s → 2s → 4s → 8s。
+
+### 4. 各错误的识别与处理建议
+
+- **超时（`APITimeoutError`）**
+  - 识别：捕获 `APITimeoutError`。
+  - 处理：适当增大 `timeout`；若因上下文过长导致生成慢，可减小请求/上下文规模；重试可恢复偶发性超时。
+
+- **限流（`RateLimitError`，HTTP 429）**
+  - 识别：捕获 `RateLimitError`，其底层 HTTP 状态码为 429。
+  - 处理：降低并发数与请求频率；指数退避后重试；必要时联系运维提升配额（QPS/TPM）。
+
+- **网络错误（`APIConnectionError`）**
+  - 识别：捕获 `APIConnectionError`，根因可通过 `e.__cause__` 查看（如连接拒绝）。
+  - 处理：检查 `base_url` 是否正确、Hy3 服务是否已启动、网络/防火墙是否放通对应端口。
+
+- **其他 HTTP 错误（`APIStatusError`）**
+  - 识别：捕获 `APIStatusError`，通过 `e.status_code` 获取状态码。
+  - 处理：4xx 检查请求参数（如模型名、消息格式），5xx 检查服务端日志与状态。
+
+---
+
+## 示例输出
+> 已于 **2026-07-18** 在腾讯云 **TokenHub** （`https://tokenhub.tencentmaas.com/v1`，`model=hy3`）实测。内容为模型生成，可能随调用变化；密钥已脱敏。
+
+```text
+场景 1：超时（APITimeoutError）— 重试耗尽并捕获。✅
+场景 2：限流 — 正常成功或按 Retry-After 处理 429。✅
+场景 3：网络错误（不可达 base_url）— 重试后抛出 APIConnectionError。✅
+（场景 1、3 无需真实 Hy3 服务即可演示。）
+```
