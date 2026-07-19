@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "hy3-code-assistant": {
+      "command": "PYTHON_EXE",
+      "args": ["SERVER_PY"],
+      "env": {
+        "HY3_API_KEY": "YOUR_KEY",
+        "HY3_BASE_URL": "https://openrouter.ai/api/v1",
+        "HY3_MODEL": "tencent/hy3:free",
+        "HY3_MCP_ROOT": "WORKSPACE_ROOT"
+      }
+    }
+  }
+}
