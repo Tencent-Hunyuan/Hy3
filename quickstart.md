@@ -272,6 +272,35 @@ Full comparison: [`examples/en/05_reasoning_mode.py`](./examples/en/05_reasoning
 - Local vLLM: `--reasoning-parser hy_v3`
 - Local SGLang: `--reasoning-parser hunyuan`
 
+### 4.7 Tool call not triggered
+
+**Symptom:** `message.tool_calls` is `None` even though `tools` was sent.
+
+- Local vLLM: start with `--tool-call-parser hy_v3 --enable-auto-tool-choice`.
+- Local SGLang: start with `--tool-call-parser hunyuan`.
+- Ensure `tool_choice` is `auto` (or a specific tool); `"none"` disables tool calls.
+- Some chat templates require `tools` to be passed via `extra_body` rather than top-level — check the server's doc if unsure.
+- Example: [`examples/en/04_tool_calling.py`](./examples/en/04_tool_calling.py).
+
+### 4.8 Chat template missing / malformed
+
+**Symptom:** `Chat template not set` / `Apply chat template failed` / garbled output.
+
+- The served model dir must contain a valid `chat_template.jinja` (or tokenizer config with one).
+- If you load weights from a custom path, re-check the tokenizer files are present.
+- For thinking mode, the template must support `reasoning_effort` — otherwise `reasoning_content` stays empty.
+- Avoid manually concatenating prompts; always go through the `messages` API.
+
+### 4.9 CUDA out-of-memory (local deployment)
+
+**Symptom:** Server log `CUDA out of memory` / request returns 500 / hang.
+
+- Hy3 needs 8 GPUs (e.g. H20-3e); a single 24GB card cannot serve it.
+- Lower `--max-model-len` / `--max-num-seqs` / `gpu-memory-utilization`.
+- Close other GPU processes (`nvidia-smi`); TP=8 is mandatory for full weights.
+- Try quantization (if provided) or switch to the cloud TokenHub API if GPU is insufficient.
+- For long-context requests, raise `max_tokens` cautiously — output also consumes KV cache.
+
 ---
 
 ## 5. Next Steps

@@ -272,6 +272,35 @@ extra_body = {
 - 本地 vLLM：启动加 `--reasoning-parser hy_v3`
 - 本地 SGLang：启动加 `--reasoning-parser hunyuan`
 
+### 4.7 工具调用未触发
+
+**现象：** 已发送 `tools`，但 `message.tool_calls` 为 `None`。
+
+- 本地 vLLM：启动加 `--tool-call-parser hy_v3 --enable-auto-tool-choice`。
+- 本地 SGLang：启动加 `--tool-call-parser hunyuan`。
+- 确认 `tool_choice` 为 `auto`（或指定具体工具）；`"none"` 会禁用工具调用。
+- 部分 chat template 要求 `tools` 通过 `extra_body` 而非顶层传入 —— 不确定时查阅服务端文档。
+- 示例：[`examples/cn/04_tool_calling.py`](./examples/cn/04_tool_calling.py)。
+
+### 4.8 Chat template 缺失 / 异常
+
+**现象：** `Chat template not set` / `Apply chat template failed` / 输出乱码。
+
+- served 模型目录必须包含有效的 `chat_template.jinja`（或带模板的 tokenizer 配置）。
+- 从自定义路径加载权重时，重新确认 tokenizer 文件齐全。
+- 思考模式依赖模板支持 `reasoning_effort` —— 否则 `reasoning_content` 恒为空。
+- 避免手动拼接 prompt，始终通过 `messages` API 调用。
+
+### 4.9 CUDA 显存不足（本地部署）
+
+**现象：** 服务端日志 `CUDA out of memory` / 请求返回 500 / 卡住。
+
+- Hy3 需要 8 张 GPU（如 H20-3e），单张 24GB 卡无法承载。
+- 降低 `--max-model-len` / `--max-num-seqs` / `gpu-memory-utilization`。
+- 关闭其他 GPU 进程（`nvidia-smi`）；全权重部署 TP=8 是硬性要求。
+- 可尝试量化方案（如有提供），或显存不足时改用云端 TokenHub API。
+- 长上下文请求谨慎提高 `max_tokens` —— 输出同样占用 KV cache。
+
 ---
 
 ## 5. 下一步
