@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hyshell"
+version = "1.0.0"
+description = "hyshell — Hy3-powered terminal command assistant: natural language in, safe shell commands out (说人话，出命令；先审危险，再敲回车)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Rhino-Bird 2026 contributor" }]
+keywords = ["hy3", "hunyuan", "cli", "shell", "assistant", "llm"]
+classifiers = [
+    "Environment :: Console",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: System :: Shells",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "openai>=2,<3",
+    "rich>=13",
+    "httpx>=0.27",
+    "pydantic>=2",
+]
+
+[project.optional-dependencies]
+demo = ["pillow>=10"]
+dev = ["pytest>=7", "pillow>=10"]
+
+[project.scripts]
+hyshell = "hyshell.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
