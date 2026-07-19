@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "hy3": {
+      "command": "uvx",
+      "args": ["--from", "/ABS/PATH/TO/Hy3/mcp-server", "hy3-mcp"],
+      "env": {
+        "HY3_API_BASE": "http://127.0.0.1:8000/v1",
+        "HY3_API_KEY": "${env:HY3_API_KEY}",
+        "HY3_MCP_ROOT": "/ABS/PATH/TO/YOUR/PROJECT"
+      },
+      "disabled": false,
+      "autoApprove": ["hy3_status"]
+    }
+  }
+}

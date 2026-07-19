@@ -1,0 +1,130 @@
+[
+  {
+    "title": "hy3-mcp | Hy3 Research & Code Assistant (MCP server)  [OFFLINE DEMO MODE]",
+    "lines": [
+      "*** OFFLINE DEMO MODE (fake Hy3 backend) ***",
+      "",
+      "This recording drives a REAL hy3-mcp server subprocess over MCP",
+      "stdio, using an independent raw JSON-RPC client. No API key is",
+      "configured, so the server uses its deterministic offline backend;",
+      "every reply below is a genuine server response, clearly labeled.",
+      "",
+      "$ HY3_MCP_OFFLINE=1 python -m hy3_mcp     # stdio MCP server"
+    ]
+  },
+  {
+    "title": "step 1/5 - initialize (MCP handshake)  [OFFLINE DEMO MODE]",
+    "lines": [
+      "$ {\"method\": \"initialize\", ...}",
+      "",
+      "-> server   : hy3-research-assistant",
+      "-> protocol : 2025-06-18",
+      "-> transport: stdio (newline-delimited JSON-RPC)"
+    ]
+  },
+  {
+    "title": "step 2/5 - tools/list (5 tools)  [OFFLINE DEMO MODE]",
+    "lines": [
+      "$ {\"method\": \"tools/list\"}",
+      "",
+      "-> review_code    Code review: reads a unified diff (or a source file inside",
+      "-> ask_docs       Knowledge-base Q&A: retrieves relevant chunks from local d",
+      "-> analyze_data   Data analysis: reads a sandboxed CSV or JSON records file,",
+      "-> deep_research  Deep research: gathers evidence from the pluggable search",
+      "-> hy3_status     Diagnostics: reports server version, backend mode (offline",
+      "",
+      "-> 5 tools, all with param schemas + outputSchema"
+    ]
+  },
+  {
+    "title": "step 3/5 - call hy3_status (diagnostics, no LLM)  [OFFLINE DEMO MODE]",
+    "lines": [
+      "$ tools/call hy3_status {}",
+      "",
+      "{",
+      "  \"server_version\": \"0.1.0\",",
+      "  \"protocol\": \"MCP/stdio\",",
+      "  \"mode\": \"offline\",",
+      "  \"api_base\": \"http://127.0.0.1:8000/v1\",",
+      "  \"api_key_present\": false,",
+      "  \"model\": \"hy3\",",
+      "  \"search_provider\": \"offline\",",
+      "  \"sandbox_root\": \".../Hy3/mcp-server (abs path redacted)\",",
+      "  \"usage\": {",
+      "    \"calls\": 0,",
+      "    \"prompt_tokens\": 0,",
+      "    \"completion_tokens\": 0",
+      "  }",
+      "}"
+    ]
+  },
+  {
+    "title": "step 4/5 - call review_code on examples/diffs/demo.diff  [OFFLINE DEMO MODE]",
+    "lines": [
+      "$ tools/call review_code {\"path\": \"examples/diffs/demo.diff\"}",
+      "",
+      "-> stats: 2 files, 2 hunks, +9/-2 lines, 5 heuristic flags",
+      "",
+      "> OFFLINE DEMO MODE (fake Hy3 backend) -- deterministic canned analysis",
+      "",
+      "## Code review (canned)",
+      "",
+      "Summary: reviewed the submitted change; findings below are ordered by",
+      "severity.",
+      "",
+      "- **[security/high]** line 12: possible hardcoded credential (`+",
+      "cfg[\"db_password\"] = \"hunter2\"`). Move it to an environment variable or a",
+      "secret store.",
+      "- **[correctness/medium]** line 13: fragile construct (`+    cfg[\"debug\"] =",
+      "eval(os.environ.get(\"DEBUG_EXPR\", \"False`). Prefer `ast.literal_eval`/`is",
+      "None`.",
+      "- **[maintainability/low]** line 14: leftover TODO/FIXME marker.",
+      "- **[style/low]** line 15: line exceeds 120 characters (146).",
+      "- **[correctness/medium]** line 25: fragile construct (`+    if user ==",
+      "None:`). Prefer `ast.literal_eval`/`is None`.",
+      "",
+      "Recommendation: fix the high-severity findings before merging.",
+      "... (truncated for the GIF)"
+    ]
+  },
+  {
+    "title": "step 5/5 - call ask_docs (knowledge-base Q&A)  [OFFLINE DEMO MODE]",
+    "lines": [
+      "$ tools/call ask_docs {\"question\": \"What is the context length",
+      "  of Hy3?\", \"docs_path\": \"examples/docs\"}",
+      "",
+      "> OFFLINE DEMO MODE (fake Hy3 backend) -- deterministic canned analysis",
+      "",
+      "## Answer (grounded in the retrieved chunks)",
+      "",
+      "According to the knowledge base: # Hy3 Model Overview ## Key specifications",
+      "Hy3 is Tencent Hunyuan's flagship open-source large language model. The",
+      "context length of Hy3 is 256K tokens, which enables long-document",
+      "understanding and stable multi-turn agent workflows. The model uses a",
+      "Mixture-of-Experts (MoE) architecture with 295B total parameters, of which",
+      "21B are active per token. ## Reasoning modes Hy3 supports three reasoning",
+      "",
+      "Citation: (examples/docs/hy3_intro.md#0)",
+      "",
+      "<!-- effort=no_think -->",
+      "",
+      "-> citations: hy3_intro.md#0, mcp_faq.md#0, hy3_intro.md#1"
+    ]
+  },
+  {
+    "title": "switch to the real Hy3 backend (one env var)  [OFFLINE DEMO MODE]",
+    "lines": [
+      "$ pip install ./mcp-server      # or: uvx --from ./mcp-server hy3-mcp",
+      "",
+      "# self-hosted (vLLM / SGLang, upstream README quickstart):",
+      "$ export HY3_API_BASE=http://127.0.0.1:8000/v1",
+      "",
+      "# or Tencent cloud OpenAI-compatible endpoint:",
+      "$ export HY3_API_BASE=https://api.hunyuan.cloud.tencent.com/v1",
+      "$ export HY3_API_KEY=<your key from the console>",
+      "",
+      "Same code path, real model. Re-record: scripts/record_demo.py",
+      "then scripts/render_gif.py."
+    ]
+  }
+]
