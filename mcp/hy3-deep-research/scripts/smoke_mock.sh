@@ -1,26 +1,27 @@
 #!/usr/bin/env bash
-# 本地冒烟：不经过 MCP 客户端，直接调用 tool 函数（mock）。
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 export HY3_MOCK=1
 PYTHON="${ROOT}/.venv/bin/python"
-if [[ ! -x "$PYTHON" ]]; then
-  PYTHON="python3"
-fi
+[[ -x "$PYTHON" ]] || PYTHON="python3"
+
 "$PYTHON" - <<'PY'
-from server import web_search, fetch_url, hy3_analyze, hy3_research_report
+import json
+from server import clarify_or_plan, run_deep_research, critique_and_finalize, get_research_status
 
-print("== web_search ==")
-print(web_search("Hy3 MCP deep research", 3)[:400], "...\n")
+plan = json.loads(clarify_or_plan("MCP 深度研究助手应如何设计"))
+print("plan session", plan["session_id"])
+print("sub_questions", len(plan["plan"]["sub_questions"]))
 
-print("== fetch_url ==")
-print(fetch_url("https://example.com", 500)[:400], "...\n")
+run = json.loads(run_deep_research(session_id=plan["session_id"], max_iterations=2))
+print("evidence", run["evidence_count"], "iterations", run["iterations"])
+print("draft_head", run["draft_markdown"][:180].replace("\n", " "))
 
-print("== hy3_analyze ==")
-print(hy3_analyze("Hy3 适合做什么？", "Hy3 是腾讯混元面向 Agent/代码场景的模型。")[:500], "...\n")
+final = json.loads(critique_and_finalize(session_id=plan["session_id"]))
+print("report_head", final["report_markdown"][:180].replace("\n", " "))
 
-print("== hy3_research_report ==")
-print(hy3_research_report("Hy3 深度研究助手", "证据：MCP + 搜索 + Hy3 分析可组成研究流水线。")[:500], "...")
-print("\nOK")
+st = json.loads(get_research_status(plan["session_id"]))
+print("status", st["has_draft"], st["has_report"], "gaps", st["gaps"])
+print("OK")
 PY

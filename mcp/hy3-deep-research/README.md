@@ -1,24 +1,28 @@
 # Hy3 Deep Research MCP Server
 
-> 犀牛鸟 Issue [#3](https://github.com/Tencent-Hunyuan/Hy3/issues/3)：基于 MCP 的 **深度研究助手**（搜索 + 读页 + Hy3 分析 / 结论文档）。  
-> 目标分支：`rhinobird2026`。
+> 犀牛鸟 Issue [#3](https://github.com/Tencent-Hunyuan/Hy3/issues/3)  
+> 目标分支：`rhinobird2026`
 
-可被 **Cursor / WorkBuddy（CodeBuddy）/ Cline** 等 MCP 客户端以 **stdio** 方式一键拉起；API Key 仅通过环境变量传入。
+把业界 Deep Research 常见闭环收进 MCP Server（参考 OpenAI / Gemini Deep Research、LangChain Open Deep Research）：
 
-## 能力（4 个 Tools）
+```text
+clarify_or_plan
+    → run_deep_research（并行子查询检索 → 精读 → 反思缺口 → 跟进检索 → 带引用草稿）
+    → critique_and_finalize（引用审计 + 不确定性终稿）
+```
+
+原子工具 `web_search` / `fetch_url` 仍可单独调用。
+
+## Tools
 
 | Tool | 作用 |
 |------|------|
-| `web_search` | 网页搜索（DuckDuckGo，无需搜索 API Key） |
-| `fetch_url` | 抓取 URL 并提取纯文本 |
-| `hy3_analyze` | 用 Hy3 对资料做深度分析（可开 thinking） |
-| `hy3_research_report` | 用 Hy3 生成结构化研究报告 |
-
-推荐调用链：
-
-```text
-web_search → fetch_url（1～N 次）→ hy3_analyze → hy3_research_report
-```
+| `clarify_or_plan` | Hy3 生成研究简报、可并行子问题、停止条件、大纲；返回 `session_id` |
+| `run_deep_research` | **内建多轮研究闭环**（并行搜索+抓页+反思补洞+草稿） |
+| `critique_and_finalize` | 审稿 / 引用审计 → 终稿 |
+| `get_research_status` | 查看会话计划、证据、缺口 |
+| `web_search` | 原子：网页搜索 |
+| `fetch_url` | 原子：抓取页面正文 |
 
 ## 一键安装
 
@@ -27,14 +31,12 @@ web_search → fetch_url（1～N 次）→ hy3_analyze → hy3_research_report
 ```bash
 cd mcp/hy3-deep-research
 python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
-# 或：pip install -e .
-cp .env.example .env
-# 编辑 .env，填入 HY3_API_KEY（也可只在 MCP 客户端 env 中配置）
+cp .env.example .env   # 或只在 MCP 客户端 env 配 Key
 ```
 
-冒烟（不消耗额度）：
+冒烟（无 Key）：
 
 ```bash
 bash scripts/smoke_mock.sh
@@ -42,79 +44,39 @@ bash scripts/smoke_mock.sh
 
 ## 环境变量
 
-| 变量 | 必填 | 说明 |
-|------|------|------|
-| `HY3_API_KEY` | 是* | TokenHub API Key（`HY3_MOCK=1` 时可省略） |
-| `HY3_BASE_URL` | 否 | 默认 `https://tokenhub.tencentmaas.com/v1` |
-| `HY3_MODEL` | 否 | 默认 `hy3` |
-| `HY3_MOCK` | 否 | `1` 时走本地 mock，便于无 Key 联调 |
+| 变量 | 说明 |
+|------|------|
+| `HY3_API_KEY` | TokenHub Key（`HY3_MOCK=1` 时可省） |
+| `HY3_BASE_URL` | 默认 `https://tokenhub.tencentmaas.com/v1` |
+| `HY3_MODEL` | 默认 `hy3` |
+| `HY3_MOCK` | `1` = 本地 mock 联调 |
 
-\* 真实调用必须提供 Key；**代码中不硬编码 Key**。
+**禁止硬编码 Key。**
 
-## Cursor 配置
-
-将 [`configs/cursor.mcp.json`](./configs/cursor.mcp.json) 合并进 Cursor 的 MCP 设置（或项目 `.cursor/mcp.json`），并把路径/`HY3_API_KEY` 换成真实值。
-
-示例（绝对路径更稳）：
-
-```json
-{
-  "mcpServers": {
-    "hy3-deep-research": {
-      "command": "/ABSOLUTE/PATH/TO/Hy3/mcp/hy3-deep-research/.venv/bin/python",
-      "args": ["/ABSOLUTE/PATH/TO/Hy3/mcp/hy3-deep-research/server.py"],
-      "env": {
-        "HY3_API_KEY": "sk-xxxxxxxx",
-        "HY3_BASE_URL": "https://tokenhub.tencentmaas.com/v1",
-        "HY3_MODEL": "hy3"
-      }
-    }
-  }
-}
-```
-
-在 Cursor Agent 中可试：
-
-> 使用 hy3-deep-research 工具，调研「MCP 协议是什么」，搜索后抓 1～2 个页面，再生成研究报告。
-
-## WorkBuddy / CodeBuddy 配置
-
-参考 [`configs/workbuddy.mcp.json`](./configs/workbuddy.mcp.json)。在客户端的 **MCP / 自定义工具** 中添加同结构配置（`command` + `args` + `env`）。
-
-若支持 CLI 添加，逻辑等价于：用指定 Python 启动 `server.py`，并注入 `HY3_API_KEY`。
-
-可运行 demo 话术：
-
-> 调用 `web_search` 查「混元 Hy3 Agent」，再 `hy3_research_report` 输出一页执行摘要。
-
-## 目录
+## 推荐调用（客户端）
 
 ```text
-mcp/hy3-deep-research/
-  server.py                 # MCP Server（stdio）
-  requirements.txt
-  pyproject.toml
-  .env.example
-  configs/cursor.mcp.json
-  configs/workbuddy.mcp.json
-  scripts/smoke_mock.sh
-  docs/                     # 放置 demo.gif / demo.mp4
+1. clarify_or_plan("……研究问题……")
+2. run_deep_research(session_id="<上一步返回>")
+3. critique_and_finalize(session_id="...")
 ```
 
-## Demo 录制
+或一步：`run_deep_research(query="...")`（内部自动建计划）。
 
-请录制 ≤1 分钟屏幕录像或 GIF，保存为：
+## Cursor / WorkBuddy
 
-- `mcp/hy3-deep-research/docs/demo.gif` 或 `demo.mp4`
+见 [`configs/cursor.mcp.json`](./configs/cursor.mcp.json)、[`configs/workbuddy.mcp.json`](./configs/workbuddy.mcp.json)。
 
-建议镜头：Cursor/WorkBuddy 加载 MCP → 调用 `web_search` → `hy3_analyze` / `hy3_research_report` → 展示结果。
+请把 `command` 换成 `.venv/bin/python` 的**绝对路径**，`args` 指向本目录 `server.py`，并填入真实 `HY3_API_KEY`。
 
-## 安全说明
+示例话术：
 
-- 勿把含真实 Key 的配置提交进 Git。  
-- `web_search` / `fetch_url` 会访问公网；请仅用于合法公开网页。  
-- Hy3 输出可能有幻觉，报告中的事实请人工复核。
+> 用 hy3-deep-research：先 clarify_or_plan「MCP 协议在 IDE Agent 中的实践」，再 run_deep_research，最后 critique_and_finalize，给我带 [E#] 引用的报告。
+
+## Demo
+
+将 ≤1 分钟录屏放到 `docs/demo.gif` 或 `docs/demo.mp4`。
 
 ## License
 
-与 Hy3 仓库一致（Apache-2.0）。
+Apache-2.0（与 Hy3 仓库对齐）
