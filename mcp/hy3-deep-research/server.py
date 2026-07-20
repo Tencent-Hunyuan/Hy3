@@ -16,7 +16,9 @@ from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 from openai import OpenAI
 
-load_dotenv()
+# Key 优先来自 MCP 客户端 config 的 env（Cursor / WorkBuddy 注入）。
+# .env 仅作本地/CLI 兜底，且不覆盖已存在的环境变量。
+load_dotenv(override=False)
 
 mcp = FastMCP(
     "hy3-deep-research",
@@ -73,7 +75,8 @@ def _hy3_client() -> tuple[OpenAI, str]:
     api_key = os.getenv("HY3_API_KEY", "").strip()
     if not api_key and not _mock():
         raise RuntimeError(
-            "缺少环境变量 HY3_API_KEY。请在 MCP 客户端配置 env，或 export HY3_API_KEY=..."
+            "缺少环境变量 HY3_API_KEY。"
+            "请在 Cursor / WorkBuddy 的 MCP config env 中配置，或本地 export / .env。"
         )
     base_url = os.getenv("HY3_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
     model = os.getenv("HY3_MODEL", DEFAULT_MODEL)

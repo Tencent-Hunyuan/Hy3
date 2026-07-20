@@ -49,9 +49,7 @@ echo "==> 可编辑安装本包 (entry: hy3-deep-research-mcp)"
 
 if [[ ! -f "$ROOT/.env" ]]; then
   cp "$ROOT/.env.example" "$ROOT/.env"
-  echo "==> 已生成 .env（请填入 HY3_API_KEY，或只在 MCP 客户端 env 中配置）"
-else
-  echo "==> 保留已有 .env"
+  echo "==> created .env (optional local fallback only)"
 fi
 
 # 生成带绝对路径的客户端配置片段（不含真实 Key）
@@ -80,4 +78,4 @@ cp "$GEN_DIR/cursor.mcp.json" "$GEN_DIR/workbuddy.mcp.json"
 
 echo "==> 冒烟：import server"
 "$PY" -c "import server; print('ok', server.mcp.name)"
-echo "完成。编辑 .env 填 Key，再用 configs/generated/*.mcp.json 配客户端。"
+echo "Done. Set HY3_API_KEY in configs/generated/*.mcp.json env, then paste into Cursor/WorkBuddy MCP config."

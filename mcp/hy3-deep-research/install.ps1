@@ -54,4 +54,4 @@ $cfg | Set-Content -Encoding utf8 (Join-Path $Gen "cursor.mcp.json")
 $cfg | Set-Content -Encoding utf8 (Join-Path $Gen "workbuddy.mcp.json")
 
 & $VenvPy -c "import server; print('ok', server.mcp.name)"
-Write-Host "Done. Edit .env (HY3_API_KEY), then use configs\generated\workbuddy.mcp.json in WorkBuddy."
+Write-Host "Done. Set HY3_API_KEY in configs\generated\*.mcp.json env, then paste into Cursor/WorkBuddy MCP config."
