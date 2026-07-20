@@ -80,21 +80,4 @@ cp "$GEN_DIR/cursor.mcp.json" "$GEN_DIR/workbuddy.mcp.json"
 
 echo "==> 冒烟：import server"
 "$PY" -c "import server; print('ok', server.mcp.name)"
-
-echo
-echo "=============================================="
-echo " 安装完成"
-echo "=============================================="
-echo "Python : $VENV_PY"
-echo "Server : $SERVER_PY"
-echo "配置样例（已填绝对路径）:"
-echo "  $GEN_DIR/cursor.mcp.json"
-echo "  $GEN_DIR/workbuddy.mcp.json"
-echo
-echo "下一步:"
-echo "  1) 编辑 .env 或 MCP 客户端 env，填入真实 HY3_API_KEY"
-echo "  2) 把 generated/*.mcp.json 合并进 Cursor / WorkBuddy 的 MCP 配置"
-echo "  3) 可选 mock 冒烟:  bash scripts/smoke_mock.sh"
-echo "  4) 直接启动:       $VENV_PY $SERVER_PY"
-echo "     或:             hy3-deep-research-mcp   # 需已 activate .venv"
-echo "=============================================="
+echo "完成。编辑 .env 填 Key，再用 configs/generated/*.mcp.json 配客户端。"
