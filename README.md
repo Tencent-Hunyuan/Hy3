@@ -205,6 +205,10 @@ python3 -m sglang.launch_server \
 
 Hy3 provides a complete model finetuning pipeline. For detailed documentation, please refer to: [Finetuning Guide](./finetune/README.md)
 
+## MCP: Deep Research Assistant
+
+Model Context Protocol server for deep research (web search + page fetch + Hy3 analysis). See [mcp/hy3-deep-research](./mcp/hy3-deep-research/README.md) (Rhinobird Issue #3).
+
 ## Quantization
 
 We provide [AngelSlim](https://github.com/tencent/AngelSlim), a more accessible, comprehensive, and efficient toolkit for large model compression. AngelSlim supports a comprehensive suite of compression tools for large-scale multimodal models, including common quantization algorithms, low-bit quantization, and speculative sampling.
