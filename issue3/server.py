@@ -57,13 +57,14 @@ def _safe_path(rel_or_abs: str) -> Path:
         p = root / p
     p = p.resolve()
     try:
-        p.relative_to(root)
+        rel = p.relative_to(root)
     except ValueError as e:
         raise ValueError(f"路径超出工作区 {root}: {p}") from e
 
-    # 拒绝隐藏文件
-    if p.name.startswith(".") and p.name not in (".", ".."):
-        raise ValueError(f"不允许访问隐藏文件: {p.name}")
+    # 检查每个路径组件是否以 . 开头（拒绝隐藏文件/目录）
+    for part in rel.parts:
+        if part.startswith(".") and part not in (".", ".."):
+            raise ValueError(f"不允许访问隐藏路径: {part}")
 
     return p
 
