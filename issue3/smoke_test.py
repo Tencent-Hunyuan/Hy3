@@ -77,7 +77,7 @@ def main() -> int:
             include_web=False,
         )
         print(analyze_result[:1200])
-        errors += _check("分析有内容", len(analyze_result) > 50)
+        errors += _check("分析有内容", len(analyze_result) > 50 and not analyze_result.startswith("[错误]") and not analyze_result.startswith("[Hy3 API"))
         print()
 
         # 6b. hy3_chart_guide
