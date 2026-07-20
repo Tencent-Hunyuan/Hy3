@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "hy3-data-analysis": {
+      "command": "python",
+      "args": ["server.py"],
+      "cwd": ".",
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
