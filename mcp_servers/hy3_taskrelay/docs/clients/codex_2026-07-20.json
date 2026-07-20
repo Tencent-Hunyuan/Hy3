@@ -1,0 +1,35 @@
+{
+  "date": "2026-07-20",
+  "client": "Codex CLI",
+  "client_version": "0.144.6",
+  "mode": "ephemeral JSONL, read-only sandbox, explicit MCP-only configuration",
+  "fixture_id": "interrupted_bug_fix",
+  "input_checkpoint_client": "CodeBuddy Code 2.124.0",
+  "input_checkpoint_id": "cp_b3067b1cc7f4a430",
+  "mcp_calls": [
+    {
+      "tool": "taskrelay_audit_checkpoint",
+      "status": "completed"
+    },
+    {
+      "tool": "taskrelay_create_resume_brief",
+      "status": "completed"
+    }
+  ],
+  "exit_code": 0,
+  "result": {
+    "audit_status": "clean",
+    "finding_count": 0,
+    "resume_id": "resume_bff690737dece30f",
+    "priority_order": [1, 2],
+    "audit_artifact": "../client_artifacts/codex_audit_2026-07-20.json",
+    "resume_artifact": "../client_artifacts/codex_resume_2026-07-20.json"
+  },
+  "security": {
+    "server_env_forwarded_by_name": true,
+    "client_session_persisted": false,
+    "sandbox": "read-only",
+    "raw_client_events_committed": false,
+    "credentials_recorded": false
+  }
+}

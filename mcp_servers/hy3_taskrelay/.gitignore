@@ -1,0 +1,10 @@
+.venv/
+.venv-clean/
+.venv-sdist/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]

@@ -42,6 +42,7 @@
   - [SGLang](#使用-sglang-推理)
 - [模型微调](#模型微调)
 - [量化工具](#量化工具)
+- [MCP Server](#mcp-server)
 - [许可证](#许可证)
 - [联系我们](#联系我们)
 
@@ -208,6 +209,13 @@ Hy3 提供了完整的模型微调流程，详细的微调文档请参考：[模
 ## 量化工具
 
 我们提供了 [AngelSlim](https://github.com/tencent/AngelSlim)——一套易用、全面、高效的大模型压缩工具包，涵盖常用量化算法、低比特量化和投机采样等能力。
+
+## MCP Server
+
+[Hy3 TaskRelay MCP](./mcp_servers/hy3_taskrelay/README_CN.md) 是一个无状态 stdio Server，
+用于为中断任务生成带证据的 checkpoint、审计 checkpoint，并生成续作 brief。
+其 [13.2 秒真实调用演示](./mcp_servers/hy3_taskrelay/docs/demo/taskrelay_cross_client.gif)展示了
+基于公开合成 fixture、经过验证的 CodeBuddy 到 Codex 交接流程。
 
 ## 许可证
 

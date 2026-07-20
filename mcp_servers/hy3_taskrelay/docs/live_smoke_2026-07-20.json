@@ -1,0 +1,24 @@
+{
+  "date": "2026-07-20",
+  "fixture_id": "interrupted_bug_fix",
+  "model": "hy3",
+  "parameters": {
+    "temperature": 0.9,
+    "top_p": 1.0,
+    "reasoning_effort": "high"
+  },
+  "checkpoint": {
+    "checkpoint_id": "cp_a15466cf337915f4",
+    "confirmed_fact_count": 3,
+    "next_step_count": 2
+  },
+  "audit": {
+    "overall_status": "clean",
+    "finding_categories": []
+  },
+  "resume": {
+    "resume_id": "resume_836d82bd8c1de18e",
+    "priority_order": [1, 2]
+  },
+  "redaction": "Only bounded metadata is recorded; prompts, raw responses, and credentials are omitted."
+}

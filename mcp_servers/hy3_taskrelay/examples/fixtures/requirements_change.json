@@ -1,0 +1,123 @@
+{
+  "fixture_id": "requirements_change",
+  "synthetic": true,
+  "description": "A public synthetic export task whose format requirement changed after interruption.",
+  "create_input": {
+    "goal": "Finish the report export feature under the latest product contract.",
+    "session_material": "The interrupted session implemented a streaming CSV exporter and wrote CSV-only tests from the original contract.",
+    "constraints": [
+      "Do not add a third-party serialization dependency."
+    ],
+    "decisions": [
+      "Keep the exporter streaming to bound memory use."
+    ],
+    "evidence": [
+      {
+        "evidence_id": "ev_old_req",
+        "content": "Version 1 requires CSV export only.",
+        "source": "synthetic original requirement"
+      },
+      {
+        "evidence_id": "ev_design",
+        "content": "The accepted design uses an iterator to stream rows without buffering the report.",
+        "source": "synthetic design record"
+      },
+      {
+        "evidence_id": "ev_csv_test",
+        "content": "The existing suite verifies only text/csv output.",
+        "source": "synthetic test summary"
+      }
+    ]
+  },
+  "additional_evidence": [
+    {
+      "evidence_id": "ev_new_req",
+      "content": "Version 2 requires both CSV and newline-delimited JSON selected by an explicit format argument.",
+      "source": "synthetic updated requirement"
+    }
+  ],
+  "continuation_context": "The continuation session must update tests before completing the exporter.",
+  "hy3_responses": {
+    "checkpoint": {
+      "goal": "Finish the report export feature under the latest product contract.",
+      "confirmed_facts": [
+        {
+          "text": "The current implementation and tests cover CSV only.",
+          "evidence_ids": ["ev_old_req", "ev_csv_test"]
+        }
+      ],
+      "constraints": [],
+      "decisions": [
+        {
+          "text": "Keep the exporter streaming to bound memory use.",
+          "evidence_ids": ["ev_design"]
+        }
+      ],
+      "open_questions": [
+        {
+          "question": "Has the export format contract changed since the interruption?",
+          "evidence_ids": ["ev_old_req"]
+        }
+      ],
+      "next_steps": [
+        {
+          "action": "Confirm the current export formats before completing implementation.",
+          "verification": "The current contract is cited in the task notes.",
+          "evidence_ids": ["ev_old_req"]
+        }
+      ]
+    },
+    "audit": {
+      "overall_status": "blocked",
+      "findings": [
+        {
+          "severity": "critical",
+          "category": "contradiction",
+          "summary": "The CSV-only checkpoint conflicts with the new CSV and JSON requirement.",
+          "evidence_ids": ["ev_old_req", "ev_new_req"],
+          "recommendation": "Replace the CSV-only assumption with the version 2 format contract."
+        },
+        {
+          "severity": "high",
+          "category": "stale_assumption",
+          "summary": "The existing CSV-only tests no longer cover the accepted behavior.",
+          "evidence_ids": ["ev_csv_test", "ev_new_req"],
+          "recommendation": "Add newline-delimited JSON tests before finishing implementation."
+        }
+      ]
+    },
+    "resume": {
+      "concise_context": [
+        {
+          "text": "The latest contract requires streaming CSV and newline-delimited JSON.",
+          "evidence_ids": ["ev_new_req", "ev_design"]
+        }
+      ],
+      "next_steps": [
+        {
+          "priority": 1,
+          "action": "Update the tests for an explicit CSV or JSON format argument.",
+          "validation": "Both CSV and newline-delimited JSON cases fail before implementation changes.",
+          "evidence_ids": ["ev_new_req", "ev_csv_test"]
+        },
+        {
+          "priority": 2,
+          "action": "Extend the streaming exporter with standard-library JSON serialization.",
+          "validation": "Both format suites pass while the iterator-based design remains intact.",
+          "evidence_ids": ["ev_new_req", "ev_design"]
+        }
+      ],
+      "blockers": [],
+      "do_not": [
+        {
+          "text": "Do not add a third-party serialization dependency.",
+          "evidence_ids": ["ev_new_req"]
+        },
+        {
+          "text": "Do not preserve the obsolete CSV-only assumption.",
+          "evidence_ids": ["ev_old_req", "ev_new_req"]
+        }
+      ]
+    }
+  }
+}

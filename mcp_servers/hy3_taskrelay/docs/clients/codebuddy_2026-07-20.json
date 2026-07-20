@@ -1,0 +1,24 @@
+{
+  "date": "2026-07-20",
+  "client": "CodeBuddy Code",
+  "client_version": "2.124.0",
+  "mode": "headless -p with strict MCP configuration and a single NoDefer tool",
+  "client_model": "hy3",
+  "fixture_id": "interrupted_bug_fix",
+  "server": "hy3-taskrelay",
+  "tool_called": "taskrelay_create_checkpoint",
+  "exit_code": 0,
+  "result": {
+    "checkpoint_id": "cp_b3067b1cc7f4a430",
+    "schema_version": "1.0",
+    "confirmed_fact_count": 3,
+    "next_step_count": 2,
+    "artifact": "../client_artifacts/codebuddy_checkpoint_2026-07-20.json"
+  },
+  "security": {
+    "mcp_config_uses_environment_references": true,
+    "available_tool_set_restricted_to_taskrelay_create_checkpoint": true,
+    "raw_client_events_committed": false,
+    "credentials_recorded": false
+  }
+}

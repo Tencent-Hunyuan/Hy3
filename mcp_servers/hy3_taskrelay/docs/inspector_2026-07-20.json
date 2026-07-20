@@ -1,0 +1,20 @@
+{
+  "date": "2026-07-20",
+  "inspector_package": "@modelcontextprotocol/inspector@1.0.0",
+  "method": "tools/list",
+  "installed_artifact": "clean wheel environment console entry point",
+  "exit_code": 0,
+  "tool_count": 3,
+  "tools": [
+    "taskrelay_create_checkpoint",
+    "taskrelay_audit_checkpoint",
+    "taskrelay_create_resume_brief"
+  ],
+  "annotations_checked": [
+    "readOnlyHint=true",
+    "destructiveHint=false",
+    "idempotentHint=true",
+    "openWorldHint=true"
+  ],
+  "redaction": "No environment values, prompts, or model responses are recorded."
+}
