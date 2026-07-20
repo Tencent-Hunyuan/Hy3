@@ -9,6 +9,7 @@
 ### mcp server 启动
 
 ```bash
+git clone https://github.com/luohuixi/Hy3/tree/main
 cd mcp-server/code-review
 pip install -r requirements.txt
 cp .env.example .env          			  # 编辑 .env 填入 API Key
