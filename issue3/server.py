@@ -219,6 +219,78 @@ def _call_hy3_with_retry(
     return f"[Hy3 API 调用失败，已重试 {max_retries} 次] {last_error}"
 
 
+def _search_tavily(query: str, max_results: int) -> list[dict] | None:
+    """Tavily 搜索，失败返回 None。"""
+    api_key = os.environ.get("TAVILY_API_KEY", "").strip()
+    if not api_key:
+        return None
+    try:
+        from tavily import TavilyClient
+        client = TavilyClient(api_key=api_key)
+        response = client.search(query=query, max_results=max_results, search_depth="basic")
+        results = response.get("results", [])
+        return [
+            {"title": r.get("title", ""), "url": r.get("url", ""), "snippet": r.get("content", "")[:300]}
+            for r in results[:max_results]
+        ]
+    except Exception:
+        return None
+
+
+def _search_ddg(query: str, max_results: int) -> list[dict]:
+    """DuckDuckGo 搜索，失败返回空列表。"""
+    try:
+        from ddgs import DDGS
+        results = []
+        with DDGS() as ddgs:
+            for r in ddgs.text(query, max_results=max_results):
+                results.append({
+                    "title": r.get("title", ""),
+                    "url": r.get("href", ""),
+                    "snippet": (r.get("body", "") or "")[:300],
+                })
+        return results
+    except Exception:
+        return []
+
+
+@mcp.tool()
+def web_search(query: str, max_results: int = 5) -> str:
+    """搜索网络信息，用于辅助数据分析。优先使用 Tavily API，未配置时自动回退 DuckDuckGo。
+
+    Args:
+        query: 搜索查询字符串。
+        max_results: 最多返回的结果数，默认 5。
+    """
+    if not query.strip():
+        return "[错误] query 不能为空"
+
+    if max_results < 1:
+        max_results = 5
+    if max_results > 10:
+        max_results = 10
+
+    source = "DuckDuckGo"
+    results = _search_tavily(query, max_results)
+
+    if results is not None:
+        source = "Tavily"
+    else:
+        results = _search_ddg(query, max_results)
+
+    if not results:
+        return "[错误] 搜索失败：Tavily API Key 未配置且 DuckDuckGo 搜索不可用。请设置 TAVILY_API_KEY 环境变量或检查网络连接。"
+
+    lines = [f"搜索源: {source}", f"查询: {query}", f"结果数: {len(results)}", ""]
+    for i, r in enumerate(results, 1):
+        lines.append(f"{i}. {r['title']}")
+        lines.append(f"   URL: {r['url']}")
+        lines.append(f"   摘要: {r['snippet']}")
+        lines.append("")
+
+    return "\n".join(lines)
+
+
 def main() -> None:
     """以 stdio 模式启动 MCP Server。"""
     mcp.run(transport="stdio")
