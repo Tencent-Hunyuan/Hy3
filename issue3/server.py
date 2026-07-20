@@ -230,7 +230,7 @@ def _search_tavily(query: str, max_results: int) -> list[dict] | None:
         response = client.search(query=query, max_results=max_results, search_depth="basic")
         results = response.get("results", [])
         return [
-            {"title": r.get("title", ""), "url": r.get("url", ""), "snippet": r.get("content", "")[:300]}
+            {"title": r.get("title", ""), "url": r.get("url", ""), "snippet": (r.get("content", "") or "")[:300]}
             for r in results[:max_results]
         ]
     except Exception:
@@ -274,7 +274,11 @@ def web_search(query: str, max_results: int = 5) -> str:
     results = _search_tavily(query, max_results)
 
     if results is not None:
-        source = "Tavily"
+        if len(results) > 0:
+            source = "Tavily"
+        else:
+            # Tavily 返回空结果，回退到 DuckDuckGo
+            results = _search_ddg(query, max_results)
     else:
         results = _search_ddg(query, max_results)
 
