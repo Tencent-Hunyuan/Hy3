@@ -343,6 +343,50 @@ def hy3_analyze(dataset_path: str, question: str, include_web: bool = False) -> 
     return result
 
 
+@mcp.tool()
+def hy3_chart_guide(dataset_path: str, goal: str) -> str:
+    """基于数据集特征和可视化目标，用 Hy3 推荐最佳图表方案并生成可执行的 Python 绘图代码。
+
+    自动先调用 load_dataset 获取数据结构和统计摘要，然后让 Hy3 根据数据特征
+    （字段类型、分布）推荐图表类型、轴映射方案和预处理步骤。
+
+    Args:
+        dataset_path: 数据集文件路径，相对于工作区根目录。
+        goal: 可视化目标描述，如「对比各区域销售额」「展示时间趋势」「分析年龄分布」。
+    """
+    if not goal.strip():
+        return "[错误] goal 不能为空"
+
+    env_key = os.environ.get("HY3_API_KEY", "").strip()
+    if not env_key:
+        return "[错误] 未设置 HY3_API_KEY 环境变量。请在 .env 文件或环境变量中配置 API Key。"
+
+    # Step 1: 加载数据特征
+    data_summary = load_dataset(dataset_path, max_rows=20)
+    if data_summary.startswith("[错误]"):
+        return data_summary
+
+    # Step 2: 组装 prompt 调用 Hy3
+    system_prompt = (
+        "你是一个数据可视化专家。请基于数据集摘要和可视化目标，用中文给出图表方案。"
+        "输出格式：\n"
+        "1. 推荐图表类型及理由（1-2 句话）\n"
+        "2. 轴映射方案 (x, y, color, facet 等)\n"
+        "3. 数据预处理建议（如需聚合、筛选、归一化）\n"
+        "4. Python 绘图代码 (优先 matplotlib，如适合交互则用 plotly)\n"
+        "代码需包含数据加载、预处理和绘图完整流程，路径使用占位符 'DATASET_PATH'。"
+    )
+    user_prompt = (
+        f"数据集摘要:\n{data_summary}\n\n可视化目标: {goal}\n\n请给出图表方案。"
+    )
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+    result = _call_hy3_with_retry(messages, max_tokens=4096, reasoning_effort="low")
+    return result
+
+
 def main() -> None:
     """以 stdio 模式启动 MCP Server。"""
     mcp.run(transport="stdio")
