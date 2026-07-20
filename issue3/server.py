@@ -295,6 +295,54 @@ def web_search(query: str, max_results: int = 5) -> str:
     return "\n".join(lines)
 
 
+@mcp.tool()
+def hy3_analyze(dataset_path: str, question: str, include_web: bool = False) -> str:
+    """加载数据集并用 Hy3 进行深度数据分析，输出结构化分析报告。
+
+    自动先调用 load_dataset 获取数据摘要，然后组装包含数据上下文和用户问题的
+    prompt 发送给 Hy3 API。可选结合网络搜索结果增强分析。
+
+    Args:
+        dataset_path: 数据集文件路径，相对于工作区根目录。
+        question: 要分析的具体问题，越具体越好。
+        include_web: 是否结合网络搜索获取外部信息辅助分析，默认 False。
+    """
+    if not question.strip():
+        return "[错误] question 不能为空"
+
+    env_key = os.environ.get("HY3_API_KEY", "").strip()
+    if not env_key:
+        return "[错误] 未设置 HY3_API_KEY 环境变量。请在 .env 文件或环境变量中配置 API Key。"
+
+    # Step 1: 加载数据
+    data_summary = load_dataset(dataset_path, max_rows=30)
+    if data_summary.startswith("[错误]"):
+        return data_summary
+
+    # Step 2: 可选网络搜索
+    web_context = ""
+    if include_web:
+        web_result = web_search(question, max_results=3)
+        if not web_result.startswith("[错误]"):
+            web_context = f"\n\n网络搜索补充信息:\n{web_result}"
+
+    # Step 3: 组装 prompt 调用 Hy3
+    system_prompt = (
+        "你是一个资深数据分析师。请基于提供的数据集摘要和用户问题，用中文给出结构化分析报告。"
+        "报告格式：1) 关键发现 2) 趋势分析 3) 异常点（如有）4) 统计结论 5) 建议。"
+        "用分点方式回答，引用具体数据支撑观点。"
+    )
+    user_prompt = (
+        f"数据集摘要:\n{data_summary}\n{web_context}\n\n用户问题: {question}\n\n请给出分析报告。"
+    )
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+    result = _call_hy3_with_retry(messages, max_tokens=4096, reasoning_effort="high")
+    return result
+
+
 def main() -> None:
     """以 stdio 模式启动 MCP Server。"""
     mcp.run(transport="stdio")
