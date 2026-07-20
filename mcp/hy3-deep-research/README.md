@@ -18,9 +18,11 @@ cd mcp\hy3-deep-research; .\install.ps1
 
 在 **Cursor / WorkBuddy 的 MCP config** 里写 `env`（安装脚本会生成带绝对路径的模板）：
 
-1. 打开 `configs/generated/cursor.mcp.json` 或 `workbuddy.mcp.json`
+1. 打开 `configs/generated/mcp.json`（安装脚本生成）
 2. 把 `env.HY3_API_KEY` 改成你的 TokenHub Key
 3. 整段合并进客户端 MCP 配置并保存
+
+模板见 `configs/mcp.example.json`。
 
 Server 启动后通过 `os.getenv` 读取客户端注入的环境变量。  
 （可选：本地 `.env` 仅用于 CLI/冒烟，不会覆盖客户端已注入的 Key。）

@@ -580,10 +580,7 @@ def _search_crossref(client: httpx.Client, query: str, max_results: int) -> list
 
 
 def _do_web_search(query: str, max_results: int = 5) -> list[dict[str, str]]:
-    """学术检索：arXiv → OpenAlex → Crossref（合并去重）。
-
-    可选环境变量 HY3_SEARCH_ALLOW_WEB=1 时，才回退通用网页搜索（默认关闭）。
-    """
+    """学术检索：arXiv → OpenAlex → Crossref（合并去重 + 相关性排序）。"""
     max_results = max(1, min(int(max_results), 10))
     if _mock():
         return [
@@ -615,7 +612,6 @@ def _do_web_search(query: str, max_results: int = 5) -> list[dict[str, str]]:
         oa_hits: list[dict[str, str]] = []
         for v in variants[:2]:
             try:
-                # OpenAlex 用不含 boolean 的简化词
                 oa_q = re.sub(r"\b(AND|OR|ti:|abs:|all:)\b", " ", v)
                 oa_q = re.sub(r'[()"]', " ", oa_q)
                 oa_q = re.sub(r"\s+", " ", oa_q).strip()
@@ -633,14 +629,6 @@ def _do_web_search(query: str, max_results: int = 5) -> list[dict[str, str]]:
     merged = _merge_academic_results(*batches, limit=max_results, query=query)
     if merged:
         return merged
-
-    if os.getenv("HY3_SEARCH_ALLOW_WEB", "").lower() in {"1", "true", "yes"}:
-        # 显式开启时才用通用搜索；默认学术-only
-        raise RuntimeError(
-            "学术源无结果，且通用网页回退未实现为默认路径。"
-            f" errors={'; '.join(errors)}"
-        )
-
     raise RuntimeError(
         "学术检索失败（arXiv / OpenAlex / Crossref 均无可用结果）。详情: "
         + ("; ".join(errors) or "empty")

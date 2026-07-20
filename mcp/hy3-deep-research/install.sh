@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Hy3 Deep Research MCP — 一键安装（本地 venv，不发布到 PyPI）
+# One-click install (venv). ASCII-only messages.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -12,25 +12,20 @@ if [[ -z "$PYTHON_BIN" ]]; then
   elif command -v python >/dev/null 2>&1; then
     PYTHON_BIN="$(command -v python)"
   else
-    echo "错误：未找到 python3/python，请先安装 Python ≥ 3.10" >&2
+    echo "ERROR: python3/python not found (need >= 3.10)" >&2
     exit 1
   fi
 fi
 
 PY_VER="$("$PYTHON_BIN" -c 'import sys; print("%d.%d"%sys.version_info[:2])')"
 "$PYTHON_BIN" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)' || {
-  echo "错误：需要 Python ≥ 3.10，当前为 $PY_VER ($PYTHON_BIN)" >&2
+  echo "ERROR: need Python >= 3.10, got $PY_VER" >&2
   exit 1
 }
 
-echo "==> 使用解释器: $PYTHON_BIN ($PY_VER)"
-echo "==> 项目目录: $ROOT"
-
+echo "==> $PYTHON_BIN ($PY_VER) | $ROOT"
 if [[ ! -d .venv ]]; then
-  echo "==> 创建虚拟环境 .venv"
   "$PYTHON_BIN" -m venv .venv
-else
-  echo "==> 复用已有 .venv"
 fi
 
 # shellcheck disable=SC1091
@@ -38,27 +33,20 @@ source "$ROOT/.venv/bin/activate"
 PY="$ROOT/.venv/bin/python"
 PIP="$ROOT/.venv/bin/pip"
 
-echo "==> 升级 pip / setuptools / wheel"
 "$PIP" install -U pip setuptools wheel >/dev/null
-
-echo "==> 安装依赖 (requirements.txt)"
 "$PIP" install -r "$ROOT/requirements.txt"
-
-echo "==> 可编辑安装本包 (entry: hy3-deep-research-mcp)"
 "$PIP" install -e "$ROOT" >/dev/null
 
 if [[ ! -f "$ROOT/.env" ]]; then
   cp "$ROOT/.env.example" "$ROOT/.env"
-  echo "==> created .env (optional local fallback only)"
 fi
 
-# 生成带绝对路径的客户端配置片段（不含真实 Key）
 GEN_DIR="$ROOT/configs/generated"
 mkdir -p "$GEN_DIR"
 SERVER_PY="$ROOT/server.py"
 VENV_PY="$ROOT/.venv/bin/python"
 
-cat > "$GEN_DIR/cursor.mcp.json" <<EOF
+cat > "$GEN_DIR/mcp.json" <<EOF
 {
   "mcpServers": {
     "hy3-deep-research": {
@@ -74,8 +62,5 @@ cat > "$GEN_DIR/cursor.mcp.json" <<EOF
 }
 EOF
 
-cp "$GEN_DIR/cursor.mcp.json" "$GEN_DIR/workbuddy.mcp.json"
-
-echo "==> 冒烟：import server"
 "$PY" -c "import server; print('ok', server.mcp.name)"
-echo "Done. Set HY3_API_KEY in configs/generated/*.mcp.json env, then paste into Cursor/WorkBuddy MCP config."
+echo "Done. Set HY3_API_KEY in configs/generated/mcp.json env, paste into Cursor/WorkBuddy."

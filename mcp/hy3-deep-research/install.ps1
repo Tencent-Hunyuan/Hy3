@@ -1,4 +1,4 @@
-# Hy3 Deep Research MCP - Windows one-click install (ASCII-only; avoids PS encoding issues)
+# One-click install for Windows PowerShell (ASCII-only)
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $Root
@@ -50,8 +50,7 @@ $cfg = @{
   }
 } | ConvertTo-Json -Depth 6
 
-$cfg | Set-Content -Encoding utf8 (Join-Path $Gen "cursor.mcp.json")
-$cfg | Set-Content -Encoding utf8 (Join-Path $Gen "workbuddy.mcp.json")
+$cfg | Set-Content -Encoding utf8 (Join-Path $Gen "mcp.json")
 
 & $VenvPy -c "import server; print('ok', server.mcp.name)"
-Write-Host "Done. Set HY3_API_KEY in configs\generated\*.mcp.json env, then paste into Cursor/WorkBuddy MCP config."
+Write-Host "Done. Set HY3_API_KEY in configs\generated\mcp.json env, paste into Cursor/WorkBuddy."
