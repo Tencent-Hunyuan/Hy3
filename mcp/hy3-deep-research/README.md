@@ -43,7 +43,8 @@ clarify_or_plan("...") → run_deep_research(session_id=...) → critique_and_fi
 
 ## Demo
 
-`docs/demo.gif` 或 `docs/demo.mp4`
+- [`docs/video_mcp1.mp4`](./docs/video_mcp1.mp4)
+- [`docs/video_mcp.mp4`](./docs/video_mcp.mp4)
 
 ## License
 
