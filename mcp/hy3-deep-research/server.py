@@ -3,9 +3,11 @@
 
 from __future__ import annotations
 
+import functools
 import json
 import os
 import re
+import tempfile
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass, field
@@ -13,7 +15,7 @@ from typing import Any
 
 import httpx
 from dotenv import load_dotenv
-from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import Context, FastMCP
 from openai import OpenAI
 
 # Key 优先来自 MCP 客户端 config 的 env（Cursor / WorkBuddy 注入）。
@@ -65,6 +67,100 @@ class ResearchSession:
 
 
 SESSIONS: dict[str, ResearchSession] = {}
+
+
+# ---------- durable session persistence ----------
+# 原 SESSIONS 仅存于进程内存；stdio 进程因重连/重启被回收时，
+# clarify_or_plan 创建的 session 会丢失，导致 run_deep_research(session_id=...)
+# 报「需要 session_id 或 query」。持久化到磁盘可跨进程重启保留状态。
+
+_SESSION_DIR = os.path.join(tempfile.gettempdir(), "hy3_deep_research")
+_SESSION_FILE = os.path.join(_SESSION_DIR, "sessions.json")
+
+
+def _evidence_to_dict(e: "Evidence") -> dict:
+    return {
+        "eid": e.eid, "url": e.url, "title": e.title,
+        "snippet": e.snippet, "quote": e.quote, "sub_question": e.sub_question,
+    }
+
+
+def _dict_to_evidence(d: dict) -> "Evidence":
+    return Evidence(
+        eid=d.get("eid", ""), url=d.get("url", ""), title=d.get("title", ""),
+        snippet=d.get("snippet", ""), quote=d.get("quote", ""),
+        sub_question=d.get("sub_question", ""),
+    )
+
+
+def _session_to_dict(s: "ResearchSession") -> dict:
+    return {
+        "session_id": s.session_id, "query": s.query, "plan": s.plan,
+        "evidence": [_evidence_to_dict(e) for e in s.evidence],
+        "gaps": s.gaps, "log": s.log, "draft": s.draft,
+        "report": s.report, "iteration": s.iteration,
+    }
+
+
+def _dict_to_session(d: dict) -> "ResearchSession":
+    return ResearchSession(
+        session_id=d.get("session_id", ""),
+        query=d.get("query", ""),
+        plan=d.get("plan") or {},
+        evidence=[_dict_to_evidence(x) for x in (d.get("evidence") or [])],
+        gaps=list(d.get("gaps") or []),
+        log=list(d.get("log") or []),
+        draft=d.get("draft", ""),
+        report=d.get("report", ""),
+        iteration=d.get("iteration", 0),
+    )
+
+
+def _save_sessions() -> None:
+    try:
+        os.makedirs(_SESSION_DIR, exist_ok=True)
+        data = {sid: _session_to_dict(s) for sid, s in SESSIONS.items()}
+        tmp = _SESSION_FILE + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False)
+        os.replace(tmp, _SESSION_FILE)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _load_sessions() -> None:
+    try:
+        if os.path.exists(_SESSION_FILE):
+            with open(_SESSION_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            for sid, d in data.items():
+                SESSIONS[sid] = _dict_to_session(d)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _emit(ctx, message: str, progress: "float | None" = None, total: "float | None" = None) -> None:
+    """向 MCP 客户端发送进度/日志通知（保持长连接活跃）。
+
+    ctx 为 FastMCP 注入的 Context；非 MCP 调用时为 None，安全跳过。
+    """
+    if ctx is None:
+        return
+    if progress is not None and total is not None:
+        try:
+            ctx.progress(progress, total, message)
+        except Exception:  # noqa: BLE001
+            try:
+                ctx.report_progress(progress, total, message)
+            except Exception:  # noqa: BLE001
+                pass
+    try:
+        ctx.info(message)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+_load_sessions()
 
 
 def _mock() -> bool:
@@ -894,6 +990,7 @@ def _collect_for_queries(
     *,
     max_results: int,
     fetch_top: int,
+    ctx: "Context | None" = None,
 ) -> None:
     """对每个子查询：学术搜索 → 取前 N 条（优先摘要，必要时抓 abs 页）→ 写入证据库。"""
 
@@ -948,6 +1045,8 @@ def _collect_for_queries(
         return found
 
     # 并行子查询
+    total = max(1, len([q for q in queries if q.strip()]))
+    done = 0
     with ThreadPoolExecutor(max_workers=min(4, max(1, len(queries)))) as pool:
         futs = {pool.submit(one, q): q for q in queries if q.strip()}
         for fut in as_completed(futs):
@@ -956,6 +1055,8 @@ def _collect_for_queries(
                 ev.eid = f"E{len(session.evidence) + 1}"
                 session.evidence.append(ev)
                 session.log.append(f"evidence:{ev.eid}:{ev.url}")
+            done += 1
+            _emit(ctx, f"已检索 {done}/{total} 个子查询", progress=done, total=total)
 
 
 def _plan_search_queries(session: ResearchSession) -> list[str]:
@@ -973,6 +1074,23 @@ def _plan_search_queries(session: ResearchSession) -> list[str]:
 
 
 # ---------- MCP tools ----------
+
+
+def _safe_tool(func):
+    """兜底装饰器：捕获工具体内的未处理异常，转为干净的 JSON 报错，
+
+    避免单次 LLM/网络失败直接炸掉 stdio 进程导致 MCP 连接 -32000 断开。
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as exc:  # noqa: BLE001
+            return json.dumps(
+                {"error": f"{func.__name__} 执行失败：{type(exc).__name__}: {exc}"},
+                ensure_ascii=False,
+            )
+    return wrapper
 
 
 @mcp.tool()
@@ -995,6 +1113,7 @@ def fetch_url(url: str, max_chars: int = 8000) -> str:
 
 
 @mcp.tool()
+@_safe_tool
 def clarify_or_plan(query: str, extra_context: str = "") -> str:
     """生成深度研究计划（研究简报、可并行子问题、停止条件、报告大纲）。
 
@@ -1007,6 +1126,7 @@ def clarify_or_plan(query: str, extra_context: str = "") -> str:
     session = ResearchSession(session_id=sid, query=query, plan=plan)
     session.log.append("created_plan")
     SESSIONS[sid] = session
+    _save_sessions()
     return json.dumps(
         {
             "session_id": sid,
@@ -1020,12 +1140,14 @@ def clarify_or_plan(query: str, extra_context: str = "") -> str:
 
 
 @mcp.tool()
+@_safe_tool
 def run_deep_research(
     session_id: str = "",
     query: str = "",
     max_iterations: int = 3,
     max_results_per_query: int = 6,
     fetch_top_per_query: int = 3,
+    ctx: Context = None,
 ) -> str:
     """执行深度研究闭环：按计划并行检索 → 精读 → 反思缺口 → 跟进检索 → 生成带引用草稿。
 
@@ -1049,8 +1171,11 @@ def run_deep_research(
         sid = uuid.uuid4().hex[:12]
         session = ResearchSession(session_id=sid, query=query, plan=plan)
         SESSIONS[sid] = session
+        _save_sessions()
     else:
         return json.dumps({"error": "需要 session_id 或 query"}, ensure_ascii=False)
+
+    _emit(ctx, f"开始深度研究：{session.query[:60]}")
 
     # 初始子查询：优先英文学术 search_query
     sub_qs = _plan_search_queries(session)
@@ -1059,6 +1184,7 @@ def run_deep_research(
     for i in range(max_iterations):
         session.iteration = i
         session.log.append(f"iteration_start:{i}")
+        _emit(ctx, f"第 {i + 1}/{max_iterations} 轮检索", progress=i, total=max_iterations)
         queries = sub_qs if i == 0 else followups
         if not queries:
             session.log.append("no_more_queries")
@@ -1069,10 +1195,13 @@ def run_deep_research(
             queries,
             max_results=max_results_per_query,
             fetch_top=fetch_top_per_query,
+            ctx=ctx,
         )
+        _save_sessions()
         reflection = _reflect(session)
         session.gaps = list(reflection.get("gaps") or [])
         session.log.append(f"reflect:{json.dumps(reflection, ensure_ascii=False)[:500]}")
+        _emit(ctx, f"第 {i + 1} 轮完成，已收集 {len(session.evidence)} 条证据")
         if reflection.get("enough"):
             session.log.append("enough:true")
             break
@@ -1081,6 +1210,7 @@ def run_deep_research(
             session.log.append(f"followup:{fq}")
 
     session.draft = _draft_report(session)
+    _save_sessions()
     return json.dumps(
         {
             "session_id": session.session_id,
@@ -1099,7 +1229,8 @@ def run_deep_research(
 
 
 @mcp.tool()
-def critique_and_finalize(session_id: str, draft_markdown: str = "") -> str:
+@_safe_tool
+def critique_and_finalize(session_id: str, draft_markdown: str = "", ctx: Context = None) -> str:
     """对草稿做引用审计与不确定性审稿，输出终稿。
 
     Args:
@@ -1112,7 +1243,9 @@ def critique_and_finalize(session_id: str, draft_markdown: str = "") -> str:
     draft = draft_markdown.strip() or session.draft
     if not draft:
         return json.dumps({"error": "无草稿可审，请先 run_deep_research"}, ensure_ascii=False)
+    _emit(ctx, "开始审稿并生成终稿")
     session.report = _finalize(session, draft)
+    _save_sessions()
     session.log.append("finalized")
     return json.dumps(
         {
