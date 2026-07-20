@@ -76,6 +76,113 @@ def _check_extension(path: Path) -> str:
     return ext
 
 
+@mcp.tool()
+def load_dataset(path: str, max_rows: int = 50) -> str:
+    """读取 CSV 或 JSON 数据集文件，返回结构摘要、统计信息和数据预览。
+
+    Args:
+        path: 数据集文件路径，相对于工作区根目录（HY3_MCP_ROOT）。支持 .csv / .json / .jsonl。
+        max_rows: 预览时最多返回的行数，默认 50。
+    """
+    if max_rows < 1:
+        max_rows = 50
+
+    try:
+        file_path = _safe_path(path)
+    except ValueError as e:
+        return f"[错误] {e}"
+
+    try:
+        ext = _check_extension(file_path)
+    except ValueError as e:
+        return f"[错误] {e}"
+
+    if not file_path.is_file():
+        return f"[错误] 文件不存在: {file_path}"
+
+    file_size = file_path.stat().st_size
+
+    try:
+        if ext == ".csv":
+            df = pd.read_csv(file_path, encoding="utf-8")
+        elif ext == ".jsonl":
+            records = []
+            with open(file_path, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        records.append(json.loads(line))
+            df = pd.DataFrame(records)
+        else:  # .json
+            with open(file_path, encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, list):
+                df = pd.DataFrame(data)
+            elif isinstance(data, dict):
+                # 尝试展开单层嵌套
+                df = pd.json_normalize(data, max_level=1)
+            else:
+                return f"[错误] JSON 数据结构不支持，需为数组或对象，实际: {type(data).__name__}"
+    except Exception as e:
+        return f"[错误] 文件解析失败: {e}"
+
+    total_rows = len(df)
+    columns = df.columns.tolist()
+    dtypes = {col: str(df[col].dtype) for col in columns}
+
+    # null 统计
+    null_counts = {col: int(df[col].isna().sum()) for col in columns}
+
+    # 数值列统计
+    numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    stats = {}
+    if numeric_cols:
+        desc = df[numeric_cols].describe()
+        for col in numeric_cols:
+            stats[col] = {
+                "min": round(float(desc.loc["min", col]), 2) if not pd.isna(desc.loc["min", col]) else None,
+                "max": round(float(desc.loc["max", col]), 2) if not pd.isna(desc.loc["max", col]) else None,
+                "mean": round(float(desc.loc["mean", col]), 2) if not pd.isna(desc.loc["mean", col]) else None,
+                "std": round(float(desc.loc["std", col]), 2) if not pd.isna(desc.loc["std", col]) else None,
+            }
+
+    # 构建输出
+    lines = [
+        f"工作区: {_workspace_root()}",
+        f"文件: {file_path}",
+        f"大小: {file_size:,} 字节",
+        f"格式: {ext}",
+        f"总行数: {total_rows}",
+        f"列数: {len(columns)}",
+        "",
+        "--- 字段信息 ---",
+    ]
+    for col in columns:
+        null_info = f", 空值: {null_counts[col]}" if null_counts.get(col) else ""
+        lines.append(f"  {col}: {dtypes.get(col, 'unknown')}{null_info}")
+
+    if stats:
+        lines.append("")
+        lines.append("--- 数值列统计 ---")
+        for col, s in stats.items():
+            lines.append(f"  {col}: min={s['min']}, max={s['max']}, mean={s['mean']}, std={s['std']}")
+
+    # 预览数据
+    preview_rows = min(max_rows, total_rows)
+    lines.append("")
+    lines.append(f"--- 数据预览 (前 {preview_rows} 行) ---")
+    preview_df = df.head(preview_rows).copy()
+    # 截断长文本单元格
+    for col in preview_df.columns:
+        preview_df[col] = preview_df[col].astype(str).apply(lambda x: x[:80] + "..." if len(x) > 80 else x)
+    lines.append(preview_df.to_string(index=True, max_colwidth=40))
+
+    if total_rows > preview_rows:
+        lines.append(f"\n... (共 {total_rows} 行，仅显示前 {preview_rows} 行)")
+
+    return "\n".join(lines)
+
+
 def _hy3_client() -> tuple[OpenAI, str]:
     api_key = os.environ.get("HY3_API_KEY", "").strip()
     if not api_key:
