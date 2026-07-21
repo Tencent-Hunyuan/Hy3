@@ -1,0 +1,31 @@
+[project]
+name = "antipattern-mcp"
+version = "0.1.0"
+description = "你的最佳实践，是我的异端审判对象。A rebellious design advisor MCP Server powered by Hy3."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "zhang66633" }]
+keywords = ["mcp", "hy3", "design-advisor", "contrarian"]
+
+dependencies = [
+    "fastmcp>=3.0",
+    "openai>=1.0",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+
+[project.scripts]
+antipattern = "antipattern.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/antipattern"]
