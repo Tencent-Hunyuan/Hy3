@@ -224,6 +224,7 @@ fastmcp dev src/antipattern/server.py
 
 - [Demo 1 — challenge_design](https://github.com/zhang66633/Hy3/releases/download/demo-videos/demo-1-challenge.mp4)
 - [Demo 2 — stress_test_orthodoxy + escalate](https://github.com/zhang66633/Hy3/releases/download/demo-videos/demo-2-stress-escalate.mp4)
+- [Demo 3 — escalate 强度5加码](https://github.com/zhang66633/Hy3/releases/download/demo-videos/demo-3-escalate.mp4)
 
 ## License
 
