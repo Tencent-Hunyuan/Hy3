@@ -1,167 +1,24 @@
-<p align="left">
-    <a href="README_CN.md">中文</a>&nbsp;｜&nbsp;English
-</p>
-<br>
+# Hy3 本地部署示例 · 快速上手
 
-<p align="center">
- <img src="assets/logo-en.png" width="400"/> <br>
-</p>
+> 6 个自包含示例覆盖从“第一次对话”到“思考模式 / 错误处理”的完整路径，全部用 OpenAI 兼容 SDK 调用**本地部署**的 Hy3 服务。
 
-<div align="center" style="line-height: 1;">
+## 1. 环境准备
 
-
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](#license)
-&nbsp;&nbsp;
-[![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Tencent%20Hy-ffc107?color=ffc107&logoColor=white)](https://huggingface.co/tencent/Hy3)
-&nbsp;&nbsp;
-[![ModelScope](https://img.shields.io/badge/ModelScope-Tencent%20Hy-624aff)](https://modelscope.cn/models/Tencent-Hunyuan/Hy3)
-&nbsp;&nbsp;
-[![cnb.cool](https://img.shields.io/badge/cnb.cool-Tencent%20Hy-blue?logoColor=white)](https://cnb.cool/ai-models/tencent/Hy3)
-&nbsp;&nbsp;
-[![GitCode](https://img.shields.io/badge/GitCode-Tencent%20Hy-red?logoColor=white)](https://ai.gitcode.com/tencent_hunyuan/Hy3)
-
-</div>
-
-<p align="center">
-    🖥️&nbsp;<a href="https://aistudio.tencent.com/"><b>Official Website</b></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    💬&nbsp;<a href="https://github.com/Tencent-Hunyuan/Hy3"><b>GitHub</b></a></p>
-
----
-
-## Table of Contents
-
-- [Model Introduction](#model-introduction)
-- [Stronger Agent Capabilities](#stronger-agent-capabilities)
-- [More Reliable Product Experiences](#more-reliable-product-experiences)
-- [Benchmark Appendix](#benchmark-appendix)
-- [News](#news)
-- [Model Links](#model-links)
-- [Quickstart](#quickstart)
-- [Deployment](#deployment)
-  - [vLLM](#vllm)
-  - [SGLang](#sglang)
-- [Finetuning](#finetuning)
-- [Quantization](#quantization)
-- [License](#license)
-- [Contact Us](#contact-us)
-
----
-
-## Model Introduction
-
-**Hy3** is a 295B-parameter Mixture-of-Experts (MoE) model with 21B active parameters and 3.8B MTP layer parameters, developed by the Tencent Hy Team. Following the Hy3 Preview launch in late April, we gathered feedback from 50+ products and scaled up post-training with higher quality data. Today, we introduce Hy3, which outperforms similar-size models and rivals flagship open-source models with 2-5x parameters. It also shows significant gains in utility across various products and productivity tasks.
-
-
-| Property | Value |
-|:---|:---|
-| Architecture | Mixture-of-Experts (MoE) |
-| Total Parameters | 295B |
-| Activated Parameters | 21B |
-| MTP Layer Parameters | 3.8B |
-| Number of Layers (excluding MTP layer) | 80 |
-| Number of MTP Layers | 1 |
-| Attention Heads | 64 (GQA, 8 KV heads, head dim 128) |
-| Hidden Size | 4096 |
-| Intermediate Size | 13312 |
-| Context Length | 256K |
-| Vocabulary Size | 120832 |
-| Number of Experts | 192 experts, top-8 activated |
-| Supported Precisions | BF16 |
-
-## Stronger Agent Capabilities
-
-Building on Hy3 Preview, we further improved the quality and diversity of post-training data while scaling up RL training. Hy3 shows solid gains across reasoning, agentic, and long-context tasks, competitive with much larger flagship models.
-
-<p align="center">
-  <img src="assets/benchmark.png" width="100%"/>
-</p>
-
-In productivity scenarios such as coding, office work, financial modeling, frontend design, and game development, Hy3 has made remarkable progress and can now serve as a reliable, cost-effective model option.
-
-We don't think public benchmark scores tell the full story. So we ran a blind evaluation with 270 experts using tasks from their work, and Hy3 scored 2.67/4, outperforming GLM-5.1 at 2.51/4. The advantage was most substantial in frontend development, data & storage, and CI/CD tasks.
-
-## More Reliable Product Experiences
-
-Model usefulness is not fully captured by benchmarks. Based on extensive product feedback, we identified and fixed the following issues, receiving consistently positive feedback from product teams.
-
-**Stability of tool calls and output formats**: We fixed multiple baseline reliability issues, bringing the model to production-grade standards across tool configurations and output constraints. Tool-call error recovery and overall efficiency improved. Hy3 also generalizes across different agent scaffoldings. On SWE-Bench Verified, accuracy variance across scaffoldings like CodeBuddy, Cline, and KiloCode remains within 4%.
-
-**Knowledge and anti-hallucination**: Guided by the ideal of "answer when grounded, state when evidence is missing, do not conflate sources or fabricate data," we implemented fine-grained data cleaning and training constraints. In internal evaluations based on real-world scenarios, Hy3's hallucination rate dropped from 12.5% to 5.4%, and commonsense error rates fell from 25.4% to 12.7%. These improvements materially reduce fact conflation, fabrication, and logical contradiction.
-
-**Complex context retention and multi-turn intent tracking**: Through joint optimization of SFT and RL, Hy3 improved on operational pain points like coreference resolution, ellipsis recovery, and multi-turn constraint inheritance. On internal comprehensive multi-turn tests, the issue rate dropped from 17.4% to 7.9%. Hy3 also improved markedly on long-dialogue evals like MRCR. Its outputs are more concise while ensuring complex intents do not decay or drift over long-horizon interactions.
-
-## Benchmark Appendix
-
-<p align="center">
-  <img src="assets/benchmark-appendix.png" width="100%"/>
-</p>
-
-## News
-
-
-* 🔥 We open-source **Hy3** and **Hy3-FP8** model weights on [Hugging Face](https://huggingface.co/tencent/Hy3), [ModelScope](https://modelscope.cn/models/Tencent-Hunyuan/Hy3), [GitCode](https://ai.gitcode.com/tencent_hunyuan/Hy3), and [CNB](https://cnb.cool/ai-models/tencent/Hy3).
-
-## Model Links
-
-
-| Model Name | Description | Hugging Face | ModelScope | GitCode | CNB |
-|:---|:---|:---:|:---:|:---:|:---:|
-| Hy3 | Instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3) | [Model](https://cnb.cool/ai-models/tencent/Hy3) |
-| Hy3-FP8 | FP8 quantized instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3-FP8) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3-FP8) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3-FP8) | [Model](https://cnb.cool/ai-models/tencent/Hy3-FP8) |
-
-## Quickstart
-
-Deploy Hy3 with [vLLM](#vllm) or [SGLang](#sglang) first, then call the OpenAI-compatible API:
-
-```python
-from openai import OpenAI
-
-client = OpenAI(base_url="http://127.0.0.1:8000/v1", api_key="EMPTY")
-
-response = client.chat.completions.create(
-    model="hy3",
-    messages=[
-        {"role": "user", "content": "Hello! Can you briefly introduce yourself?"},
-    ],
-    temperature=0.9,
-    top_p=1.0,
-    # reasoning_effort: "no_think" (default, direct response), "low", "high" (deep chain-of-thought)
-    extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
-)
-print(response.choices[0].message.content)
-```
-
-> **Recommended parameters**: `temperature=0.9`, `top_p=1.0`.
->
-> **Reasoning mode**: Set `reasoning_effort` to `"high"` for complex tasks (math, coding, reasoning) or `"no_think"` for direct responses.
-
-See the [Deployment](#deployment) section below for how to start the API server.
-
-## Deployment
-
-Hy3 has 295B parameters in total. To serve it on 8 GPUs, we recommend using H20-3e or other GPUs with larger memory capacity.
-
-For production serving, we recommend using vLLM or SGLang, both of which provide dedicated recipes for Hy3:
-
-- [vLLM](https://github.com/vllm-project/vllm) - see [vLLM recipes](https://recipes.vllm.ai/tencent/Hy3)
-
-- [SGLang](https://docs.sglang.io/) - see [SGLang cookbook](https://lmsysorg.mintlify.app/cookbook/autoregressive/Tencent/Hy3)
-
-### vLLM
-
-Build vLLM from source:
-```bash
-uv venv --python 3.12 --seed --managed-python
-source .venv/bin/activate
-git clone https://github.com/vllm-project/vllm.git
-cd vllm
-uv pip install --editable . --torch-backend=auto
-```
-
-Start the vLLM server with MTP enabled:
+### 1.1 Python 依赖
 
 ```bash
-# Switch to trtllm backend to work-around mnnvl workspace size issue.
+python -m venv .venv
+source .venv/bin/activate        
+pip install -r requirements.txt
+```
+
+### 1.2 启动本地服务（官方推荐）
+
+**vLLM**：
+
+从源码构建 vLLM：
+
+```bash
 export VLLM_FLASHINFER_ALLREDUCE_BACKEND=trtllm
 vllm serve tencent/Hy3 \
   --tensor-parallel-size 8 \
@@ -174,18 +31,7 @@ vllm serve tencent/Hy3 \
   --served-model-name hy3
 ```
 
-### SGLang
-
-Build SGLang from source:
-```bash
-git clone https://github.com/sgl-project/sglang
-cd sglang
-pip3 install pip --upgrade
-pip3 install "transformers>=5.6.0"
-pip3 install -e "python"
-```
-
-Launch SGLang server with MTP enabled:
+**SGLang**：
 
 ```bash
 python3 -m sglang.launch_server \
@@ -201,27 +47,63 @@ python3 -m sglang.launch_server \
   --served-model-name hy3
 ```
 
-## Finetuning
+- `--reasoning-parser hy_v3`（vLLM）/ `hunyuan`（SGLang）：开启后 `high` 模式才会返回 `reasoning_content`（见示例 05）。
+- `--tool-call-parser` + `--enable-auto-tool-choice`（vLLM）：示例 04 工具调用依赖。
 
-Hy3 provides a complete model finetuning pipeline. For detailed documentation, please refer to: [Finetuning Guide](./finetune/README.md)
+### 1.3 推荐采样参数（官方）
 
-## Quantization
+`temperature=0.9`，`top_p=1.0`。
 
-We provide [AngelSlim](https://github.com/tencent/AngelSlim), a more accessible, comprehensive, and efficient toolkit for large model compression. AngelSlim supports a comprehensive suite of compression tools for large-scale multimodal models, including common quantization algorithms, low-bit quantization, and speculative sampling.
+### 1.4 配置 `.env`
 
-## License
+```bash
+cp .env.example .env
+```
 
+默认已填本地部署值（`HY3_BASE_URL=http://127.0.0.1:8000/v1`、`HY3_MODEL=hy3`、`HY3_API_KEY=EMPTY`）。
+如需云端 TokenHub，取消注释 `.env.example` 底部的云端段,注意云端用顶层  reasoning_effort ，而非  chat_template_kwargs
 
-Hy3 is released under the **Apache License 2.0**. See [LICENSE](./LICENSE) for details.
+## 2. 六个示例的递进关系
 
-## Contact Us
+| # | 文件 | 主题 | 你学到 |
+|---|---|---|---|
+| 1 | `01_basic_chat` | 单次 + 多轮对话 | `messages` 结构、模型无记忆、靠重发历史做多轮 |
+| 2 | `02_streaming` | 流式输出 | `stream=True`、delta 累积、usage 尾块（`choices` 为空） |
+| 3 | `03_latency_compare` | 非流式 vs 流式时延 | TTFT、首字加速比、为什么用流式 |
+| 4 | `04_tool_calling` | 函数调用 | tool schema、模型回传 `arguments`、本地执行后回填 |
+| 5 | `05_reasoning_mode` | 思考模式 | `reasoning_content`、`no_think`/`low`/`high`、依赖 reasoning parser |
+| 6 | `06_error_handling_retry` | 错误处理与重试 | 可重试 / 不可重试错误、退避、401/400 直接失败 |
 
-If you would like to leave a message for our R&D and product teams, welcome to contact us. You can also reach us via email:
+**递进逻辑** : 基础对话 01 -> 流式输出 02 -> 时延对比 03 -> 工具调用 04 -> 思考模式 05 -> 错误处理与重试 06
 
-📧 **hunyuan_opensource@tencent.com**
+## 3. 推荐运行顺序
 
----
+```bash
+python 01_basic_chat.py
+python 02_streaming.py
+python 03_latency_compare.py
+python 04_tool_calling.py
+python 05_reasoning_mode.py
+python 06_error_handling_retry.py
+```
 
-<p align="center">
-  <i>Hy3 is developed by the Tencent Hy Team.</i>
-</p>
+每个示例配套同名 `.md`，讲解原理与真实输出。
+
+## 4. reasoning_effort 控制方式
+
+统一通过 `extra_body` 透传：
+
+```python
+extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}}  # 默认，直接回复
+extra_body={"chat_template_kwargs": {"reasoning_effort": "high"}}    # 深度思考
+```
+
+取值：`no_think`（默认，最快）/ `low` / `high`（数学、代码、复杂推理）。
+**必须服务端启用 `--reasoning-parser`，否则该字段不返回**（示例 05 的 `reasoning_content` 因此为空）。
+
+## 5. 常见问题
+
+- **05 的 `high` 模式没有 `reasoning_content`？** 服务端启动未加 `--reasoning-parser hy_v3`（vLLM）/ `hunyuan`（SGLang）。加上即可；否则该字段为空，与示例输出一致。
+- **04 工具调用不触发？** 确认 vLLM 加了 `--enable-auto-tool-choice --tool-call-parser hy_v3`。
+- **401 / 400？** 见 06：密钥错 = 401、模型名错 = 400，均不可重试，直接报错。
+- **连不上 / 超时？** 确认本地服务、`.env` 的 `HY3_BASE_URL` 正确；超时调大 `HY3_TIMEOUT_SECONDS`。
