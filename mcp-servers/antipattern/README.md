@@ -220,11 +220,10 @@ fastmcp dev src/antipattern/server.py
 
 ## Demo
 
-录屏（CodeBuddy 实际调用，无剪辑）：
+录屏（CodeBuddy 实际调用，无剪辑），在 `demo/` 目录下：
 
-- [Demo 1 — challenge_design](https://github.com/zhang66633/Hy3/releases/download/demo-videos/demo-1-challenge.mp4)
-- [Demo 2 — stress_test_orthodoxy + escalate](https://github.com/zhang66633/Hy3/releases/download/demo-videos/demo-2-stress-escalate.mp4)
-- [Demo 3 — escalate 强度5加码](https://github.com/zhang66633/Hy3/releases/download/demo-videos/demo-3-escalate.mp4)
+- `demo-1-challenge-escalate.mp4` — challenge_design 挑战后台管理系统方案 + escalate 强度5加码
+- `demo-2-stress-test.mp4` — stress_test_orthodoxy 压力测试"微服务优于单体架构"
 
 ## License
 
