@@ -42,14 +42,13 @@ Hy3：Mixture-of-Experts（MoE）是一种神经网络架构，
 **任务**：用 Hy3 分析项目 `Notes Web APP` 生成完整README报告。
 
 ### 3.1 任务指令（直接发给 WorkBuddy）
-
 ```
 请为一个Notes WebApp项目生成完整README。
 项目功能:
 新增笔记
-·编辑笔记
-·删除笔记
-·LocalStorage保存数据
+编辑笔记
+删除笔记
+LocalStorage保存数据
 技术栈:
 HTML
 cSs
@@ -62,31 +61,28 @@ JavaScript
 5.后续优化方向
 请输出Markdown。
 ```
+---
 
 ### 3.2 预期输出（Hy3 实际产出，节选）
-```
+
 >Notes Web App是一个面向个人随手记录场景的单页应用(SPA)。它不需要任何后端服务或构建工具，只需在浏览器中打开[index.nhtml
 >即可使用。
 >项目采用经典的三层分离结构:
 >index.html一一页面骨架与DOM结构
 >style.css--响应式布局与暗色主题样式
 >script.js一一基于LocalStorage 的笔记增删改查逻辑
-```
+
 ![openrouter结果](images/openrouter-result.jpg)
-
+>截图说明：openrouter实际产出节选
 ---
-
 ## 四、注意事项（Notes）
 
 1. **API Key 安全**：Key 不要提交到仓库或公开发到 Issue。本地用环境变量或 WorkBuddy 的密钥管理存储。
-2. **Token 预算**：Hy3 支持 262K 上下文，但长文档分析时注意 `max_tokens` 设置（建议 ≥ 2000），避免输出被截断。
+2. **如果填了 Key 却报 401 怎么办**:检查api_key是否到期或者未打开，token不够
 3. **推理模式**：Hy3 默认 `no_think` 直答模式。
 4. **工具调用**：Hy3 工具调用稳定，适合 Agent 场景（如让 WorkBuddy 自动读文件、跑命令）。
-
 ---
-
 ## 五、小结
-
 通过 OpenAI 兼容协议，WorkBuddy 可在 **5 分钟内** 接入 Hy3。
 Hy3 的 256K 上下文 + 稳定工具调用，使其特别适合「分析大型代码库」「长文档处理」
 这类 WorkBuddy 核心场景。本指南已端到端验证（配置 → 首次对话 → 真实任务跑通）。

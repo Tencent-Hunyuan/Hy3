@@ -86,11 +86,9 @@ Hy3：Mixture-of-Experts（MoE）是一种神经网络架构，
 ## 四、注意事项（Notes）
 
 1. **API Key 安全**：Key 不要提交到仓库或公开发到 Issue。本地用环境变量或 WorkBuddy 的密钥管理存储。
-
-2. **Token 预算**：Hy3 支持 262K 上下文，但长文档分析时注意 `max_tokens` 设置（建议 ≥ 2000），避免输出被截断。
-3. **推理模式**：Hy3 默认 `no_think` 直答模式。
-4. **工具调用**：Hy3 工具调用稳定，适合 Agent 场景（如让 WorkBuddy 自动读文件、跑命令）。
-
+2. **推理模式**：Hy3 默认 `no_think` 直答模式。
+3. **工具调用**：Hy3 工具调用稳定，适合 Agent 场景（如让 WorkBuddy 自动读文件、跑命令）。
+4. **如果填了 Key 却报 401 怎么办**:检查api_key是否到期或者未打开，token不够
 ---
 
 ## 五、小结
