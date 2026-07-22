@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hy3-api-guardian"
+version = "0.1.0"
+description = "A Hy3-powered MCP server for OpenAPI audits, breaking-change detection, and contract-test generation."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [
+  { name = "Kanghz87" },
+]
+dependencies = [
+  "mcp>=1.27,<2",
+  "openai>=1.0,<3",
+  "pydantic>=2.10,<3",
+  "PyYAML>=6.0,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.2,<2",
+  "pytest>=8.3,<9",
+  "pytest-asyncio>=0.25,<2",
+  "ruff>=0.11,<1",
+]
+
+[project.scripts]
+hy3-api-guardian = "hy3_api_guardian.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hy3_api_guardian"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.ruff.format]
+quote-style = "double"

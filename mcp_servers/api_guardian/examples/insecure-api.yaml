@@ -1,0 +1,22 @@
+openapi: 3.0.3
+info:
+  title: Insecure Demo API
+  version: 0.1.0
+servers:
+  - url: http://api.example.test
+paths:
+  /accounts/{accountId}:
+    get:
+      operationId: duplicatedOperation
+      responses: {}
+    delete:
+      operationId: duplicatedOperation
+      parameters:
+        - name: accountId
+          in: path
+          required: false
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
