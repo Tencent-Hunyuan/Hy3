@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from .errors import ConfigurationError
 
@@ -54,17 +55,30 @@ class Settings:
             raise ConfigurationError("HY3_ALLOWED_ROOT must be an existing directory")
 
         base_url = os.getenv("HY3_BASE_URL", "https://tokenhub.tencentmaas.com/v1").strip()
-        if not base_url.startswith(("https://", "http://127.0.0.1", "http://localhost")):
+        try:
+            parsed_base_url = urlsplit(base_url)
+            hostname = parsed_base_url.hostname
+            _ = parsed_base_url.port  # Validate malformed port values eagerly.
+        except ValueError as exc:
+            raise ConfigurationError("HY3_BASE_URL must be a valid URL") from exc
+        scheme = parsed_base_url.scheme.lower()
+        if not hostname or scheme not in {"http", "https"}:
+            raise ConfigurationError("HY3_BASE_URL must be an absolute HTTP(S) URL")
+        if parsed_base_url.username or parsed_base_url.password:
+            raise ConfigurationError("HY3_BASE_URL must not contain credentials")
+        if scheme == "http" and hostname.lower() not in {"localhost", "127.0.0.1", "::1"}:
             raise ConfigurationError(
                 "HY3_BASE_URL must use HTTPS, except for localhost development endpoints"
             )
-
         effort = os.getenv("HY3_REASONING_EFFORT", "high").strip().lower()
         if effort not in {"no_think", "low", "high"}:
             raise ConfigurationError("HY3_REASONING_EFFORT must be one of: no_think, low, high")
 
+        raw_api_key = os.getenv("HY3_API_KEY")
+        api_key = raw_api_key.strip() if raw_api_key and raw_api_key.strip() else None
+
         return cls(
-            api_key=os.getenv("HY3_API_KEY") or None,
+            api_key=api_key,
             base_url=base_url.rstrip("/"),
             model=os.getenv("HY3_MODEL", "hy3").strip() or "hy3",
             allowed_root=root,

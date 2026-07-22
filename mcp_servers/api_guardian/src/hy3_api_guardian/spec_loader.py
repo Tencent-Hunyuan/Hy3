@@ -18,6 +18,7 @@ HTTP_METHODS = {"get", "put", "post", "delete", "options", "head", "patch", "tra
 SUPPORTED_SUFFIXES = {".json", ".yaml", ".yml"}
 MAX_CONTAINER_NODES = 200_000
 MAX_NESTING_DEPTH = 100
+MAX_LOCAL_REF_DEPTH = 16
 
 
 class _NoAliasSafeLoader(yaml.SafeLoader):
@@ -155,6 +156,31 @@ def load_spec(
     return LoadedSpec(label=label, document=_parse_document(text, label))
 
 
+def resolve_local_object(
+    document: dict[str, Any], value: Any, *, max_depth: int = MAX_LOCAL_REF_DEPTH
+) -> dict[str, Any] | None:
+    """Resolve a bounded chain of local JSON Pointer references without network access."""
+    current = value
+    seen: set[str] = set()
+    for _ in range(max_depth + 1):
+        if not isinstance(current, dict):
+            return None
+        ref = current.get("$ref")
+        if ref is None:
+            return current
+        if not isinstance(ref, str) or not ref.startswith("#/") or ref in seen:
+            return None
+        seen.add(ref)
+        target: Any = document
+        for raw_token in ref[2:].split("/"):
+            token = raw_token.replace("~1", "/").replace("~0", "~")
+            if not isinstance(target, dict) or token not in target:
+                return None
+            target = target[token]
+        current = target
+    return None
+
+
 def compact_for_model(spec: LoadedSpec, max_chars: int) -> str:
     """Project an OpenAPI document into a bounded, secret-reduced JSON representation."""
     document = spec.document
@@ -163,7 +189,7 @@ def compact_for_model(spec: LoadedSpec, max_chars: int) -> str:
         "info": document.get("info"),
         "security": document.get("security"),
         "paths": {},
-        "components": {"schemas": {}},
+        "components": {},
     }
 
     paths = document.get("paths", {})
@@ -195,12 +221,17 @@ def compact_for_model(spec: LoadedSpec, max_chars: int) -> str:
 
     components = document.get("components", {})
     if isinstance(components, dict):
-        schemas = components.get("schemas", {})
-        if isinstance(schemas, dict):
-            compact["components"]["schemas"] = schemas
-        security_schemes = components.get("securitySchemes")
-        if isinstance(security_schemes, dict):
-            compact["components"]["securitySchemes"] = security_schemes
+        for section in (
+            "schemas",
+            "parameters",
+            "requestBodies",
+            "responses",
+            "headers",
+            "securitySchemes",
+        ):
+            section_value = components.get(section)
+            if isinstance(section_value, dict):
+                compact["components"][section] = section_value
 
     serialized = json.dumps(redact_structure(compact), ensure_ascii=False, separators=(",", ":"))
     serialized = redact_text(serialized)

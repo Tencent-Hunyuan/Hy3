@@ -1,6 +1,6 @@
 # CodeBuddy verification
 
-- Verified at: `2026-07-22T16:26:05+08:00`
+- Verified at: `2026-07-22T17:25:27+08:00`
 - Client: CodeBuddy Code CLI `2.125.0`
 - Transport: local stdio
 - Project configuration: repository-root `.mcp.json`

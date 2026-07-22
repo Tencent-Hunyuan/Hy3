@@ -5,9 +5,10 @@ from __future__ import annotations
 import re
 from collections.abc import Iterator
 from typing import Any
+from urllib.parse import urlsplit
 
 from .models import Finding
-from .spec_loader import HTTP_METHODS, LoadedSpec
+from .spec_loader import HTTP_METHODS, LoadedSpec, resolve_local_object
 
 _PATH_PARAMETER = re.compile(r"\{([^{}]+)\}")
 
@@ -22,6 +23,7 @@ def iter_operations(
     for path, path_item in paths.items():
         if not isinstance(path_item, dict):
             continue
+        path_item = resolve_local_object(document, path_item) or path_item
         shared_parameters = path_item.get("parameters", [])
         if not isinstance(shared_parameters, list):
             shared_parameters = []
@@ -31,11 +33,16 @@ def iter_operations(
             operation_parameters = operation.get("parameters", [])
             if not isinstance(operation_parameters, list):
                 operation_parameters = []
+            combined_parameters = [*shared_parameters, *operation_parameters]
+            resolved_parameters = [
+                resolve_local_object(document, parameter) or parameter
+                for parameter in combined_parameters
+            ]
             yield (
                 str(path),
                 str(method).lower(),
                 operation,
-                [*shared_parameters, *operation_parameters],
+                resolved_parameters,
             )
 
 
@@ -90,8 +97,22 @@ def audit_locally(spec: LoadedSpec) -> list[Finding]:
             if not isinstance(server, dict):
                 continue
             url = str(server.get("url", ""))
-            if url.startswith("http://") and not url.startswith(
-                ("http://localhost", "http://127.0.0.1")
+            try:
+                parsed_url = urlsplit(url)
+                hostname = parsed_url.hostname
+            except ValueError:
+                findings.append(
+                    _finding(
+                        "medium",
+                        "server",
+                        f"servers[{index}].url",
+                        "The server URL is malformed.",
+                        "Use a valid absolute or OpenAPI server-template URL.",
+                    )
+                )
+                continue
+            if parsed_url.scheme.lower() == "http" and (
+                not hostname or hostname.lower() not in {"localhost", "127.0.0.1", "::1"}
             ):
                 findings.append(
                     _finding(

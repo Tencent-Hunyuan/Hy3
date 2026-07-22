@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import asyncio
 import json
 import os
@@ -40,10 +41,19 @@ def _summary(name: str, result: Any) -> dict[str, Any]:
             }
         )
     else:
+        generated_code = structured.get("generated_code", "")
+        python_syntax_valid = False
+        if structured.get("framework") == "pytest" and isinstance(generated_code, str):
+            try:
+                ast.parse(generated_code)
+            except SyntaxError as exc:
+                raise RuntimeError("Hy3 generated invalid Python contract-test code") from exc
+            python_syntax_valid = True
         summary.update(
             {
                 "selected_operations": structured.get("selected_operations", []),
-                "generated_code_chars": len(structured.get("generated_code", "")),
+                "generated_code_chars": len(generated_code),
+                "generated_code_python_syntax_valid": python_syntax_valid,
             }
         )
     return summary

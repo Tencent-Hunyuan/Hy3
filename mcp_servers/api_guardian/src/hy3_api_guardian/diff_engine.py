@@ -6,7 +6,7 @@ from typing import Any
 
 from .audit import iter_operations
 from .models import ApiChange
-from .spec_loader import LoadedSpec
+from .spec_loader import LoadedSpec, resolve_local_object
 
 
 def _change(kind: str, category: str, location: str, message: str) -> ApiChange:
@@ -138,12 +138,8 @@ def _compare_operations(old: LoadedSpec, new: LoadedSpec) -> list[ApiChange]:
                     )
                 )
 
-        old_body = old_operation.get("requestBody", {})
-        new_body = new_operation.get("requestBody", {})
-        if not isinstance(old_body, dict):
-            old_body = {}
-        if not isinstance(new_body, dict):
-            new_body = {}
+        old_body = resolve_local_object(old.document, old_operation.get("requestBody", {})) or {}
+        new_body = resolve_local_object(new.document, new_operation.get("requestBody", {})) or {}
         if old_body.get("required") is not True and new_body.get("required") is True:
             changes.append(
                 _change(

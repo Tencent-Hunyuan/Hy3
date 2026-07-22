@@ -18,5 +18,6 @@ $env:HY3_API_KEY = "your-key"
 python scripts/live_smoke.py
 ```
 
-The script prints only tool names, result counts, output lengths, model ID, and token usage. It does
-not print the key or full provider responses.
+The script prints only tool names, result counts, output lengths, model ID, token usage, and a
+Python syntax-validation flag for generated pytest source. It does not print the key or full
+provider responses.

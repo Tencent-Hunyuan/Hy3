@@ -14,7 +14,7 @@ from .hy3_client import Hy3Client, ModelReply
 from .models import AuditResult, BreakingChangeResult, ContractTestResult
 from .prompts import AUDIT_SYSTEM, DIFF_SYSTEM, TEST_SYSTEM
 from .settings import Settings
-from .spec_loader import LoadedSpec, compact_for_model, load_spec
+from .spec_loader import HTTP_METHODS, LoadedSpec, compact_for_model, load_spec
 
 
 class CompletionClient(Protocol):
@@ -26,14 +26,37 @@ def _client(settings: Settings, supplied: CompletionClient | None) -> Completion
 
 
 def _operation_names(spec: LoadedSpec, selected_paths: Sequence[str] | None) -> list[str]:
-    requested = {path.strip() for path in selected_paths or [] if path.strip()}
-    names = [
-        f"{method.upper()} {path}"
+    operations = [
+        (path, f"{method.upper()} {path}")
         for path, method, _operation, _parameters in iter_operations(spec.document)
-        if not requested or path in requested or f"{method.upper()} {path}" in requested
     ]
-    if requested and not names:
-        raise SpecInputError("selected_paths did not match any operation in the specification")
+    if not operations:
+        raise SpecInputError("The specification contains no operations to generate tests for")
+
+    requested: set[str] = set()
+    for selector in selected_paths or []:
+        normalized = selector.strip()
+        parts = normalized.split(maxsplit=1)
+        if len(parts) == 2 and parts[0].lower() in HTTP_METHODS:
+            normalized = f"{parts[0].upper()} {parts[1]}"
+        if normalized:
+            requested.add(normalized)
+    if not requested:
+        return [name for _path, name in operations]
+
+    matched_selectors: set[str] = set()
+    names: list[str] = []
+    for path, name in operations:
+        selectors = {path, name}
+        matches = requested & selectors
+        if matches:
+            matched_selectors.update(matches)
+            names.append(name)
+    unmatched = sorted(requested - matched_selectors)
+    if unmatched:
+        rendered = ", ".join(unmatched[:5])
+        suffix = " ..." if len(unmatched) > 5 else ""
+        raise SpecInputError(f"selected_paths did not match an operation: {rendered}{suffix}")
     return names
 
 

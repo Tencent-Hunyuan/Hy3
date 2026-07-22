@@ -68,6 +68,11 @@ Copy a client template from [`clients/`](clients/):
 
 Replace placeholders only in the local config. Never commit a real API key.
 
+CodeBuddy recommends the repository-root `.mcp.json` for project scope and requires approval on
+the first connection. Cursor reads project servers from `.cursor/mcp.json`. See the official
+[CodeBuddy MCP documentation](https://www.codebuddy.ai/docs/cli/mcp) and
+[Cursor MCP documentation](https://docs.cursor.com/context/model-context-protocol).
+
 ## Demo
 
 ![Cursor calling Hy3 API Guardian through native MCP](docs/verification/assets/cursor-native-mcp-demo.gif)
@@ -92,6 +97,10 @@ Use generate_contract_tests to create pytest tests for GET /pets/{petId} from
 examples/petstore-v1.yaml.
 ```
 
+The server never executes generated tests. Review them before running in an isolated test
+environment. The real Hy3 smoke test additionally checks that generated pytest source parses as
+valid Python.
+
 ## Security
 
 - Read-only stdio server; no source-file writes or command execution.
@@ -100,7 +109,11 @@ examples/petstore-v1.yaml.
 - Best-effort credential and private-key redaction before provider calls.
 - Untrusted-data boundaries in every model prompt.
 - API keys are read from environment variables and never returned or logged.
+- Bounded local JSON Pointer `$ref` resolution for parameters, path items, and request bodies.
 - Remote `$ref` values are not fetched.
+
+The deterministic comparator covers common compatibility changes; it is not a complete formal
+OpenAPI compatibility proof. Hy3 augments those bounded findings with semantic impact analysis.
 
 ## Development
 

@@ -95,6 +95,49 @@ async def test_contract_test_service_rejects_unknown_selector(settings: Settings
 
 
 @pytest.mark.asyncio
+async def test_contract_test_service_rejects_partially_unknown_selectors(
+    settings: Settings,
+) -> None:
+    with pytest.raises(SpecInputError, match="/missing"):
+        await generate_contract_tests_service(
+            spec_path=None,
+            spec_text=VALID_SPEC,
+            framework="pytest",
+            selected_paths=["GET /health", "/missing"],
+            settings=settings,
+            client=FakeHy3Client(),
+        )
+
+
+@pytest.mark.asyncio
+async def test_contract_test_service_accepts_case_insensitive_method_selector(
+    settings: Settings,
+) -> None:
+    result = await generate_contract_tests_service(
+        spec_path=None,
+        spec_text=VALID_SPEC,
+        framework="pytest",
+        selected_paths=["get /health"],
+        settings=settings,
+        client=FakeHy3Client("def test_health():\n    assert True"),
+    )
+    assert result.selected_operations == ["GET /health"]
+
+
+@pytest.mark.asyncio
+async def test_contract_test_service_rejects_spec_without_operations(settings: Settings) -> None:
+    with pytest.raises(SpecInputError, match="no operations"):
+        await generate_contract_tests_service(
+            spec_path=None,
+            spec_text="openapi: 3.1.0\ninfo: {title: Empty, version: 1}\npaths: {}",
+            framework="pytest",
+            selected_paths=None,
+            settings=settings,
+            client=FakeHy3Client(),
+        )
+
+
+@pytest.mark.asyncio
 async def test_contract_test_service_limits_operation_count(settings: Settings) -> None:
     paths = "\n".join(
         f"  /items/{index}:\n    get:\n      responses:\n        '200': {{description: ok}}"

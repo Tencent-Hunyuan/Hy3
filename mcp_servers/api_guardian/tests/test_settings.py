@@ -31,12 +31,38 @@ def test_rejects_plaintext_remote_provider(monkeypatch: pytest.MonkeyPatch, tmp_
         Settings.from_env()
 
 
+def test_rejects_deceptive_localhost_hostname(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("HY3_ALLOWED_ROOT", str(tmp_path))
+    monkeypatch.setenv("HY3_BASE_URL", "http://localhost.evil.example/v1")
+    with pytest.raises(ConfigurationError, match="HTTPS"):
+        Settings.from_env()
+
+
 def test_allows_plaintext_localhost_provider(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     monkeypatch.setenv("HY3_ALLOWED_ROOT", str(tmp_path))
     monkeypatch.setenv("HY3_BASE_URL", "http://127.0.0.1:8000/v1")
     assert Settings.from_env().base_url == "http://127.0.0.1:8000/v1"
+
+
+def test_allows_plaintext_ipv6_loopback_provider(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("HY3_ALLOWED_ROOT", str(tmp_path))
+    monkeypatch.setenv("HY3_BASE_URL", "http://[::1]:8000/v1")
+    assert Settings.from_env().base_url == "http://[::1]:8000/v1"
+
+
+def test_whitespace_api_key_is_treated_as_missing(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("HY3_ALLOWED_ROOT", str(tmp_path))
+    monkeypatch.setenv("HY3_API_KEY", "   ")
+    with pytest.raises(ConfigurationError, match="HY3_API_KEY"):
+        Settings.from_env().require_api_key()
 
 
 def test_safe_summary_never_contains_api_key(settings: Settings) -> None:

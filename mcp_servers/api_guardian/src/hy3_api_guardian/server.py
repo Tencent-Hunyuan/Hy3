@@ -24,6 +24,7 @@ from .settings import Settings
 
 mcp = FastMCP(
     name="Hy3 API Guardian",
+    log_level="WARNING",
     instructions=(
         "Read-only OpenAPI governance tools powered by Hy3. Provide file paths inside "
         "HY3_ALLOWED_ROOT or inline OpenAPI text. The server never modifies source files."
@@ -177,7 +178,7 @@ def _parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = _parser().parse_args()
-    logging.basicConfig(level=logging.INFO, stream=sys.stderr)
+    logging.basicConfig(level=logging.WARNING, stream=sys.stderr)
     if args.check:
         try:
             settings = Settings.from_env()

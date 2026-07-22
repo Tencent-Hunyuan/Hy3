@@ -1,5 +1,5 @@
 {
-  "verified_at": "2026-07-22T16:17:48+08:00",
+  "verified_at": "2026-07-22T17:19:52+08:00",
   "endpoint": "https://tokenhub.tencentmaas.com/v1",
   "http_status": 200,
   "server": "Hy3 API Guardian",
@@ -15,39 +15,40 @@
       "tool": "audit_openapi",
       "model": "hy3",
       "usage": {
-        "prompt_tokens": 804,
-        "completion_tokens": 616,
-        "total_tokens": 1420
+        "prompt_tokens": 801,
+        "completion_tokens": 704,
+        "total_tokens": 1505
       },
       "operation_count": 2,
       "local_finding_count": 8,
-      "hy3_analysis_chars": 2647
+      "hy3_analysis_chars": 3066
     },
     {
       "tool": "detect_breaking_changes",
       "model": "hy3",
       "usage": {
         "prompt_tokens": 964,
-        "completion_tokens": 514,
-        "total_tokens": 1478
+        "completion_tokens": 545,
+        "total_tokens": 1509
       },
       "breaking_count": 5,
       "warning_count": 1,
       "compatible_count": 1,
-      "hy3_analysis_chars": 1951
+      "hy3_analysis_chars": 2164
     },
     {
       "tool": "generate_contract_tests",
       "model": "hy3",
       "usage": {
         "prompt_tokens": 484,
-        "completion_tokens": 357,
-        "total_tokens": 841
+        "completion_tokens": 380,
+        "total_tokens": 864
       },
       "selected_operations": [
         "GET /pets/{petId}"
       ],
-      "generated_code_chars": 1281
+      "generated_code_chars": 1381,
+      "generated_code_python_syntax_valid": true
     }
   ],
   "sensitive_data_included": false
