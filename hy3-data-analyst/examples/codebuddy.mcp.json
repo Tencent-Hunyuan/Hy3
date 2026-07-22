@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "hy3-data-analyst": {
+      "command": "/absolute/path/to/your/python",
+      "args": ["-m", "hy3_data_analyst.server"],
+      "env": {
+        "HY3_ENV_FILE": "/absolute/path/to/hy3-data-analyst/.env"
+      }
+    }
+  }
+}

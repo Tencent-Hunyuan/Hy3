@@ -194,7 +194,7 @@ Are you sure you want to continue connecting (yes/no)?
 - 从 ckpt 继续训练时，loss 可能会有微小的偏差，这是由一些非确定性算法带来的随机性，是正常现象。参考：[HuggingFace Transformers Trainer Randomness](https://huggingface.co/docs/transformers/main/en/main_classes/trainer#randomness)
 - 当 `--model_name_or_path` 有效时，所有模型相关的参数都会被忽略
 - 一个 batch 内的样本会通过 padding 对齐 batch 内最长的样本，而每条样本的长度最长为 max_seq_length，超出的部分会被裁剪
-- 如果报出 bias 权重没有 load 的 warning，忽略即可，Hunyuan-Large 中不会用到 bias
+- 如果报出**线性层** bias 权重没有 load 的 warning，忽略即可，Hy3 的线性层（q_proj / k_proj / v_proj / o_proj 等）不使用 bias。注意：MoE 路由的 `e_score_correction_bias` 属于 buffer，已由训练脚本自动加载，如果加载失败请不要忽略。
 
 ##### 显存不足怎么办？
 
