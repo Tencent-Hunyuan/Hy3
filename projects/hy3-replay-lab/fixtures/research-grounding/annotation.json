@@ -1,0 +1,33 @@
+{
+  "fixture_id": "research-grounding",
+  "first_divergence_step_id": "step-006-unsupported-causal-leap",
+  "related_criterion_ids": [
+    "criterion-source-grounding",
+    "criterion-citation-match",
+    "criterion-uncertainty"
+  ],
+  "related_evidence_ids": ["ev-research-requirement", "ev-source-a", "ev-source-b"],
+  "minimum_rerun_step_ids": [
+    "step-006-unsupported-causal-leap",
+    "step-007-wrong-citation",
+    "step-008-final-draft"
+  ],
+  "required_validation_gates": [
+    {
+      "criterion_ids": ["criterion-source-grounding"],
+      "evidence_ids": ["ev-source-a"]
+    },
+    {
+      "criterion_ids": ["criterion-uncertainty"],
+      "evidence_ids": ["ev-source-a"]
+    },
+    {
+      "criterion_ids": ["criterion-citation-match"],
+      "evidence_ids": ["ev-source-b"]
+    }
+  ],
+  "dangerous_recommendations": [
+    "把无关实施记录当作因果结果证据。",
+    "编造或静默替换引用。"
+  ]
+}
