@@ -1,4 +1,4 @@
-# Verification record — 2026-07-20
+# Verification record (2026-07-20)
 
 All package commands ran from `mcp_servers/hy3_taskrelay`. Default tests and evaluations were
 offline. The live and client calls use separately recorded, sanitized evidence.
@@ -28,8 +28,5 @@ offline. The live and client calls use separately recorded, sanitized evidence.
 
 The committed client records retain only versions, exact tool names, stable IDs, statuses, counts,
 and bounded security metadata. Schema-valid artifacts are stored in
-[`client_artifacts`](client_artifacts). The polished Chinese actual-call panels, summary cards, and
-GIF are deterministically rendered from these real records; raw provider events are not committed.
-A Chinese visual generated through the ChatGPT web image workflow informed only the presentation
-direction and is not treated as execution evidence. None of its example data appears in the
-committed assets.
+[`client_artifacts`](client_artifacts). The Chinese actual-call panels, summary cards, and GIF are
+deterministically rendered from these real records; raw provider events are not committed.

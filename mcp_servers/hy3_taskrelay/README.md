@@ -5,25 +5,14 @@ or MCP client. Hy3 performs semantic extraction, conflict reasoning, and continu
 Local code enforces input boundaries, credential redaction, stable IDs, evidence integrity,
 timeouts, bounded retries, and output-schema validation.
 
-The first release is deliberately stateless and read-only. It does not scan a repository, inspect
-agent logs, write files, execute commands, or create a database. The caller saves and transports
-the returned checkpoint.
+TaskRelay is stateless and read-only. It does not scan repositories, inspect agent logs, write
+files, execute commands, or create a database. The caller stores and transfers each checkpoint.
 
-## Scope and differentiation
+## Scope
 
-TaskRelay is the explicit-input artifact layer for Issue #3. It is not a generic chat server,
-repository agent, knowledge base, or native persistent memory. The closest submitted idea found in
-the duplicate audit was [PR #78, CtxPilot](https://github.com/Tencent-Hunyuan/Hy3/pull/78), a
-closed, unmerged Issue #4 application:
-
-| Boundary | TaskRelay | CtxPilot PR #78 |
-|---|---|---|
-| Input | Material explicitly supplied in each MCP call | Agent logs and Git state collected automatically |
-| State | Stateless portable schema artifact | Persistent application workflow |
-| Side effects | No scanning and no file writes | Writes `HANDOFF.md` / `AGENTS.md`; includes a Web UI |
-| Primary concern | Evidence-linked checkpoint, audit, and resume contract | Project/session harvesting and continuity |
-
-The implementations therefore address adjacent product layers rather than duplicate submissions.
+TaskRelay accepts only material supplied in the current MCP call. It returns portable, schema-valid
+artifacts for checkpointing, auditing, and continuation planning. It does not collect project
+state, persist memory, or provide a user interface.
 
 ## 1. Install
 
@@ -54,8 +43,7 @@ hy3-taskrelay-mcp
 python -m hy3_taskrelay
 ```
 
-The process waits for MCP JSON-RPC on stdin. Starting it directly is therefore expected to show no
-interactive prompt.
+The process waits for MCP JSON-RPC on stdin, so starting it directly shows no interactive prompt.
 
 ## 2. Configure the Hy3 API
 
@@ -212,7 +200,7 @@ attempt is rejected.
 ## 7. Troubleshooting
 
 `HY3_API_KEY is required`: set the variable in the environment that launches the MCP client, then
-restart or reconnect the server. A literal `${HY3_API_KEY}` is intentionally treated as missing.
+restart or reconnect the server. A literal `${HY3_API_KEY}` is treated as missing.
 
 `HY3 authentication failed`: verify the key locally and confirm its TokenHub/model permissions. Do
 not paste the key into a bug report.
@@ -249,7 +237,7 @@ and personal paths are not committed.
 
 ## 9. Offline verification and evaluations
 
-The default suite never calls the real API:
+The default suite makes no live API calls:
 
 ```bash
 uv run --directory mcp_servers/hy3_taskrelay pytest

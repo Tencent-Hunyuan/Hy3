@@ -16,10 +16,9 @@
 路径在渲染前已主动排除。
 
 [`codebuddy_checkpoint.png`](codebuddy_checkpoint.png) 和
-[`codex_audit_resume.png`](codex_audit_resume.png) 是补充产物摘要卡。设计阶段参考了一张由
-ChatGPT 网页图像生成得到的中文视觉稿；该参考稿不作为运行证据。最终四张 PNG 和 GIF
+[`codex_audit_resume.png`](codex_audit_resume.png) 是补充产物摘要卡。四张 PNG 和 GIF
 全部由 Pillow 确定性绘制，所有数据均来自[已提交的脱敏客户端记录](../clients)和
-[通过 Schema 校验的产物](../client_artifacts)，没有使用或虚构参考稿中的示例数据。
+[通过 Schema 校验的产物](../client_artifacts)，没有添加示例结果。
 
 安装开发依赖后可重新生成：
 
