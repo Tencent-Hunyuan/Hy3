@@ -43,7 +43,12 @@ def test_client_records_match_the_validated_artifacts() -> None:
 
 
 def test_actual_call_demo_is_bounded_and_rendered_from_current_records() -> None:
-    for name in ("codebuddy_actual_call.png", "codex_actual_calls.png"):
+    for name in (
+        "codebuddy_actual_call.png",
+        "codex_actual_calls.png",
+        "codebuddy_checkpoint.png",
+        "codex_audit_resume.png",
+    ):
         with Image.open(DEMO / name) as screenshot:
             assert screenshot.size == (1280, 720)
 
