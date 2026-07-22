@@ -8,3 +8,17 @@
 Thumbs.db
 __pycache__/
 *.pyc
+.venv/
+.tmp/
+.pytest_cache/
+pytest-cache-files-*/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+.env
+.env.*
+!.env.example
+.mcp.json
+.cursor/mcp.json
+.codebuddy/settings.local.json

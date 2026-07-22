@@ -1,0 +1,64 @@
+openapi: 3.1.0
+info:
+  title: Pet Store API
+  version: 1.0.0
+  description: Manage pets in the example store.
+servers:
+  - url: https://api.example.test
+security:
+  - bearerAuth: []
+paths:
+  /pets/{petId}:
+    get:
+      operationId: getPet
+      summary: Get a pet by ID
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Pet found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+        "404":
+          description: Pet not found
+  /pets:
+    post:
+      operationId: createPet
+      summary: Create a pet
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+      responses:
+        "201":
+          description: Pet created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Pet:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        tag:
+          type: string
