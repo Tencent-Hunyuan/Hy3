@@ -9,20 +9,17 @@ Verification status: Dify Cloud with Hy3 through Tencent Cloud TokenHub mode was
 ## Prerequisites
 
 - Access to a Dify Cloud workspace. No local Dify installation was required for this verification.
+- First-party reference: [Dify documentation](https://docs.dify.ai/).
 - Dify app type used: Chatflow.
 - Provider/plugin used: OpenAI-API-compatible.
-- Provider version shown in the UI: `0.0.55`.
+- Tested provider snapshot shown in the UI: `0.0.55` (not a minimum supported version).
 - Choose one Hy3 setup mode:
   - TokenHub cloud API mode: manually verified.
   - Local self-hosted mode: Not verified in this PR.
 
 ## Option A: TokenHub Cloud API Mode
 
-Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without self-hosting.
-
-See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
-
-The values below use the verified Guangzhou / China-mainland endpoint. Use the TokenHub domain that matches your API key and service region; see [tokenhub.md](tokenhub.md) for region selection.
+Use the region-matched credentials and safety rules in [tokenhub.md](tokenhub.md). The table below preserves Dify-specific fields from the verified Guangzhou run.
 
 The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). Dify Cloud through TokenHub was also manually verified.
 
@@ -67,7 +64,7 @@ Verified Dify Cloud setup:
 | App type | Chatflow |
 | Flow | User input -> LLM node using Hy3 TokenHub -> Direct reply |
 | Provider/plugin | OpenAI-API-compatible |
-| Provider version shown in UI | `0.0.55` |
+| Provider tested snapshot shown in UI | `0.0.55` |
 | Model name | `hy3` |
 | Model display name | Hy3 TokenHub |
 | API Base URL | `https://tokenhub.tencentmaas.com/v1` |
@@ -137,7 +134,7 @@ Screenshots and GIFs must not reveal API keys.
 - Local self-hosted authentication or API key handling: Not verified in this PR.
 - Dedicated streaming-behavior and tool-calling tasks: Not verified in this PR.
 
-## Verified Environment
+## Tested Snapshot and Evidence
 
 | Item | Value |
 |:---|:---|
@@ -145,7 +142,7 @@ Screenshots and GIFs must not reveal API keys.
 | Dify installation | Cloud workspace; no local installation used |
 | App type | Chatflow |
 | Provider/plugin | OpenAI-API-compatible |
-| Provider version shown in UI | `0.0.55` |
+| Provider tested snapshot shown in UI | `0.0.55` |
 | Setup mode | Tencent Cloud TokenHub cloud API mode |
 | Hy3 server backend | TokenHub cloud API |
 | Flow | User input -> LLM node using Hy3 TokenHub -> Direct reply |

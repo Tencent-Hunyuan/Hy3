@@ -8,7 +8,7 @@ Verification status: Aider CLI with Hy3 through Tencent Cloud TokenHub mode was 
 
 ## Prerequisites
 
-- Verified Aider version: `0.86.2`.
+- Tested Aider snapshot: `0.86.2` (an observed test version, not a minimum supported version).
 - Observed executable path:
   - `%USERPROFILE%\.local\bin\aider.exe`
 - Install Aider by following the [official installation guide](https://aider.chat/docs/install.html). One supported installer flow is:
@@ -30,11 +30,7 @@ aider --version
 
 ## Option A: TokenHub Cloud API Mode
 
-Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without self-hosting.
-
-See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
-
-The values below use the verified Guangzhou / China-mainland endpoint. Use the TokenHub domain that matches your API key and service region; see [tokenhub.md](tokenhub.md) for region selection.
+Use the region-matched credentials and safety rules in [tokenhub.md](tokenhub.md). The table below preserves Aider-specific fields from the verified Guangzhou run.
 
 The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). Aider CLI through TokenHub was also manually verified.
 
@@ -156,13 +152,13 @@ Screenshots and GIFs must not reveal API keys.
 - Local self-hosted authentication or API key handling: Not verified in this PR.
 - Dedicated streaming-behavior and tool-calling tasks: Not verified in this PR.
 
-## Verified Environment
+## Tested Snapshot and Evidence
 
 | Item | Value |
 |:---|:---|
 | OS | Windows 11 25H2 (build 26200) |
 | Tool | Aider CLI |
-| Aider version | `0.86.2` |
+| Aider tested snapshot | `0.86.2` |
 | Executable path | `%USERPROFILE%\.local\bin\aider.exe` |
 | Setup mode | Tencent Cloud TokenHub cloud API mode |
 | Hy3 server backend | TokenHub cloud API |

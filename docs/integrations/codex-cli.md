@@ -8,7 +8,7 @@ Verification status: Codex CLI with Hy3 through Tencent Cloud TokenHub mode was 
 
 ## Prerequisites
 
-- Verified OpenAI Codex CLI version: `0.142.5`.
+- Tested OpenAI Codex CLI snapshot: `0.142.5` (an observed test version, not a minimum supported version).
 - npm package: `@openai/codex`.
 - Install Codex CLI with npm:
 
@@ -34,11 +34,7 @@ codex --version
 
 ## Option A: TokenHub Cloud API Mode
 
-Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without self-hosting.
-
-See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
-
-The values below use the verified Guangzhou / China-mainland endpoint. Use the TokenHub domain that matches your API key and service region; see [tokenhub.md](tokenhub.md) for region selection.
+Use the region-matched credentials and safety rules in [tokenhub.md](tokenhub.md). The table below preserves Codex-specific fields from the verified Guangzhou run.
 
 The basic TokenHub Hy3 Chat Completions API smoke test is verified separately in [tokenhub.md](tokenhub.md). Codex CLI uses the OpenAI Responses API through its custom provider profile and was also manually verified through TokenHub.
 
@@ -192,13 +188,13 @@ Model metadata for `hy3` not found. Defaulting to fallback metadata.
 - Local self-hosted authentication or API key handling: Not verified in this PR.
 - Dedicated streaming-behavior and tool-calling tasks: Not verified in this PR.
 
-## Verified Environment
+## Tested Snapshot and Evidence
 
 | Item | Value |
 |:---|:---|
 | OS | Windows 11 25H2 (build 26200) |
 | Tool | OpenAI Codex CLI |
-| Codex CLI version | `0.142.5` |
+| Codex CLI tested snapshot | `0.142.5` |
 | Package | `@openai/codex` |
 | Install command | `npm install -g @openai/codex` |
 | Command path 1 | `%APPDATA%\npm\codex` |

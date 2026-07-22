@@ -8,7 +8,8 @@ Verification status: OpenCode with Hy3 through Tencent Cloud TokenHub mode was m
 
 ## Prerequisites
 
-- Verified OpenCode version: `1.17.15`.
+- Tested OpenCode snapshot: `1.17.15` (an observed test version, not a minimum supported version).
+- First-party reference: [OpenCode documentation](https://opencode.ai/docs/).
 - npm package: `opencode-ai`.
 - Install OpenCode with npm:
 
@@ -32,11 +33,7 @@ opencode --version
 
 ## Option A: TokenHub Cloud API Mode
 
-Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without self-hosting.
-
-See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
-
-The values below use the verified Guangzhou / China-mainland endpoint. Use the TokenHub domain that matches your API key and service region; see [tokenhub.md](tokenhub.md) for region selection.
+Use the region-matched credentials and safety rules in [tokenhub.md](tokenhub.md). The table below preserves OpenCode-specific fields from the verified Guangzhou run.
 
 The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). OpenCode through TokenHub was also manually verified.
 
@@ -175,7 +172,7 @@ Screenshots and GIFs must not reveal API keys.
 - OpenCode used its built-in workspace file-reading flow for the README demo. Dedicated OpenAI-protocol tool-calling behavior was not independently tested in this PR.
 - Dedicated streaming-behavior testing was not performed in this PR.
 
-## Verified Environment
+## Tested Snapshot and Evidence
 
 | Item | Value |
 |:---|:---|
@@ -185,7 +182,7 @@ Screenshots and GIFs must not reveal API keys.
 | npm | `11.11.0` |
 | Package | `opencode-ai` |
 | Install command | `npm install -g opencode-ai` |
-| OpenCode version | `1.17.15` |
+| OpenCode tested snapshot | `1.17.15` |
 | Setup mode | Tencent Cloud TokenHub cloud API mode |
 | Hy3 server backend | TokenHub cloud API |
 | Provider ID | `hy3-tokenhub` |

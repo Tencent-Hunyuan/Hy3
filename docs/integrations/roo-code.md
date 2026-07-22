@@ -8,7 +8,8 @@ Verification status: Roo Code with Hy3 through Tencent Cloud TokenHub mode was m
 
 ## Prerequisites
 
-- Verified Roo Code version: `3.54.0`.
+- Tested Roo Code snapshot: `3.54.0` (an observed test version, not a minimum supported version).
+- First-party reference: [Roo Code documentation](https://docs.roocode.com/).
 - VS Code extension identifier: `rooveterinaryinc.roo-cline`.
 - Install Roo Code from the VS Code Extensions view, or use:
 
@@ -34,11 +35,7 @@ rooveterinaryinc.roo-cline@3.54.0
 
 ## Option A: TokenHub Cloud API Mode
 
-Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without self-hosting.
-
-See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
-
-The values below use the verified Guangzhou / China-mainland endpoint. Use the TokenHub domain that matches your API key and service region; see [tokenhub.md](tokenhub.md) for region selection.
+Use the region-matched credentials and safety rules in [tokenhub.md](tokenhub.md). The table below preserves Roo Code-specific fields from the verified Guangzhou run.
 
 The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). Roo Code-specific setup through TokenHub was also manually verified.
 
@@ -138,14 +135,14 @@ Screenshots and GIFs must not reveal API keys.
 - Roo Code used its built-in file-reading flow for the README demo. Dedicated OpenAI-protocol tool-calling behavior was not independently tested in this PR.
 - Dedicated streaming-behavior testing was not performed in this PR.
 
-## Verified Environment
+## Tested Snapshot and Evidence
 
 | Item | Value |
 |:---|:---|
 | OS | Windows 11 25H2 (build 26200) |
 | Editor | VS Code |
 | Extension | Roo Code (`rooveterinaryinc.roo-cline`) |
-| Roo Code version | `3.54.0` |
+| Roo Code tested snapshot | `3.54.0` |
 | Roo mode | Architect |
 | API configuration label | `Hy3 TokenHub` |
 | Setup mode | Tencent Cloud TokenHub cloud API mode |

@@ -8,7 +8,8 @@ Verification status: Kilo Code with Hy3 through Tencent Cloud TokenHub mode was 
 
 ## Prerequisites
 
-- Verified Kilo Code version: `7.4.1`.
+- Tested Kilo Code snapshot: `7.4.1` (an observed test version, not a minimum supported version).
+- First-party reference: [Kilo Code documentation](https://kilo.ai/docs).
 - VS Code extension name: Kilo Code: AI Coding Agent, Copilot, and Autocomplete.
 - Publisher: Kilo Code / kilocode.ai.
 - VS Code extension identifier: `kilocode.kilo-code`.
@@ -32,11 +33,7 @@ The screenshots and original verification in this guide were produced with Kilo 
 
 ## Option A: TokenHub Cloud API Mode
 
-Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without self-hosting.
-
-See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
-
-The values below use the verified Guangzhou / China-mainland endpoint. Use the TokenHub domain that matches your API key and service region; see [tokenhub.md](tokenhub.md) for region selection.
+Use the region-matched credentials and safety rules in [tokenhub.md](tokenhub.md). The table below preserves Kilo Code-specific fields from the verified Guangzhou run.
 
 The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). Kilo Code-specific setup through a TokenHub custom provider was also manually verified.
 
@@ -164,7 +161,7 @@ Screenshots and GIFs must not reveal API keys.
 - Kilo Code used its built-in workspace file-reading flow for the README demo. Dedicated OpenAI-protocol tool-calling behavior was not independently tested in this PR.
 - Dedicated streaming-behavior testing was not performed in this PR.
 
-## Verified Environment
+## Tested Snapshot and Evidence
 
 | Item | Value |
 |:---|:---|
@@ -173,7 +170,7 @@ Screenshots and GIFs must not reveal API keys.
 | Extension | Kilo Code (`kilocode.kilo-code`) |
 | Extension name | Kilo Code: AI Coding Agent, Copilot, and Autocomplete |
 | Publisher | Kilo Code / kilocode.ai |
-| Kilo Code version | `7.4.1` |
+| Kilo Code tested snapshot | `7.4.1` |
 | Setup mode | Tencent Cloud TokenHub cloud API mode |
 | Hy3 server backend | TokenHub cloud API |
 | Provider type | Custom provider |

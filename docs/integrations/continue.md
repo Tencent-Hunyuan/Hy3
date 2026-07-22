@@ -8,7 +8,7 @@ Verification status: Continue with Hy3 through Tencent Cloud TokenHub mode was m
 
 ## Prerequisites
 
-- Verified Continue version: `2.0.0`.
+- Tested Continue snapshot: `2.0.0` (an observed test version, not a minimum supported version).
 - VS Code extension identifier: `continue.continue`.
 - Install Continue from the VS Code Extensions view, or run:
 
@@ -37,11 +37,7 @@ See the [official Continue installation guide](https://docs.continue.dev/ide-ext
 
 ## Option A: TokenHub Cloud API Mode
 
-Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without self-hosting.
-
-See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
-
-The values below use the verified Guangzhou / China-mainland endpoint. Use the TokenHub domain that matches your API key and service region; see [tokenhub.md](tokenhub.md) for region selection.
+Use the region-matched credentials and safety rules in [tokenhub.md](tokenhub.md). The table below preserves Continue-specific fields from the verified Guangzhou run.
 
 The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). Continue through TokenHub was also manually verified.
 
@@ -177,14 +173,14 @@ Screenshots and GIFs must not reveal API keys.
 - Local self-hosted authentication or API key handling: Not verified in this PR.
 - Dedicated streaming-behavior and general OpenAI-protocol tool-calling tasks: Not independently verified in this PR.
 
-## Verified Environment
+## Tested Snapshot and Evidence
 
 | Item | Value |
 |:---|:---|
 | OS | Windows 11 25H2 (build 26200) |
 | Editor | VS Code |
 | Extension | Continue (`continue.continue`) |
-| Continue version | `2.0.0` |
+| Continue tested snapshot | `2.0.0` |
 | Setup mode | Tencent Cloud TokenHub cloud API mode |
 | Hy3 server backend | TokenHub cloud API |
 | Config file | `%USERPROFILE%\.continue\config.yaml` |

@@ -8,7 +8,8 @@ Verification status: Cline with Hy3 through Tencent Cloud TokenHub mode was manu
 
 ## Prerequisites
 
-- Verified Cline version: `4.0.6`.
+- Tested Cline snapshot: `4.0.6` (an observed test version, not a minimum supported version).
+- First-party reference: [Cline documentation](https://docs.cline.bot/).
 - VS Code extension identifier: `saoudrizwan.claude-dev`.
 - Install Cline from the VS Code Extensions view, or run:
 
@@ -28,11 +29,7 @@ code --list-extensions --show-versions | Select-String -Pattern "cline|claude-de
 
 ## Option A: TokenHub Cloud API Mode
 
-Use TokenHub when you want to call Hy3 through Tencent Cloud TokenHub without self-hosting.
-
-See [tokenhub.md](tokenhub.md) for shared setup and safety notes.
-
-The values below use the verified Guangzhou / China-mainland endpoint. Use the TokenHub domain that matches your API key and service region; see [tokenhub.md](tokenhub.md) for region selection.
+Use the region-matched credentials and safety rules in [tokenhub.md](tokenhub.md). The table below preserves Cline-specific fields from the verified Guangzhou run.
 
 The basic TokenHub Hy3 Chat Completions API smoke test is verified in [tokenhub.md](tokenhub.md). Cline-specific setup through TokenHub was also manually verified.
 
@@ -149,14 +146,14 @@ Fix: in VS Code, use **File -> Open Folder** and open `%USERPROFILE%\open-source
 - Model selection issue: TokenHub mode verified with `hy3`.
 - Dedicated streaming-behavior and general OpenAI-protocol tool-calling tasks: Not independently verified in this PR.
 
-## Verified Environment
+## Tested Snapshot and Evidence
 
 | Item | Value |
 |:---|:---|
 | OS | Windows 11 25H2 (build 26200) |
 | Editor | VS Code |
 | Extension | Cline (`saoudrizwan.claude-dev`) |
-| Cline version | `4.0.6` |
+| Cline tested snapshot | `4.0.6` |
 | Setup mode | Tencent Cloud TokenHub cloud API mode |
 | Hy3 server backend | TokenHub cloud API |
 | API provider | OpenAI Compatible |
