@@ -1,0 +1,130 @@
+# Rule Catalogue
+
+## 1. Rule model
+
+Every finding references a stable rule ID. IDs are never recycled after release.
+Rules declare whether their conclusion is deterministic or produced by Hy3.
+
+Severity meanings:
+
+- `critical`: inspection cannot be trusted or presents immediate high-impact risk;
+- `error`: contract or protocol behavior is invalid or breaking;
+- `warning`: likely ambiguity, unsafe design, or degraded interoperability;
+- `info`: non-breaking improvement or migration note.
+
+Hy3 rules are semantic judgments. They always include confidence and do not affect
+the deterministic numeric score. Hybrid rules have a deterministic trigger and may
+use Hy3 only to explain context; their score impact comes from the deterministic
+part.
+
+## 2. Protocol rules
+
+| ID | Default severity | Source | Condition |
+| --- | --- | --- | --- |
+| `PROTO-001` | critical | deterministic | Target process does not start before the configured deadline. |
+| `PROTO-002` | error | deterministic | Target stdout contains non-protocol bytes or ordinary log output. |
+| `PROTO-003` | critical | deterministic | A received JSON-RPC message is malformed or exceeds parser limits. |
+| `PROTO-004` | error | deterministic | MCP initialization returns an error or no valid result. |
+| `PROTO-005` | warning | deterministic | Initialization omits required or expected server identity information. |
+| `PROTO-006` | error | deterministic | `tools/list` fails, times out, or returns an invalid result shape. |
+| `PROTO-007` | error | deterministic | Tool names are duplicated within the same server snapshot. |
+| `PROTO-008` | warning | deterministic | A tool name violates the MCP-compatible project naming policy. |
+| `PROTO-009` | warning | deterministic | Negotiated protocol metadata is internally inconsistent. |
+
+## 3. Schema rules
+
+| ID | Default severity | Source | Condition |
+| --- | --- | --- | --- |
+| `SCHEMA-001` | error | deterministic | A tool has no object-shaped input schema. |
+| `SCHEMA-002` | error | deterministic | An input schema is not valid JSON Schema for the supported dialect. |
+| `SCHEMA-003` | error | deterministic | `required` names a property that is not declared. |
+| `SCHEMA-004` | warning | deterministic | A declared parameter lacks a useful description. |
+| `SCHEMA-005` | warning | deterministic | A parameter is unconstrained where the contract advertises bounded behavior. |
+| `SCHEMA-006` | error | deterministic | An enum is empty, duplicated after normalization, or conflicts with its default. |
+| `SCHEMA-007` | error | deterministic | A declared output schema is invalid JSON Schema. |
+| `SCHEMA-008` | warning | deterministic | A tool promises structured output but declares no output schema. |
+| `SCHEMA-009` | error | deterministic | A deterministic fixture result does not conform to the declared output schema. |
+
+`SCHEMA-009` is evaluated only against quality-gate-owned fixtures or a future
+explicitly authorized execution mode. The first release does not invoke target
+business tools merely to produce this rule.
+
+## 4. Documentation and semantic rules
+
+| ID | Default severity | Source | Condition |
+| --- | --- | --- | --- |
+| `DOC-001` | warning | deterministic | A tool description is absent or only whitespace. |
+| `DOC-002` | warning | hybrid | A description is present but too generic to distinguish the tool's purpose. |
+| `DOC-003` | warning | Hy3 | Tool name, description, and parameters express conflicting intent. |
+| `DOC-004` | warning | Hy3 | Two or more tools overlap enough to make selection unreliable. |
+| `DOC-005` | warning | Hy3 | Side effects, prerequisites, failure behavior, or output meaning are materially underspecified. |
+| `DOC-006` | warning | hybrid | Untrusted instruction-like text appears in a description or schema annotation. |
+| `DOC-007` | info | Hy3 | Terminology is inconsistent across related tools and may confuse users. |
+
+## 5. Safety rules
+
+| ID | Default severity | Source | Condition |
+| --- | --- | --- | --- |
+| `SAFETY-001` | error | hybrid | A tool declares `readOnlyHint: true` while its declared semantics indicate mutation. |
+| `SAFETY-002` | warning | hybrid | A mutating tool omits or ambiguously declares destructive behavior. |
+| `SAFETY-003` | warning | Hy3 | Idempotency hints conflict with the described operation. |
+| `SAFETY-004` | warning | Hy3 | Open-world interaction is described but not reflected in annotations or documentation. |
+| `SAFETY-005` | error | deterministic | A schema contains a credential-like parameter with an unsafe default value. |
+| `SAFETY-006` | warning | Hy3 | A path, URL, query, or command-like parameter lacks a documented scope boundary. |
+| `SAFETY-007` | warning | Hy3 | The contract encourages sensitive data transmission without consent or redaction guidance. |
+| `SAFETY-008` | warning | deterministic | A target registry entry requests inheritance of a denied secret-like environment name. |
+
+## 6. Compatibility rules
+
+| ID | Default severity | Source | Condition |
+| --- | --- | --- | --- |
+| `COMPAT-001` | error | deterministic | A previously exposed tool is removed. |
+| `COMPAT-002` | error | hybrid | A tool appears renamed without an explicit compatibility path. |
+| `COMPAT-003` | error | deterministic | A new required input parameter is added. |
+| `COMPAT-004` | error | deterministic | An input type or constraint is narrowed for previously valid values. |
+| `COMPAT-005` | error | deterministic | An enum removes or changes an existing accepted value. |
+| `COMPAT-006` | error | deterministic | An output contract removes or narrows previously declared data. |
+| `COMPAT-007` | warning | deterministic | Safety annotations change toward greater side effects or open-world behavior. |
+| `COMPAT-008` | warning | Hy3 | Text changed the tool's apparent semantics without a corresponding structural change. |
+| `COMPAT-009` | info | deterministic | A compatible addition or widening should still be documented for consumers. |
+
+Hy3 can add migration explanations but cannot downgrade `COMPAT-001`,
+`COMPAT-003`, `COMPAT-004`, `COMPAT-005`, or `COMPAT-006`.
+
+## 7. Robustness rules
+
+| ID | Default severity | Source | Condition |
+| --- | --- | --- | --- |
+| `ROBUST-001` | error | deterministic | Target exceeds the configured total lifetime and requires termination. |
+| `ROBUST-002` | error | deterministic | Target stdout or stderr exceeds its byte limit. |
+| `ROBUST-003` | critical | deterministic | Target process cannot be completely terminated after timeout or cancellation. |
+| `ROBUST-004` | warning | deterministic | Target exits unexpectedly before orderly inspection shutdown. |
+| `ROBUST-005` | warning | deterministic | A declared contract exceeds configured tool, field, depth, or character limits. |
+| `ROBUST-006` | warning | deterministic | The normalized snapshot is unstable across equivalent repeated discovery. |
+
+## 8. Evidence requirements
+
+Each rule family uses specific evidence:
+
+| Family | Required evidence |
+| --- | --- |
+| Protocol | Lifecycle event, bounded output offset, or timeout name. |
+| Schema | JSON Pointer into the normalized tool contract. |
+| Documentation | Tool name plus description/parameter JSON Pointer and bounded excerpt. |
+| Safety | Annotation and conflicting semantic/schema locations. |
+| Compatibility | Baseline and current JSON Pointers with normalized before/after values. |
+| Robustness | Named limit, configured value, observed value, and lifecycle phase. |
+
+A rule that cannot provide its required evidence must not emit a finding.
+
+## 9. Scoring policy baseline
+
+The deterministic score starts at 100 and is projected into the documented category
+weights. Exact deductions will be versioned with the implementation. The following
+constraints already apply:
+
+- Hy3-only rules never change the numeric score;
+- repeated evidence does not cause duplicate deductions;
+- a critical protocol or process-control failure caps the overall score;
+- severity filtering does not change the score;
+- reports include the catalogue version and every applied deduction.
