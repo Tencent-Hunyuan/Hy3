@@ -1,163 +1,47 @@
-# Hy3 Integrations
+# Hy3 integrations
 
-This directory contains end-user integration guides for running Hy3 through popular AI tools and clients.
+Nine task-complete guides show how to use Hy3 from mainstream AI clients. Start with the tool you already use; shared TokenHub region, authentication, and safety details live in one place.
 
-The guides cover two setup modes:
+- [TokenHub cloud setup](tokenhub.md): region-matched endpoint, model access, authentication, model-list preflight, smoke test, and safety.
+- [Local server setup](local-server.md): repository-documented vLLM/SGLang serving, protocol limits, and hardware feasibility.
 
-- **TokenHub cloud API mode**: use Hy3 through Tencent Cloud TokenHub without self-hosting.
-- **Local self-hosted mode**: run Hy3 locally as an OpenAI-compatible chat completions server.
+Every version below is an exact **tested snapshot**, not a claimed minimum supported version or a statement about the current latest release. All client runs used model `hy3` and the Guangzhou / China-mainland TokenHub service. Singapore / global routing is documented but was not tested.
 
-Client verification status is tracked in the guide table below.
+## Part A: integration verification matrix
 
-## Setup Modes
+| Tool | Tested snapshot | Test date | Protocol | Evidence | Result | Known limitation |
+|:---|:---|:---|:---|:---|:---|:---|
+| [Aider](aider.md) | `0.86.2` | 2026-07-09 | Chat Completions | [2 screenshots](aider.md#screenshots--gifs) | Client task completed | Repository map generated; local/tool-call/streaming paths unverified |
+| [Cline](cline.md) | `4.0.6` | 2026-07-08 | Chat Completions | [2 screenshots](cline.md#screenshots--gif) | Client task completed | General-protocol tool calling unverified |
+| [Codex CLI](codex-cli.md) | `0.142.5`; `0.144.1` compatibility check | 2026-07-09 | Responses | [4 screenshots](codex-cli.md#screenshots--gifs) | Exec and interactive tasks completed | Model-list and stream-delta warnings were visible |
+| [Continue](continue.md) | `2.0.0` | 2026-07-08; secret check 2026-07-10 | Chat Completions | [2 screenshots](continue.md#screenshots--gifs) | Client task completed | Full VS Code restart required after secret changes |
+| [Dify Cloud](dify.md) | provider `0.0.55` | 2026-07-10 | Chat Completions | [2 screenshots](dify.md#screenshots--gifs) | Workflow task completed | Pasted input only; no local repository access |
+| [Roo Code](roo-code.md) | `3.54.0` | 2026-07-10 | Chat Completions | [2 screenshots](roo-code.md#screenshots--gif) | Client task completed | General tool calling and streaming unverified |
+| [Kilo Code](kilo-code.md) | `7.4.1` | 2026-07-08 | Chat Completions | [2 screenshots](kilo-code.md#screenshots--gif) | Client task completed | Custom provider only; not Kilo Gateway |
+| [OpenCode](opencode.md) | `1.17.15` | 2026-07-08 | OpenAI-compatible adapter | [2 screenshots](opencode.md#screenshots--gif) | CLI task completed | Local test configuration intentionally excluded |
+| [CodeBuddy Code](codebuddy-code.md) | `2.117.2` | 2026-07-08 | Chat Completions | [2 screenshots](codebuddy-code.md#screenshots--gif) | Print-mode task completed | Tool-call flag not tested |
 
-| Mode | Setup | Status |
-|:---|:---|:---|
-| TokenHub cloud API | [tokenhub.md](tokenhub.md) | Chat Completions smoke test and nine tool integrations verified with screenshots |
-| Local self-hosted server | [local-server.md](local-server.md) | Repo-documented server facts only |
+Screenshots prove the visible client result described by each guide; they are not endpoint-level request transcripts. Local self-hosting and any feature marked unverified were not silently inferred from those images. Existing media is retained as historical evidence even where a username, branch name, or working-tree noise remains visible.
 
-## TokenHub Cloud API Mode
+## What each guide contains
 
-Use TokenHub cloud API mode when you want to call Hy3 through Tencent Cloud TokenHub without hosting the model yourself.
+Each guide preserves the issue-required workflow: installation and tested snapshot, exact base URL and model, authentication, protocol/provider selection, first chat, a real task, screenshots, and troubleshooting. Tool-specific differences stay in the guide; shared TokenHub facts stay in [tokenhub.md](tokenhub.md).
 
-TokenHub settings used by these guides:
+## Part B: Codex + Hy3 evidence-grounded spec diff reviewer
 
-| Setting | Value |
-|:---|:---|
-| Base URL | `https://tokenhub.tencentmaas.com/v1` |
-| Model | `hy3` |
-| API key | User-created TokenHub API key, never committed |
-| Provider/protocol | OpenAI-compatible |
+The reusable review engine is a standalone CLI. For issue #2, its primary documented workflow is invoked from Codex CLI after a developer stages a change.
 
-See [tokenhub.md](tokenhub.md) for setup notes and safety requirements.
+Codex modifies code; the human chooses and stages the intended diff; the repository workflow invokes Hy3; local code validates the structured result and every cited spec/diff location; then Markdown and JSON are published with input hashes and execution provenance. The result is advisory and never edits code or Git state.
 
-The values and screenshots in these guides use the verified Guangzhou / China-mainland TokenHub endpoint. TokenHub uses region-specific domains; users of the Singapore / global service must use the matching endpoint documented in `tokenhub.md`.
+- Repository: [hy3-tokenhub-spec-diff-reviewer](https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer)
+- Credential-free demo: `npm ci && npm run demo:offline` (always labelled `OFFLINE / FAKE`)
+- Live preflight: `npm run check`
+- Canonical Codex/staged command: `npm run review:staged -- --spec examples/spec.md --output reports/review.md`
+- Browser console: `npm run serve`
+- Architecture and Codex boundary: [Codex workflow guide](https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/CODEX_WORKFLOW.md)
+- Sanitized bounded live check: [2026-07-22 verification record](https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/evidence/live-verification-2026-07-22.md)
+- Existing ≤60-second evidence: [31-second live CLI-core recording, pinned to the historical implementation](https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/fecbbc49a4e3c21f2fe78b9ab3bcc9ee24ec156f/docs/assets/hy3-spec-to-diff-demo.mp4)
 
-## Local Self-hosted Mode
+The current implementation adds a fixed JSON contract, one bounded repair attempt, locally verified evidence, official `GET /v1/models` preflight, bounded retry/backoff, deterministic offline fixtures/evaluation, provenance, and a thin local browser console. The pinned 31-second recording remains real live evidence for the CLI core but predates those additions; refreshed 50–55 second media must be recorded manually rather than simulated.
 
-Use local self-hosted mode when you run Hy3 yourself and expose the repository-documented local OpenAI-compatible endpoint.
-
-Local settings used by these guides:
-
-| Setting | Value |
-|:---|:---|
-| Base URL | `http://127.0.0.1:8000/v1` |
-| Model | `hy3` |
-| API key for local testing | `EMPTY` |
-| API protocol | OpenAI-compatible chat completions |
-
-For shared local server setup, see [local-server.md](local-server.md). The repository quickstart documents calling Hy3 through an OpenAI-compatible chat completions API after deploying Hy3 with vLLM or SGLang. See the root README sections for [Quickstart](../../README.md#quickstart) and [Deployment](../../README.md#deployment).
-
-## Guides
-
-| Tool | Guide | Verification status |
-|:---|:---|:---|
-| Aider | [aider.md](aider.md) | TokenHub mode verified with screenshots |
-| Cline | [cline.md](cline.md) | TokenHub mode verified with screenshots |
-| Codex CLI | [codex-cli.md](codex-cli.md) | TokenHub mode verified with screenshots |
-| Continue | [continue.md](continue.md) | TokenHub mode verified with screenshots |
-| Dify | [dify.md](dify.md) | TokenHub mode verified with screenshots |
-| Roo Code | [roo-code.md](roo-code.md) | TokenHub mode verified with screenshots |
-| Kilo Code | [kilo-code.md](kilo-code.md) | TokenHub mode verified with screenshots |
-| OpenCode | [opencode.md](opencode.md) | TokenHub mode verified with screenshots |
-| CodeBuddy Code | [codebuddy-code.md](codebuddy-code.md) | TokenHub mode verified with screenshots |
-
-## Verification Summary
-
-- TokenHub cloud API mode was manually verified for Aider, Cline, Codex CLI, Continue, Dify, Roo Code, Kilo Code, OpenCode, and CodeBuddy Code.
-- Each verified guide includes install/version notes, TokenHub endpoint/base URL, model `hy3`, authentication setup, first chat, a real task demo, screenshots, and troubleshooting notes.
-- Local self-hosted mode is documented from repository facts, but local tool-by-tool verification is not part of this PR.
-- Screenshots and demo media are from real local runs; generated, mocked, or placeholder media should not be used as verification evidence.
-
-## Screenshots / GIFs
-
-Verification media referenced by these guides comes from real local runs.
-
-Do not use generated, mocked, or placeholder media as verification evidence.
-
-## Showcase Project
-
-Part A documents the nine client integrations above. Part B is a standalone showcase that calls Hy3 directly through Tencent Cloud TokenHub's OpenAI-compatible Chat Completions endpoint.
-
-The independent showcase project is **Hy3 TokenHub Spec-to-Diff Reviewer**.
-
-The Node.js CLI compares a written specification with a proposed unified diff and asks Hy3 to generate a structured Markdown PR-readiness report. It accepts specification and diff files, reads a diff from standard input, or reviews changes already staged in Git. Streaming is enabled by default, and a completed report can be published atomically with `--output`.
-
-Per Issue #2's capability list, this showcase exercises Hy3's long-form structured generation and evidence-grounded analysis of a written specification and unified diff. It does not claim native tool calling, independent repository access, or autonomous agent behavior.
-
-The report includes:
-
-- an executive verdict;
-- requirement-by-requirement coverage;
-- evidence-grounded P0-P3 findings;
-- missing tests;
-- uncertainties; and
-- recommended next steps.
-
-The bundled sample intentionally contains an incomplete implementation, so `Not ready` is the expected verdict. This allows the showcase to demonstrate coverage analysis, prioritized findings, uncertainty handling, and missing-test detection.
-
-The demo shows a real streaming request through the Guangzhou / China-mainland TokenHub service boundary, followed by the same completed report rendered as Markdown.
-
-![Hy3 Spec-to-Diff Reviewer streaming preview](assets/showcase/showcase-spec-to-diff-preview.gif)
-
-### Complete 31-second demo
-
-https://github.com/user-attachments/assets/93667341-2cd8-4a30-9b40-0c7ec7eed03b
-
-[Open the versioned MP4](https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/fecbbc49a4e3c21f2fe78b9ab3bcc9ee24ec156f/docs/assets/hy3-spec-to-diff-demo.mp4)
-
-### Rendered report
-
-![Rendered Hy3 PR-readiness report](assets/showcase/showcase-spec-to-diff-report.png)
-
-The animated preview is extracted from the complete demo recording. The rendered
-report screenshot comes from a separate real TokenHub run, so exact model wording
-may differ.
-
-### Verified Codex CLI Companion Workflow
-
-Codex CLI is one of the Part A tools documented above. In the verified manual handoff, Codex CLI configured with Hy3 through TokenHub performed the implementation and correction passes; a human inspected and staged the diff; and the standalone reviewer evaluated the same written requirements and staged artifact.
-
-The first reviewer pass identified a malformed-`change.files` validation gap. Human review found one additional high-risk reviewer-selection defect that the model missed. After Codex corrected both defects, the target project's local suite passed 13/13 tests.
-
-The reviewer does not run inside Codex, access the repository independently, modify code, stage changes, or create an autonomous agent loop.
-
-Evidence: [workflow details and media](https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer#codex-companion-workflow) and the [preserved first-pass report](https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/examples/sample-pr-readiness-report.md).
-
-The showcase is separate from this Hy3 repository and uses:
-
-- Endpoint: `https://tokenhub.tencentmaas.com/v1/chat/completions`
-- Model: `hy3`
-- Protocol: OpenAI-compatible Chat Completions
-- Output: structured Markdown
-- Default transport: SSE streaming
-- Runtime: Node.js 18 or later
-
-Project links:
-
-- Repository: https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer
-- Demo video: https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/assets/hy3-spec-to-diff-demo.mp4
-- Streaming preview: https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/assets/hy3-spec-to-diff-preview.gif
-- Rendered report screenshot: https://github.com/Small-fish-QAQ/hy3-tokenhub-spec-diff-reviewer/blob/main/docs/assets/hy3-spec-to-diff-report.png
-
-Run the bundled sample:
-
-```bash
-npm install
-# Copy .env.example to .env, then set TOKENHUB_API_KEY.
-npm run review:sample
-```
-
-The equivalent direct CLI command is:
-
-```bash
-node hy3_showcase.js diff-review \
-  --spec samples/issue.md \
-  --diff samples/change.diff
-```
-
-Use the normal non-streaming response path when needed:
-
-```bash
-npm run review:sample:no-stream
-```
+Limitations: local citation validation proves that quoted locations exist, not that a model conclusion is semantically correct. Prompt-injection risk is reduced, not eliminated. Live behavior still depends on TokenHub availability, model access, and the selected regional endpoint.

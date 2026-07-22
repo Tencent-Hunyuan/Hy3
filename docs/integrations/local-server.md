@@ -4,6 +4,8 @@ This page documents the repository's local-server option. The verified tool guid
 
 The root README documents deploying Hy3 with vLLM or SGLang first, then calling the OpenAI-compatible API.
 
+> **Hardware feasibility:** Hy3 has 295B total parameters. The official deployment guidance recommends H20-3e cards or other GPUs with larger memory capacity when serving on eight GPUs. Confirm hardware, backend, and dependency requirements in the root [Deployment](../../README.md#deployment) section before choosing local mode; this is not a typical single-workstation setup.
+
 ## Local API Settings
 
 | Setting | Value |
@@ -50,6 +52,6 @@ python3 -m sglang.launch_server \
 
 ## Notes
 
-- Follow the root README for hardware, backend, and dependency details.
+- Follow the root README for hardware, backend, and dependency details; the commands above do not reduce the 295B model's serving requirements.
 - Local self-hosted tool-by-tool verification is not part of this PR.
 - TokenHub client integrations are covered in the tool-specific guides.

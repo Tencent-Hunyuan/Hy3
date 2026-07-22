@@ -32,6 +32,31 @@ The endpoint must match the TokenHub service and API-key region. Cross-region an
 
 The Singapore / global endpoint is documented from the official [API domains and regional routing](https://cloud.tencent.com/document/product/1823/130078) reference but was not tested in this PR.
 
+Tencent also documents `.cn` backup domains. Prefer the default domain for the selected service region and use a backup only according to the official routing guidance. A generic `401` proves that authentication failed; it does not by itself prove a region mismatch. Check the key's creation region and the configured host together.
+
+### Safe model-list preflight
+
+TokenHub officially supports authenticated `GET /v1/models`. It sends no prompt, specification, or diff and returns a documented `object: "list"` response with model `id`, `name`, and `status` fields. Before a live client run, confirm that the region-matched endpoint is reachable and that `hy3` is listed as `online`:
+
+```powershell
+$SecureApiKey = Read-Host "TokenHub API key" -AsSecureString
+$ApiKey = [System.Net.NetworkCredential]::new("", $SecureApiKey).Password
+
+try {
+    $Models = Invoke-RestMethod `
+        -Method Get `
+        -Uri "https://tokenhub.tencentmaas.com/v1/models" `
+        -Headers @{ Authorization = "Bearer $ApiKey" }
+
+    $Models.data | Where-Object { $_.id -eq "hy3" }
+}
+finally {
+    Remove-Variable ApiKey -ErrorAction SilentlyContinue
+}
+```
+
+Model listing is stronger evidence than guessing endpoint behavior, but it is not a substitute for a bounded live request: TokenHub keys can have model-specific access scopes. See the official [API use and model-list contract](https://cloud.tencent.com/document/product/1823/130078), [Hy3 invocation guide](https://cloud.tencent.com/document/product/1823/132252), and [API error codes](https://cloud.tencent.com/document/product/1823/131595).
+
 ## Smoke Test
 
 The basic TokenHub Hy3 Chat Completions API path has been manually smoke-tested.
