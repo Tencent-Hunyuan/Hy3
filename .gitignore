@@ -8,3 +8,7 @@
 Thumbs.db
 __pycache__/
 *.pyc
+.env
+.venv/
+.pytest_cache/
+.ruff_cache/

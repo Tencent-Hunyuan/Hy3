@@ -111,7 +111,11 @@ Model usefulness is not fully captured by benchmarks. Based on extensive product
 
 ## Quickstart
 
-Deploy Hy3 with [vLLM](#vllm) or [SGLang](#sglang) first, then call the OpenAI-compatible API:
+Tencent Cloud Hosted API: follow the [Hosted API quickstart (Chinese)](quickstart.md),
+then choose from the [six runnable examples (Chinese)](examples/api/README.md).
+
+Local deployment: start Hy3 with [vLLM](#vllm) or [SGLang](#sglang), then call the
+OpenAI-compatible API:
 
 ```python
 from openai import OpenAI
