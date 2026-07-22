@@ -1,24 +1,15 @@
-# Python
 __pycache__/
-*.py[cod]
+*.pyc
+*.pyo
+.env
 *.egg-info/
 dist/
 build/
 .venv/
 venv/
-
-# Environment
-.env
-
-# IDE
 .idea/
 .vscode/
 *.swp
 *.swo
-
-# OS
 .DS_Store
 Thumbs.db
-
-# Uploaded files
-uploads/

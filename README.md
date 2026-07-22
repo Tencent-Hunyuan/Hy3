@@ -1,174 +1,128 @@
 # Hy3 研究助手
 
-> 基于 **腾讯混元 Hy3**（295B MoE 模型）的端到端研究助手应用。
->
-> 🏷️ 腾讯犀牛鸟开源人才培养计划 2026 · Issue [#4](https://github.com/Tencent-Hunyuan/Hy3/issues/4)
+基于腾讯混元 Hy3 大模型的智能研究助手，提供**深度研究**、**代码分析**、**文档问答**三大核心功能。
 
----
+## 项目简介
 
-## 项目概述
+本项目是腾讯犀牛鸟实战计划 [Issue #4](https://github.com/Tencent-Hunyuan/Hy3/issues/4) 的完整实现。所有智能任务（研究规划、报告生成、代码分析、文档问答）均通过调用 **Hy3 API**（OpenAI 兼容接口）完成，不涉及模型训练、微调或本地推理。
 
-Hy3 研究助手是一个全栈 Web 应用，展示了 **Hy3 在实际场景中的强大能力**：
+### Hy3 在项目中的角色
 
-| 功能 | 描述 | Hy3 扮演的角色 |
-|------|------|---------------|
-| 🔬 **深度研究** | 规划 → 搜索 → 长文报告（带引用来源） | 规划智能体、信息综合、报告撰写 |
-| 💻 **代码分析** | Bug 检测、性能优化、代码解释 | 代码理解、逻辑分析、重构建议 |
-| 📄 **文档问答** | 多文档上传与智能问答 | 阅读理解、基于证据的回答 |
+| 功能模块 | Hy3 的角色 |
+|---------|-----------|
+| 深度研究 | 研究计划制定 → 搜索关键词生成 → 长文报告撰写 → 执行摘要提炼 |
+| 代码分析 | 代码理解、Bug 检测、性能优化建议、安全审计、质量评分 |
+| 文档问答 | 多文档阅读理解、证据驱动的精准问答 |
 
-所有 LLM 能力**完全通过 Hy3 API 实现**——无需训练、微调或本地推理。
-
----
-
-## 演示流程
-
-### 演示一：「MoE 架构效率」深度研究
-
-1. 输入主题：「MoE 架构对 LLM 推理效率的影响」
-2. Hy3 生成包含 4 个关键问题和搜索查询的研究计划
-3. 系统执行网页搜索并收集来源
-4. Hy3 撰写带有引用标注（[来源 1], [来源 2], ...）的全面报告
-5. 生成中英文双语执行摘要
-
-### 演示二：技术论文多文档问答
-
-1. 上传 2-3 个技术 PDF/TXT 文件
-2. 提问：「比较这些文档中描述的方法，关键区别是什么？」
-3. Hy3 读取所有文档并提供跨文档的综合分析
-
----
-
-## 架构
+## 项目结构
 
 ```
 hy3-research-assistant/
 ├── backend/
-│   ├── main.py            # FastAPI 服务器（6 个 API 端点）
-│   ├── hy3_client.py      # Hy3 API 客户端（OpenAI 兼容）
-│   ├── tools.py            # 网页搜索、文件解析工具
+│   ├── main.py            # FastAPI 服务器（6 个 API 端点，全部支持 SSE 流式输出）
+│   ├── hy3_client.py      # Hy3 API 客户端封装（OpenAI 兼容接口）
+│   ├── tools.py            # 工具函数（网页搜索、PDF/DOCX/代码文件解析）
 │   └── requirements.txt   # Python 依赖
 ├── frontend/
-│   └── index.html          # 现代化单页应用（纯 HTML/CSS/JS）
-├── .env.example            # 环境变量模板
-└── README.md               # 项目文档
+│   └── index.html          # 现代化 Web 前端（暗色主题、流式渲染、Markdown 展示）
+├── .env.example            # 环境变量配置模板
+├── .gitignore
+├── start.bat               # Windows 一键启动脚本
+└── README.md
 ```
-
-**技术栈：**
-- **后端**：Python 3.10+ · FastAPI · OpenAI SDK（Hy3 兼容）
-- **前端**：纯 HTML5/CSS3/JavaScript（零依赖）
-- **大模型**：腾讯混元 Hy3（295B MoE，21B 活跃参数）
-- **搜索**：DuckDuckGo（无需 API 密钥）
-- **文件解析**：PyPDF2、python-docx
-
----
 
 ## 快速开始
 
-### 前提条件
+### 环境要求
 
-- Python 3.10+
-- 从 [腾讯云控制台](https://console.cloud.tencent.com/hunyuan) 获取 Hy3 API 密钥
+- Python 3.9+
+- 有效的 Hy3 API Key
 
-### 安装运行
+### 安装与启动
 
 ```bash
-# 1. 进入项目目录
+# 1. 克隆项目
 cd hy3-research-assistant
 
-# 2. 设置 Hy3 API 密钥
-export HY3_API_KEY="你的 API 密钥"
-
-# Windows 系统使用:
-set HY3_API_KEY=你的 API 密钥
+# 2. 配置 API 密钥
+# Windows
+set HY3_API_KEY=你的API密钥
+# 或复制 .env.example 为 .env 并填入密钥
 
 # 3. 安装依赖
 cd backend
 pip install -r requirements.txt
 
-# 4. 启动服务器
+# 4. 启动服务
 python main.py
+# 服务运行在 http://localhost:8000
 ```
 
-在浏览器中访问 http://localhost:8000 即可使用。
+打开浏览器访问 `http://localhost:8000` 即可使用。
 
-### API 端点
+### 可选环境变量
 
-| 方法 | 端点 | 描述 |
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| `HY3_API_KEY` | Hy3 API 密钥（必填） | - |
+| `HY3_BASE_URL` | API 端点地址 | `https://api.hunyuan.cloud.tencent.com/v1` |
+| `HY3_MODEL` | 模型名称 | `hunyuan-pro` |
+| `PORT` | 服务端口 | `8000` |
+
+## 三大功能
+
+### 🔬 深度研究 (Deep Research)
+
+输入研究主题，Hy3 将自动完成：
+
+1. **研究规划** — 将主题拆解为子问题，生成搜索关键词
+2. **资料搜索** — 自动搜索相关网页资料
+3. **报告撰写** — 基于搜索结果生成 1500-3000 字专业研究报告
+4. **执行摘要** — 提炼核心发现的简明摘要
+
+### 💻 代码分析 (Code Analysis)
+
+粘贴代码或上传代码文件，Hy3 将提供：
+
+- 代码概览与核心功能解读
+- 执行逻辑与关键流程分析
+- 潜在 Bug、性能隐患、安全问题诊断
+- 具体优化建议与最佳实践
+- 1-10 分代码质量评分
+
+### 📚 文档问答 (Document Q&A)
+
+上传多个文档（支持 PDF、DOCX、TXT、代码文件等），向 Hy3 提问：
+
+- 基于文档内容精准回答
+- 引用原始段落作为证据
+- 明确标注信息缺失情况
+
+## API 端点
+
+| 端点 | 方法 | 说明 |
 |------|------|------|
-| `GET` | `/api/health` | 健康检查 |
-| `POST` | `/api/research` | 深度研究（完整版） |
-| `POST` | `/api/research/stream` | 深度研究（流式 SSE） |
-| `POST` | `/api/analyze-code` | 代码分析 |
-| `POST` | `/api/upload-documents` | 上传文档 |
-| `POST` | `/api/qa` | 文档问答 |
+| `/` | GET | 前端页面 |
+| `/health` | GET | 服务健康检查 |
+| `/api/research` | POST | 深度研究（流式） |
+| `/api/analyze-code` | POST | 粘贴代码分析（流式） |
+| `/api/analyze-code-file` | POST | 上传代码文件分析（流式） |
+| `/api/qa-documents` | POST | 多文档问答（流式） |
 
----
+所有智能端点均使用 Server-Sent Events (SSE) 实现流式输出，支持前端实时渲染。
 
-## Hy3 API 配置
+## 技术栈
 
-Hy3 提供了 **OpenAI 兼容的 API**。本项目使用标准的 `openai` Python SDK 配合 Hy3 的接口地址：
+- **后端**: FastAPI + OpenAI SDK + Uvicorn
+- **前端**: 原生 HTML/CSS/JS + marked.js（Markdown 渲染）
+- **模型**: 腾讯混元 Hy3（通过 OpenAI 兼容接口调用）
+- **工具**: DuckDuckGo 网页搜索、PyPDF2、python-docx
 
-```python
-from openai import OpenAI
+## CodeBuddy 协作说明
 
-client = OpenAI(
-    api_key="你的 Hy3 API 密钥",
-    base_url="https://api.hunyuan.cloud.tencent.com/v1",
-)
+本项目借助 CodeBuddy AI 编程助手完成：
 
-response = client.chat.completions.create(
-    model="hunyuan-hy3-295b-a21b",
-    messages=[{"role": "user", "content": "你好！"}],
-)
-```
-
-环境变量说明：
-- `HY3_API_KEY` — 腾讯云 API 密钥 **（必填）**
-- `HY3_BASE_URL` — API 基础地址（默认：`https://api.hunyuan.cloud.tencent.com/v1`）
-- `HY3_MODEL` — 模型名称（默认：`hunyuan-hy3-295b-a21b`）
-
----
-
-## 开发说明
-
-### CodeBuddy 协作
-
-本项目使用 **CodeBuddy** 作为主要开发环境。以下是由 CodeBuddy 生成或大幅协助完成的代码模块：
-
-| 文件 | CodeBuddy 贡献 |
-|------|---------------|
-| `backend/hy3_client.py` | 完整文件 — Hy3 API 客户端封装，含流式支持 |
-| `backend/tools.py` | 完整文件 — 网页搜索爬虫、多格式文件解析器 |
-| `backend/main.py` | 完整文件 — FastAPI 服务器及所有端点（含流式） |
-| `frontend/index.html` | 完整文件 — 单页应用（暗色主题、SSE 流式、Markdown 渲染） |
-| `README.md` | 完整文件 — 项目文档和配置指南 |
-
-开发者的主要工作：
-- 设计应用架构
-- 选择技术栈
-- 配置 Hy3 API 凭证
-- 测试和迭代提示词工程
-- 制作演示录屏
-
-### 提示词工程
-
-系统使用精心设计的提示词来最大化 Hy3 的能力：
-
-1. **研究规划器**：结构化 JSON 输出，用于制定研究计划
-2. **研究报告撰写器**：学术风格的写作，带来源引用
-3. **代码分析器**：领域专用分析（Bug 检测/优化/解释）
-4. **文档问答器**：基于证据的回答，支持段落引用
-
----
-
-## 许可证
-
-MIT License — 模型许可参见 [Hy3 仓库](https://github.com/Tencent-Hunyuan/Hy3)
-
----
-
-## 致谢
-
-- [腾讯混元 Hy3](https://github.com/Tencent-Hunyuan/Hy3) — 驱动本应用的 295B MoE 模型
-- 腾讯犀牛鸟开源人才培养计划 2026
-- 使用 [CodeBuddy](https://www.codebuddy.ai/) 构建
+- **协同设计**：AI 参与整体架构规划、功能模块拆解、前后端交互设计
+- **代码生成**：AI 编写了 `backend/main.py`（服务器和所有提示词工程）、`backend/hy3_client.py`（API 客户端封装）、`backend/tools.py`（搜索和文件解析）、`frontend/index.html`（完整前端界面）
+- **文档撰写**：AI 生成了 README、配置模板、启动脚本
+- **代码审查与打磨**：AI 辅助进行了语法检查、中英文翻译、结构优化
