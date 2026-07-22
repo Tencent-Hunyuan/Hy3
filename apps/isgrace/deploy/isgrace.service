@@ -1,0 +1,33 @@
+# Pairs with deploy/nginx-isgrace.conf, which reverse-proxies /api/* to
+# 127.0.0.1:3001 (see PORT below) and serves dist/ directly for everything else.
+
+[Unit]
+Description=isGrace backend
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/isgrace
+ExecStart=/opt/isgrace/node_modules/.bin/tsx server/index.ts
+Restart=always
+RestartSec=5
+User=isgrace
+Group=isgrace
+
+Environment=NODE_ENV=production
+Environment=PORT=3001
+Environment=WORKSPACE_DIR=/opt/isgrace/data
+Environment=CLIENT_ORIGIN=https://isgrace.limlamleen.com
+
+# Auth — REPLACE_ME before starting the service. Generate with: openssl rand -hex 32
+# Never commit the real value into this file in the repo.
+Environment=SESSION_SECRET=REPLACE_ME_run_openssl_rand_hex_32
+
+# Shared default LLM key — REPLACE_ME with the real OpenRouter key. Never commit the real value.
+Environment=DEFAULT_LLM_API_KEY=REPLACE_ME_sk-or-v1-your-real-key
+Environment=DEFAULT_LLM_PROVIDER=openrouter
+Environment=DEFAULT_LLM_MODEL=tencent/hy3
+Environment=DEFAULT_LLM_TEMPERATURE=0.7
+
+[Install]
+WantedBy=multi-user.target
