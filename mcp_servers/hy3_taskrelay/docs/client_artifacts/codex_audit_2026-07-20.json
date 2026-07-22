@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "checkpoint_id": "cp_b3067b1cc7f4a430",
+  "overall_status": "clean",
+  "findings": [],
+  "evidence": [
+    {
+      "evidence_id": "ev_api_test",
+      "content": "test_public_total_signature asserts the existing positional parameter and Decimal return type.",
+      "source": "synthetic compatibility test"
+    },
+    {
+      "evidence_id": "ev_issue",
+      "content": "Empty carts must return Decimal('0.00') and the public signature must remain stable.",
+      "source": "synthetic issue"
+    },
+    {
+      "evidence_id": "ev_test_log",
+      "content": "test_empty_cart_total expected Decimal('0.00') but received None.",
+      "source": "synthetic pytest log"
+    },
+    {
+      "evidence_id": "ev_trace",
+      "content": "calculate_total returns without a value when cart.items is empty.",
+      "source": "synthetic trace note"
+    }
+  ]
+}

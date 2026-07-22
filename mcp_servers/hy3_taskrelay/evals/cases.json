@@ -1,0 +1,16 @@
+[
+  {"case_id":"bug_goal","fixture":"interrupted_bug_fix","artifact":"checkpoint","pointer":"/goal","operator":"equals","expected":"Fix the empty-cart total regression without changing the public API."},
+  {"case_id":"bug_constraint","fixture":"interrupted_bug_fix","artifact":"checkpoint","pointer":"/constraints/0/text","operator":"equals","expected":"Do not change the public calculate_total signature."},
+  {"case_id":"bug_fact_refs","fixture":"interrupted_bug_fix","artifact":"checkpoint","pointer":"/confirmed_facts/0/evidence_ids","operator":"set_equals","expected":["ev_test_log","ev_trace"]},
+  {"case_id":"bug_audit_category","fixture":"interrupted_bug_fix","artifact":"audit","pointer":"/findings/0/category","operator":"equals","expected":"missing_constraint"},
+  {"case_id":"bug_audit_severity","fixture":"interrupted_bug_fix","artifact":"audit","pointer":"/findings/0/severity","operator":"equals","expected":"high"},
+  {"case_id":"bug_resume_first_action","fixture":"interrupted_bug_fix","artifact":"resume","pointer":"/next_steps/0/action","operator":"contains","expected":"regression test"},
+  {"case_id":"bug_resume_validation","fixture":"interrupted_bug_fix","artifact":"resume","pointer":"/next_steps/1/validation","operator":"contains","expected":"test_public_total_signature"},
+  {"case_id":"bug_all_refs_known","fixture":"interrupted_bug_fix","artifact":"resume","pointer":"/","operator":"refs_known","expected":true},
+  {"case_id":"change_audit_category","fixture":"requirements_change","artifact":"audit","pointer":"/findings/0/category","operator":"equals","expected":"contradiction"},
+  {"case_id":"change_audit_refs","fixture":"requirements_change","artifact":"audit","pointer":"/findings/0/evidence_ids","operator":"set_equals","expected":["ev_old_req","ev_new_req"]},
+  {"case_id":"change_resume_priority","fixture":"requirements_change","artifact":"resume","pointer":"/next_steps/0/priority","operator":"equals","expected":1},
+  {"case_id":"change_no_dependency","fixture":"requirements_change","artifact":"resume","pointer":"/do_not/0/text","operator":"contains","expected":"third-party"},
+  {"case_id":"change_evidence_count","fixture":"requirements_change","artifact":"checkpoint","pointer":"/evidence","operator":"length","expected":3},
+  {"case_id":"change_priorities_sorted","fixture":"requirements_change","artifact":"resume","pointer":"/next_steps","operator":"priorities_sorted","expected":true}
+]

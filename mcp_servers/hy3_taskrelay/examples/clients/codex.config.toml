@@ -1,0 +1,12 @@
+[mcp_servers."hy3-taskrelay"]
+command = "uv"
+args = ["run", "--directory", "mcp_servers/hy3_taskrelay", "hy3-taskrelay-mcp"]
+env_vars = ["HY3_API_KEY", "HY3_BASE_URL", "HY3_MODEL"]
+startup_timeout_sec = 30
+tool_timeout_sec = 240
+enabled_tools = [
+  "taskrelay_create_checkpoint",
+  "taskrelay_audit_checkpoint",
+  "taskrelay_create_resume_brief",
+]
+default_tools_approval_mode = "approve"

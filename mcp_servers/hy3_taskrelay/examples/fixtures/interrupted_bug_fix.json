@@ -1,0 +1,117 @@
+{
+  "fixture_id": "interrupted_bug_fix",
+  "synthetic": true,
+  "description": "A public synthetic cart-total bug-fix interrupted after reproduction.",
+  "create_input": {
+    "goal": "Fix the empty-cart total regression without changing the public API.",
+    "session_material": "The previous session reproduced test_empty_cart_total and traced the None return to calculate_total's empty-cart branch.",
+    "constraints": [
+      "Do not change the public calculate_total signature."
+    ],
+    "decisions": [
+      "Add a regression test before changing the implementation."
+    ],
+    "evidence": [
+      {
+        "evidence_id": "ev_issue",
+        "content": "Empty carts must return Decimal('0.00') and the public signature must remain stable.",
+        "source": "synthetic issue"
+      },
+      {
+        "evidence_id": "ev_test_log",
+        "content": "test_empty_cart_total expected Decimal('0.00') but received None.",
+        "source": "synthetic pytest log"
+      },
+      {
+        "evidence_id": "ev_trace",
+        "content": "calculate_total returns without a value when cart.items is empty.",
+        "source": "synthetic trace note"
+      }
+    ]
+  },
+  "additional_evidence": [
+    {
+      "evidence_id": "ev_api_test",
+      "content": "test_public_total_signature asserts the existing positional parameter and Decimal return type.",
+      "source": "synthetic compatibility test"
+    }
+  ],
+  "continuation_context": "A new session has a clean working tree and can edit the implementation and tests.",
+  "hy3_responses": {
+    "checkpoint": {
+      "goal": "Fix the empty-cart total regression without changing the public API.",
+      "confirmed_facts": [
+        {
+          "text": "test_empty_cart_total fails because the empty-cart branch returns None.",
+          "evidence_ids": ["ev_test_log", "ev_trace"]
+        }
+      ],
+      "constraints": [
+        {
+          "text": "Do not change the public calculate_total signature.",
+          "evidence_ids": ["ev_issue"]
+        }
+      ],
+      "decisions": [
+        {
+          "text": "Add a regression test before changing the implementation.",
+          "evidence_ids": ["ev_issue"]
+        }
+      ],
+      "open_questions": [],
+      "next_steps": [
+        {
+          "action": "Add the empty-cart regression assertion.",
+          "verification": "test_empty_cart_total fails for the expected None return.",
+          "evidence_ids": ["ev_test_log"]
+        },
+        {
+          "action": "Return Decimal('0.00') from the empty-cart branch.",
+          "verification": "The cart total suite passes.",
+          "evidence_ids": ["ev_issue", "ev_trace"]
+        }
+      ]
+    },
+    "audit": {
+      "overall_status": "needs_attention",
+      "findings": [
+        {
+          "severity": "high",
+          "category": "missing_constraint",
+          "summary": "The checkpoint does not explicitly preserve the Decimal return type.",
+          "evidence_ids": ["ev_issue", "ev_api_test"],
+          "recommendation": "Add Decimal return compatibility to the implementation and validation gate."
+        }
+      ]
+    },
+    "resume": {
+      "concise_context": [
+        {
+          "text": "The empty-cart branch returns None and breaks the regression test.",
+          "evidence_ids": ["ev_test_log", "ev_trace"]
+        }
+      ],
+      "next_steps": [
+        {
+          "priority": 1,
+          "action": "Add or retain the empty-cart regression test.",
+          "validation": "test_empty_cart_total demonstrates the failure before the patch.",
+          "evidence_ids": ["ev_test_log"]
+        },
+        {
+          "priority": 2,
+          "action": "Patch the empty-cart branch to return Decimal('0.00').",
+          "validation": "test_empty_cart_total and test_public_total_signature both pass.",
+          "evidence_ids": ["ev_issue", "ev_api_test", "ev_trace"]
+        }
+      ],
+      "blockers": [],
+      "do_not": [
+        {
+          "text": "Do not change the public calculate_total signature.",
+          "evidence_ids": ["ev_issue", "ev_api_test"]
+        }
+      ]
+    }
+  }
+}

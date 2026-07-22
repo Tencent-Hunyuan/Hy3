@@ -1,0 +1,61 @@
+{
+  "goal": "Fix the empty-cart total regression without changing the public API.",
+  "confirmed_facts": [
+    {
+      "text": "Empty carts must return Decimal('0.00') and the public signature must remain stable.",
+      "evidence_ids": ["ev_issue"]
+    },
+    {
+      "text": "test_empty_cart_total expected Decimal('0.00') but received None.",
+      "evidence_ids": ["ev_test_log"]
+    },
+    {
+      "text": "calculate_total returns without a value when cart.items is empty.",
+      "evidence_ids": ["ev_trace"]
+    }
+  ],
+  "constraints": [
+    {
+      "text": "Do not change the public calculate_total signature.",
+      "evidence_ids": []
+    }
+  ],
+  "decisions": [
+    {
+      "text": "Add a regression test before changing the implementation.",
+      "evidence_ids": []
+    }
+  ],
+  "open_questions": [],
+  "next_steps": [
+    {
+      "action": "Add a regression test that asserts calculate_total([]) returns Decimal('0.00') without altering its signature.",
+      "verification": "New test passes locally and fails against the current buggy implementation.",
+      "evidence_ids": ["ev_issue", "ev_test_log", "ev_trace"]
+    },
+    {
+      "action": "Modify calculate_total's empty-cart branch to return Decimal('0.00').",
+      "verification": "test_empty_cart_total passes and calculate_total signature is unchanged.",
+      "evidence_ids": ["ev_issue", "ev_trace"]
+    }
+  ],
+  "schema_version": "1.0",
+  "checkpoint_id": "cp_b3067b1cc7f4a430",
+  "evidence": [
+    {
+      "evidence_id": "ev_issue",
+      "content": "Empty carts must return Decimal('0.00') and the public signature must remain stable.",
+      "source": "synthetic issue"
+    },
+    {
+      "evidence_id": "ev_test_log",
+      "content": "test_empty_cart_total expected Decimal('0.00') but received None.",
+      "source": "synthetic pytest log"
+    },
+    {
+      "evidence_id": "ev_trace",
+      "content": "calculate_total returns without a value when cart.items is empty.",
+      "source": "synthetic trace note"
+    }
+  ]
+}

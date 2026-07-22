@@ -42,6 +42,7 @@
   - [SGLang](#sglang)
 - [Finetuning](#finetuning)
 - [Quantization](#quantization)
+- [MCP servers](#mcp-servers)
 - [License](#license)
 - [Contact Us](#contact-us)
 
@@ -208,6 +209,13 @@ Hy3 provides a complete model finetuning pipeline. For detailed documentation, p
 ## Quantization
 
 We provide [AngelSlim](https://github.com/tencent/AngelSlim), a more accessible, comprehensive, and efficient toolkit for large model compression. AngelSlim supports a comprehensive suite of compression tools for large-scale multimodal models, including common quantization algorithms, low-bit quantization, and speculative sampling.
+
+## MCP servers
+
+[Hy3 TaskRelay MCP](./mcp_servers/hy3_taskrelay/README.md) is a stateless stdio server for
+evidence-grounded checkpoints, checkpoint audits, and continuation briefs for interrupted tasks.
+Its [13.2-second actual-call demo](./mcp_servers/hy3_taskrelay/docs/demo/taskrelay_cross_client.gif)
+shows a verified CodeBuddy-to-Codex handoff over a public synthetic fixture.
 
 ## License
 

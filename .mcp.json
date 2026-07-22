@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "hy3-taskrelay": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "mcp_servers/hy3_taskrelay",
+        "hy3-taskrelay-mcp"
+      ],
+      "env": {
+        "HY3_API_KEY": "${HY3_API_KEY}",
+        "HY3_BASE_URL": "${HY3_BASE_URL:-https://tokenhub.tencentmaas.com/v1}",
+        "HY3_MODEL": "${HY3_MODEL:-hy3}"
+      },
+      "description": "Stateless, evidence-grounded handoff for interrupted long tasks"
+    }
+  }
+}
