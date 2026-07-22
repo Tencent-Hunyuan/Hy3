@@ -1,0 +1,109 @@
+情况1：API错误
+
+=== 错误重试机制测试 ===
+第1次尝试调用API...
+未知错误：Error code: 401 - {'error': {'type': 'gateway_error', 'code': '401002', 'message': 'The API Key does not exist or signature verification failed. Please check whether the API Key is correct. See: https://console.cloud.tencent.com/tokenhub/apikey', 'message_zh': 'API Key 不存在或签名校验失败，请检查 API Key 是否正确，查看链接：https://console.cloud.tencent.com/tokenhub/apikey', 'request_id': '9adcaffd-db01-40dd-af39-dacd95241a32'}}
+最终调用失败：Error code: 401 - {'error': {'type': 'gateway_error', 'code': '401002', 'message': 'The API Key does not exist or signature verification failed. Please check whether the API Key is correct. See: https://console.cloud.tencent.com/tokenhub/apikey', 'message_zh': 'API Key 不存在或签名校验失败，请检查 API Key 是否正确，查看链接：https://console.cloud.tencent.com/tokenhub/apikey', 'request_id': '9adcaffd-db01-40dd-af39-dacd95241a32'}}
+
+情况2：网络无连接
+
+=== 错误重试机制测试 ===
+第1次尝试调用API...
+网络连接失败，1秒后重试... 错误：Connection error.
+第2次尝试调用API...
+网络连接失败，2秒后重试... 错误：Connection error.
+第3次尝试调用API...
+网络连接失败，4秒后重试... 错误：Connection error.
+第4次尝试调用API...
+网络连接失败，8秒后重试... 错误：Connection error.
+达到最大重试次数（3），调用失败
+最终调用失败：No active exception to reraise
+
+
+情况3：调用成功
+
+=== 错误重试机制测试 ===
+第1次尝试调用API...
+调用成功！模型回复：
+下面是一个用 **Python 实现快速排序（Quick Sort）** 的示例，包含**递归版**和**原地排序版**，并附有简单说明。
+
+--
+## 一、基础版（非原地，易理解）
+```python
+def quick_sort(arr):
+    if len(arr) <= 1:
+        return arr
+
+    pivot = arr[0]  # 选择第一个元素作为基准
+    left = [x for x in arr[1:] if x < pivot]
+    right = [x for x in arr[1:] if x >= pivot]
+
+    return quick_sort(left) + [pivot] + quick_sort(right)
+# 示例
+data = [10, 7, 8, 9, 1, 5]
+sorted_data = quick_sort(data)
+print(sorted_data)
+```
+
+**输出：**
+```
+[1, 5, 7, 8, 9, 10]
+```
+
+✅ 优点：代码简洁、易理解
+❌ 缺点：占用额外空间
+
+---
+
+## 二、原地排序版（更常用，节省空间）
+
+```python
+def quick_sort_inplace(arr, low, high):
+    if low < high:
+        pi = partition(arr, low, high)
+        quick_sort_inplace(arr, low, pi - 1)
+        quick_sort_inplace(arr, pi + 1, high)
+
+
+def partition(arr, low, high):
+    pivot = arr[high]  # 选择最后一个元素作为基准
+    i = low - 1
+
+    for j in range(low, high):
+        if arr[j] < pivot:
+            i += 1
+            arr[i], arr[j] = arr[j], arr[i]
+
+    arr[i + 1], arr[high] = arr[high], arr[i + 1]
+    return i + 1
+
+
+# 示例
+data = [10, 7, 8, 9, 1, 5]
+quick_sort_inplace(data, 0, len(data) - 1)
+print(data)
+```
+
+---
+
+## 三、快速排序特点
+
+- **时间复杂度**
+  - 平均：O(n log n)
+  - 最坏：O(n²)（数组已排序时）
+- **空间复杂度**
+  - 原地版：O(log n)
+- **不稳定排序**
+
+---
+
+如果你需要：
+- 随机选取基准
+- 用 `key` 参数
+- 改成迭代版
+- 和 `sorted()` 对比
+
+可以继续问我 👍
+
+进程已结束，退出代码为 0
+
