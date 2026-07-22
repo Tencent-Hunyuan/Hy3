@@ -1,0 +1,140 @@
+{
+  "schema_version": "1.0",
+  "fixture_id": "research-grounding",
+  "task": {
+    "title": "用来源证据评估一项合成政策结论",
+    "description": "只有导入摘录能够支持时才形成简短研究结论，并确保每条引用与对应主张匹配。导入轨迹不得触发浏览。"
+  },
+  "criteria": [
+    {
+      "criterion_id": "criterion-source-grounding",
+      "title": "为每条结论提供依据",
+      "description": "每条实质性结论都必须由导入的来源摘录直接支持。",
+      "priority": "must"
+    },
+    {
+      "criterion_id": "criterion-citation-match",
+      "title": "让引用与主张匹配",
+      "description": "每条引用都必须指向能够直接支持所附主张的摘录。",
+      "priority": "must"
+    },
+    {
+      "criterion_id": "criterion-uncertainty",
+      "title": "保留不确定性",
+      "description": "缺乏支持的因果主张必须删除，或明确标记为仍需更多证据的假设。",
+      "priority": "must"
+    }
+  ],
+  "trace": [
+    {
+      "step_id": "step-001-research-intake",
+      "sequence": 1,
+      "kind": "observation",
+      "summary": "读取证据约束与引用要求。",
+      "details": "任务要求摘录直接支持结论，并明确标注未获支持的因果不确定性。",
+      "status": "ok",
+      "criterion_ids": ["criterion-source-grounding", "criterion-citation-match", "criterion-uncertainty"],
+      "evidence_ids": ["ev-research-requirement"]
+    },
+    {
+      "step_id": "step-002-search-plan",
+      "sequence": 2,
+      "kind": "decision",
+      "summary": "计划比较两段导入来源摘录。",
+      "details": "智能体将分析范围限定为任务包中已有的证据。",
+      "status": "ok",
+      "criterion_ids": ["criterion-source-grounding"],
+      "evidence_ids": ["ev-research-requirement"]
+    },
+    {
+      "step_id": "step-003-read-source-a",
+      "sequence": 3,
+      "kind": "observation",
+      "summary": "阅读一份报告描述性相关的来源。",
+      "details": "摘录显示两个指标同步变化，并明确说明没有检验因果关系。",
+      "status": "ok",
+      "criterion_ids": ["criterion-source-grounding", "criterion-uncertainty"],
+      "evidence_ids": ["ev-source-a"]
+    },
+    {
+      "step_id": "step-004-supported-summary",
+      "sequence": 4,
+      "kind": "claim",
+      "summary": "在保留正确限定语的前提下总结描述性相关。",
+      "details": "该总结没有超出来源 A 的支持范围。",
+      "status": "ok",
+      "criterion_ids": ["criterion-source-grounding", "criterion-uncertainty"],
+      "evidence_ids": ["ev-source-a"]
+    },
+    {
+      "step_id": "step-005-read-source-b",
+      "sequence": 5,
+      "kind": "observation",
+      "summary": "阅读一份无关的实施记录。",
+      "details": "摘录只描述报告频率，没有结果或因果比较。",
+      "status": "ok",
+      "criterion_ids": ["criterion-citation-match"],
+      "evidence_ids": ["ev-source-b"]
+    },
+    {
+      "step_id": "step-006-unsupported-causal-leap",
+      "sequence": 6,
+      "kind": "decision",
+      "summary": "在没有支持证据时推断政策带来因果改善。",
+      "details": "尽管来源 A 明确未检验因果关系且来源 B 与此无关，智能体仍认定政策造成了观察到的改善。",
+      "status": "warning",
+      "criterion_ids": ["criterion-source-grounding", "criterion-uncertainty"],
+      "evidence_ids": ["ev-source-a", "ev-source-b"]
+    },
+    {
+      "step_id": "step-007-wrong-citation",
+      "sequence": 7,
+      "kind": "claim",
+      "summary": "把来源 B 附到缺乏支持的因果主张上。",
+      "details": "该引用不包含所声称的结果或因果比较。",
+      "status": "failed",
+      "criterion_ids": ["criterion-source-grounding", "criterion-citation-match"],
+      "evidence_ids": ["ev-source-b", "ev-unsupported-draft"]
+    },
+    {
+      "step_id": "step-008-final-draft",
+      "sequence": 8,
+      "kind": "action",
+      "summary": "把缺乏支持的主张带入最终草稿。",
+      "details": "最终草稿把因果关系写成事实，并保留了不匹配的引用。",
+      "status": "failed",
+      "criterion_ids": ["criterion-source-grounding", "criterion-citation-match", "criterion-uncertainty"],
+      "evidence_ids": ["ev-unsupported-draft"]
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "ev-research-requirement",
+      "step_id": "step-001-research-intake",
+      "kind": "requirement",
+      "source_label": "合成研究任务书",
+      "content": "每条结论都必须引用能够直接支持它的导入摘录。因果表述需要因果证据，否则必须标记为未解决假设。"
+    },
+    {
+      "evidence_id": "ev-source-a",
+      "step_id": "step-003-read-source-a",
+      "kind": "source_excerpt",
+      "source_label": "合成来源 A",
+      "content": "描述性序列在报告期内上升。该研究没有检验政策是否导致了这一变化。"
+    },
+    {
+      "evidence_id": "ev-source-b",
+      "step_id": "step-005-read-source-b",
+      "kind": "source_excerpt",
+      "source_label": "合成来源 B",
+      "content": "各团队每月提交实施检查表。该记录没有报告结果比较，也没有提出因果主张。"
+    },
+    {
+      "evidence_id": "ev-unsupported-draft",
+      "step_id": "step-007-wrong-citation",
+      "kind": "artifact",
+      "source_label": "合成草稿摘录",
+      "content": "政策带来了改善，月度检查表报告证明了这一点［来源 B］。"
+    }
+  ]
+}

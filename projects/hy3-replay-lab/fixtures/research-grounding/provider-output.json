@@ -1,0 +1,107 @@
+{
+  "coverage": [
+    {
+      "criterion_id": "criterion-source-grounding",
+      "status": "violated",
+      "supporting_step_ids": ["step-006-unsupported-causal-leap", "step-007-wrong-citation", "step-008-final-draft"],
+      "evidence_ids": ["ev-source-a", "ev-source-b", "ev-unsupported-draft"],
+      "explanation": "最终因果结论强于来源 A 的表述，在来源 B 中也完全不存在。"
+    },
+    {
+      "criterion_id": "criterion-citation-match",
+      "status": "violated",
+      "supporting_step_ids": ["step-007-wrong-citation", "step-008-final-draft"],
+      "evidence_ids": ["ev-source-b", "ev-unsupported-draft"],
+      "explanation": "来源 B 只描述检查表提交频率，无法支持所附的因果结果主张。"
+    },
+    {
+      "criterion_id": "criterion-uncertainty",
+      "status": "violated",
+      "supporting_step_ids": ["step-006-unsupported-causal-leap", "step-008-final-draft"],
+      "evidence_ids": ["ev-source-a", "ev-unsupported-draft"],
+      "explanation": "轨迹把明确不具因果性的相关关系改写成没有限定的因果陈述。"
+    }
+  ],
+  "finding": {
+    "severity": "high",
+    "category": "evidence_gap",
+    "first_divergence_step_id": "step-006-unsupported-causal-leap",
+    "impact_step_ids": ["step-007-wrong-citation", "step-008-final-draft"],
+    "explanation": "首个证据断裂发生在智能体无视明确限定、且没有因果摘录时，把描述性相关升级为因果关系。后续步骤又附上无关引用，并把缺乏支持的主张带入最终草稿。",
+    "evidence_ids": ["ev-research-requirement", "ev-source-a", "ev-source-b"],
+    "hypotheses": [
+      "政策可能对观察到的变化有所贡献，但导入证据无法建立这种关系。"
+    ]
+  },
+  "replay_plan": {
+    "preserved_step_ids": [
+      "step-001-research-intake",
+      "step-002-search-plan",
+      "step-003-read-source-a",
+      "step-004-supported-summary",
+      "step-005-read-source-b"
+    ],
+    "rerun_from_step_id": "step-006-unsupported-causal-leap",
+    "rerun_step_ids": [
+      "step-006-unsupported-causal-leap",
+      "step-007-wrong-citation",
+      "step-008-final-draft"
+    ],
+    "actions": [
+      {
+        "order": 1,
+        "action": "把该因果陈述标记为缺乏支持，并明确需要哪类因果证据。",
+        "evidence_ids": ["ev-research-requirement", "ev-source-a"],
+        "validation_gate": {
+          "description": "除非明确导入新的因果证据，否则主张不得强于现有摘录。",
+          "criterion_ids": ["criterion-source-grounding", "criterion-uncertainty"],
+          "evidence_ids": ["ev-research-requirement", "ev-source-a"]
+        }
+      },
+      {
+        "order": 2,
+        "action": "获取并导入直接相关的因果来源，或只保留带有限定语的描述性相关。",
+        "evidence_ids": ["ev-source-a", "ev-source-b"],
+        "validation_gate": {
+          "description": "每条保留的实质性主张都映射到能够直接支持它的导入摘录。",
+          "criterion_ids": ["criterion-source-grounding"],
+          "evidence_ids": ["ev-source-a", "ev-source-b"]
+        }
+      },
+      {
+        "order": 3,
+        "action": "重建草稿，并在导出前逐条核对引用与对应主张。",
+        "evidence_ids": ["ev-source-b", "ev-unsupported-draft"],
+        "validation_gate": {
+          "description": "没有引用被附到其摘录无法支持的主张上，未解决的因果关系也已标记为假设。",
+          "criterion_ids": ["criterion-citation-match", "criterion-uncertainty"],
+          "evidence_ids": ["ev-research-requirement", "ev-source-b", "ev-unsupported-draft"]
+        }
+      }
+    ],
+    "stop_conditions": [
+      {
+        "description": "每条保留主张都有直接支持且每条引用都匹配时，成功停止。",
+        "criterion_ids": ["criterion-source-grounding", "criterion-citation-match"],
+        "evidence_ids": ["ev-research-requirement"]
+      },
+      {
+        "description": "如果仍需保留因果结论但尚未导入因果来源，则停止并补充证据。",
+        "criterion_ids": ["criterion-uncertainty"],
+        "evidence_ids": ["ev-source-a"]
+      }
+    ],
+    "prohibited_actions": [
+      {
+        "action": "把来源 B 用作因果结果证据。",
+        "reason": "该摘录既没有结果比较，也没有因果主张。",
+        "evidence_ids": ["ev-source-b"]
+      },
+      {
+        "action": "编造、替换或静默浏览导入任务包之外的引用。",
+        "reason": "轨迹复盘台只能分析明确导入的证据，而当前草稿已经存在引用错配。",
+        "evidence_ids": ["ev-research-requirement", "ev-unsupported-draft"]
+      }
+    ]
+  }
+}

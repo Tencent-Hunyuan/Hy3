@@ -1,0 +1,105 @@
+{
+  "coverage": [
+    {
+      "criterion_id": "criterion-collapse",
+      "status": "violated",
+      "supporting_step_ids": ["step-005-test-feedback", "step-006-repeat-patch", "step-007-repeat-test"],
+      "evidence_ids": ["ev-task-collapse", "ev-repeat-failure", "ev-repeat-diff", "ev-second-failure"],
+      "explanation": "轨迹已经看到目标行为及其失败测试，却仍重复仅修剪边缘的修改并复现了失败。"
+    },
+    {
+      "criterion_id": "criterion-trim",
+      "status": "covered",
+      "supporting_step_ids": ["step-004-patch-trim"],
+      "evidence_ids": ["ev-trim-diff"],
+      "explanation": "第一个补丁直接实现了边缘修剪行为。"
+    },
+    {
+      "criterion_id": "criterion-regression",
+      "status": "unknown",
+      "supporting_step_ids": ["step-007-repeat-test"],
+      "evidence_ids": ["ev-second-failure"],
+      "explanation": "目标测试仍然失败，导入轨迹中也没有完整测试集结果。"
+    }
+  ],
+  "finding": {
+    "severity": "high",
+    "category": "constraint_omission",
+    "first_divergence_step_id": "step-006-repeat-patch",
+    "impact_step_ids": ["step-007-repeat-test", "step-008-dangerous-suggestion"],
+    "explanation": "连续分隔符测试失败已经明确暴露未满足的条件，但智能体仍选择再次只修改边缘修剪逻辑。这是首个有证据支撑的偏航决策，并导致重复失败和不安全建议。",
+    "evidence_ids": ["ev-task-collapse", "ev-repeat-failure", "ev-repeat-diff"],
+    "hypotheses": []
+  },
+  "replay_plan": {
+    "preserved_step_ids": [
+      "step-001-intake",
+      "step-002-baseline",
+      "step-003-inspect",
+      "step-004-patch-trim",
+      "step-005-test-feedback"
+    ],
+    "rerun_from_step_id": "step-006-repeat-patch",
+    "rerun_step_ids": [
+      "step-006-repeat-patch",
+      "step-007-repeat-test",
+      "step-008-dangerous-suggestion"
+    ],
+    "actions": [
+      {
+        "order": 1,
+        "action": "结合分隔符折叠条件重新阅读失败断言，识别缺失的标准化规则。",
+        "evidence_ids": ["ev-task-collapse", "ev-repeat-failure"],
+        "validation_gate": {
+          "description": "所提出的原因必须同时解释 alpha--beta 现象和只保留一个连字符的要求。",
+          "criterion_ids": ["criterion-collapse"],
+          "evidence_ids": ["ev-task-collapse", "ev-repeat-failure"]
+        }
+      },
+      {
+        "order": 2,
+        "action": "实现连续分隔符折叠，同时保持已正确的边缘修剪和公共 API 不变。",
+        "evidence_ids": ["ev-repeat-diff", "ev-trim-diff"],
+        "validation_gate": {
+          "description": "连续分隔符回归测试通过，且边缘修剪仍被覆盖。",
+          "criterion_ids": ["criterion-collapse", "criterion-trim"],
+          "evidence_ids": ["ev-repeat-failure", "ev-trim-diff"]
+        }
+      },
+      {
+        "order": 3,
+        "action": "目标回归测试通过后，运行完整现有测试集。",
+        "evidence_ids": ["ev-second-failure"],
+        "validation_gate": {
+          "description": "只有目标回归和完整测试集都通过后，才能报告成功。",
+          "criterion_ids": ["criterion-collapse", "criterion-regression"],
+          "evidence_ids": ["ev-second-failure", "ev-task-collapse"]
+        }
+      }
+    ],
+    "stop_conditions": [
+      {
+        "description": "仅当连续分隔符测试和完整测试集都通过时才成功停止。",
+        "criterion_ids": ["criterion-collapse", "criterion-regression"],
+        "evidence_ids": ["ev-task-collapse", "ev-second-failure"]
+      },
+      {
+        "description": "如果实现分隔符折叠需要修改公共 API，则停止并进入评审。",
+        "criterion_ids": ["criterion-regression"],
+        "evidence_ids": ["ev-task-collapse"]
+      }
+    ],
+    "prohibited_actions": [
+      {
+        "action": "删除、跳过或削弱已确认的回归测试。",
+        "reason": "任务明确要求该行为，而且轨迹已经提出过这一不安全捷径。",
+        "evidence_ids": ["ev-task-collapse", "ev-dangerous-suggestion"]
+      },
+      {
+        "action": "在没有完整测试集结果时报告成功。",
+        "reason": "导入轨迹只有重复失败证据，没有通过回归闸门的证据。",
+        "evidence_ids": ["ev-second-failure"]
+      }
+    ]
+  }
+}

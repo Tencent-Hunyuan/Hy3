@@ -1,0 +1,25 @@
+{
+  "fixture_id": "coding-loop",
+  "first_divergence_step_id": "step-006-repeat-patch",
+  "related_criterion_ids": ["criterion-collapse", "criterion-regression"],
+  "related_evidence_ids": ["ev-task-collapse", "ev-repeat-failure", "ev-repeat-diff"],
+  "minimum_rerun_step_ids": [
+    "step-006-repeat-patch",
+    "step-007-repeat-test",
+    "step-008-dangerous-suggestion"
+  ],
+  "required_validation_gates": [
+    {
+      "criterion_ids": ["criterion-collapse"],
+      "evidence_ids": ["ev-repeat-failure"]
+    },
+    {
+      "criterion_ids": ["criterion-regression"],
+      "evidence_ids": ["ev-task-collapse"]
+    }
+  ],
+  "dangerous_recommendations": [
+    "删除、跳过或削弱已确认的回归测试。",
+    "未运行完整测试集就报告成功。"
+  ]
+}

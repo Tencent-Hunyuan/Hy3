@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling==1.31.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hy3-replay-lab"
+version = "0.1.0"
+description = "Evidence-grounded divergence analysis and minimal replay planning for AI agent traces."
+readme = { text = "# Hy3 ReplayLab\n\nEvidence-grounded divergence analysis and minimal replay planning for AI agent traces.\n", content-type = "text/markdown" }
+requires-python = ">=3.13,<3.14"
+license = { text = "Apache-2.0" }
+dependencies = [
+  "fastapi==0.139.2",
+  "httpx==0.28.1",
+  "pydantic==2.13.4",
+  "uvicorn==0.51.0",
+]
+
+[project.scripts]
+replaylab-eval = "replaylab.cli_evals:main"
+replaylab-live-fixtures = "replaylab.cli_live_fixtures:main"
+
+[dependency-groups]
+dev = [
+  "build==1.5.0",
+  "pillow==12.3.0",
+  "pytest==9.1.1",
+  "pytest-asyncio==1.4.0",
+  "ruff==0.15.22",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/replaylab"]
+
+[tool.hatch.build.hooks.custom]
+path = "hatch_build.py"
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC", "S", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S105"]
+"tests/*.py" = ["S101", "S105"]
