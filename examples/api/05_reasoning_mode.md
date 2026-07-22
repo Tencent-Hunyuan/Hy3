@@ -1,4 +1,4 @@
-# 05 思考模式（Reasoning modes）
+# 05 思考模式
 
 这个示例用同一道题比较 Hy3 的 `off`、`low`、`medium`、`high` 四档，并分别读取
 思考内容、最终答案、结束原因、token 用量和耗时。完整代码见
@@ -68,7 +68,7 @@ python examples/api/05_reasoning_mode.py --modes off low high
 
 ## 容易踩坑
 
-- Hosted API 使用顶层 `thinking`；`chat_template_kwargs.reasoning_effort=no_think`
+- 托管 API 使用顶层 `thinking`；`chat_template_kwargs.reasoning_effort=no_think`
   属于本地部署参数。
 - 关闭 thinking 时一并省略 effort。
 - 同时检查 reasoning 和 finish reason，及时发现 `finish_reason=length` 截断。

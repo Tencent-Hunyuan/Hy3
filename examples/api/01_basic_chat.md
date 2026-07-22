@@ -1,4 +1,4 @@
-# 01 基础对话（Basic chat）
+# 01 基础对话
 
 这个示例先发送一条消息，再演示怎样维护
 `system → user → assistant → user` 的多轮历史。完整代码见
@@ -6,7 +6,7 @@
 
 ## 请求代码
 
-单轮请求使用 Hosted API 顶层 `thinking` 字段：
+单轮请求使用托管 API 的顶层 `thinking` 字段：
 
 ```python
 single = create_chat_completion(
@@ -42,8 +42,8 @@ python examples/api/01_basic_chat.py
 ```
 
 以下输出采集于 2026-07-17，使用 TokenHub 广州入口、`model=hy3`、
-`temperature=0.3` 和 `max_tokens=512`。request ID 和 headers 已省略，模型文本再次
-运行结果可能变化。
+`temperature=0.3` 和 `max_tokens=512`。request ID 和 headers 已省略；再次运行时，
+模型文本可能变化。
 
 ```text
 === Single turn ===

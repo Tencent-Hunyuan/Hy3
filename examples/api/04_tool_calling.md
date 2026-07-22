@@ -1,4 +1,4 @@
-# 04 工具调用（Tool calling）
+# 04 工具调用
 
 这个示例让模型调用本地温度换算函数，再把结果交回模型生成最终答案。循环有明确的
 轮数上限。完整代码见 [04_tool_calling.py](04_tool_calling.py)。
@@ -67,8 +67,8 @@ usage: prompt_tokens=387, completion_tokens=48, total_tokens=435
 Completed after 1 tool round(s).
 ```
 
-本地函数完成换算。第二次请求收到经过 schema 校验和允许列表检查的 `role=tool`
-消息。
+本地函数完成换算后，脚本把 `role=tool` 结果加入第二次请求。模型提出的工具名和参数
+已在执行前通过允许列表和 JSON Schema 校验。
 
 ## 容易踩坑
 

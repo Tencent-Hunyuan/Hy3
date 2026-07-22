@@ -1,4 +1,4 @@
-# 02 流式输出（Streaming）
+# 02 流式输出
 
 这个示例会边接收边打印回答，并在结束时合并完整结果。完整代码见
 [02_streaming.py](02_streaming.py)。
@@ -24,9 +24,9 @@ result = aggregate_stream(stream, on_content=print, on_reasoning=print)
 1. `choices=[]` 时读取可选的 `usage`，随后进入下一块。
 2. 分别拼接 `delta.reasoning_content` 与 `delta.content`。
 3. 按 `tool_calls[].index` 拼接分片 arguments，ID/name 只保存一次。
-4. 保存非空 `finish_reason`；缺少 finish reason 的流标记为 incomplete。
-5. 迭代器抛错时抛出 `StreamInterruptedError`，其中只保留可识别的 partial result；
-   部分文本标记为 partial result。
+4. 保存非空的 `finish_reason`；响应结束时仍缺少该字段，则把 `complete` 设为 `false`。
+5. 迭代器抛错时抛出 `StreamInterruptedError`，并在异常的 `partial` 属性中保留已解析
+   内容。
 
 ## 运行结果
 
@@ -64,4 +64,4 @@ complete：true
 
 - 同时读取 `delta.content` 和 `delta.reasoning_content`。
 - 假设每一块都有 `choices`，会在只有 usage 的尾块报错。
-- 网络中断后，把已有文本标记为 partial result。
+- 网络中断后，从异常的 `partial` 属性读取已解析内容。

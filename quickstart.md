@@ -110,7 +110,7 @@ print(response.choices[0].message.content)
 
 ## 5. 常用参数
 
-| 参数 | Hosted API 用法 |
+| 参数 | 托管 API 用法 |
 |---|---|
 | `temperature` | `[0, 2]`；越高越随机。通常与 `top_p` 二选一调节。 |
 | `top_p` | `[0, 1]` 的核采样阈值。 |

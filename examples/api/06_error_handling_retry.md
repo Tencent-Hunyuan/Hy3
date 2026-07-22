@@ -35,8 +35,8 @@ response = call_with_retry(
 | SDK 连接错误/超时 | 是，有限 | 同上。 |
 | 其他状态 | 否 | 原样向上抛出，由调用方处理。 |
 
-`Retry-After` 支持秒数和 HTTP date；脚本原样采用该值，jitter 仅用于指数退避。若
-下一次等待会超过 `max_total_wait`，抛出 `RetryBudgetExceeded`。达到
+`Retry-After` 支持秒数和 HTTP date；脚本会将两种格式解析为等待秒数。jitter 只用于
+指数退避。若下一次等待会超过 `max_total_wait`，抛出 `RetryBudgetExceeded`。达到
 `max_attempts` 后抛出最后一个原始错误并结束循环。
 
 ## 运行结果
@@ -65,8 +65,8 @@ Transient HTTP 429; attempt 4/4 in 1.516s
 }
 ```
 
-之后两次复跑都在第一次请求成功，符合临时错误会自行恢复的特点。jitter 和模型文本
-每次都可能变化。持续收到 `429002/429003/429004/429005` 时，应检查
+之后两次复跑都在第一次请求成功。jitter 和模型文本每次都可能变化。持续收到
+`429002/429003/429004/429005` 时，应检查
 RPM/TPM/TPD/并发配置；增加重试只会延长等待。
 
 ## 容易踩坑
