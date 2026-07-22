@@ -1,0 +1,104 @@
+# ============================================================================
+# ms-swift SFT config for HYV3 LoRA Fine-tuning
+#
+# Usage:
+#   YAML_FILE=hy_v3_lora_sft.yaml bash sft_train.sh
+#
+# or directly:
+#   swift sft --config hy_v3_lora_sft.yaml
+#
+# Model: Tencent-Hunyuan/Hy3
+# Template: hy_v3 (natively supported in ms-swift 4.2.2)
+# Training method: LoRA (Low-Rank Adaptation)
+# ============================================================================
+
+# ---- Model Settings ----
+model: Tencent-Hunyuan/Hy3
+# model: /path/to/local/Hy3  # use local path if needed
+model_type: hy_v3
+template: hy_v3
+torch_dtype: bfloat16
+attn_impl: flash_attn
+# experts_impl: auto
+
+# ---- Training Method: LoRA ----
+tuner_backend: peft
+tuner_type: lora
+lora_rank: 8
+lora_alpha: 16
+lora_dropout: 0.05
+# target_modules:  # auto-detected if not specified
+#   - q_proj
+#   - k_proj
+#   - v_proj
+#   - o_proj
+#   - gate_proj
+#   - up_proj
+#   - down_proj
+# use_rslora: false
+# use_dora: false
+
+# ---- Dataset Settings ----
+# Option 1: Use dataset registered in dataset_info.json
+# dataset:
+#   - hy_v3_demo
+# dataset_dir: .
+
+# Option 2: Use local jsonl file directly (RECOMMENDED)
+dataset:
+  - ../data/example_data.jsonl
+
+max_length: 4096
+truncation_strategy: delete
+lazy_tokenize: true
+preprocess_num_proc: 4
+
+# ---- Output Settings ----
+output_dir: saves/hy_v3/lora/sft
+save_steps: 500
+save_strategy: steps
+save_total_limit: 3
+save_only_model: false
+logging_steps: 10
+report_to: none
+
+# ---- Training Hyperparameters ----
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 3.0e-4  # LoRA typically uses higher LR
+num_train_epochs: 3.0
+max_steps: -1
+warmup_ratio: 0.1
+lr_scheduler_type: cosine
+bf16: true
+
+# ---- DeepSpeed / Optimization ----
+deepspeed: ../deepspeed_support/ds_zero3_offload.json  # Use custom ZeRO-3 offload config
+gradient_checkpointing: true
+max_grad_norm: 1.0
+weight_decay: 0.1
+adam_beta1: 0.9
+adam_beta2: 0.95
+optim: adamw_torch
+
+# ---- Distributed Training ----
+ddp_timeout: 180000000
+# packing: true
+# packing_length: 4096
+
+# ---- Evaluation (optional) ----
+# eval_strategy: steps
+# eval_steps: 500
+# eval_dataset:
+#   - hy_v3_eval
+# per_device_eval_batch_size: 1
+
+# ---- Generation Settings ----
+max_new_tokens: 2048
+temperature: 0.7
+top_p: 0.9
+
+# ---- Misc ----
+seed: 42
+ignore_data_skip: true
+resume_from_checkpoint: null
