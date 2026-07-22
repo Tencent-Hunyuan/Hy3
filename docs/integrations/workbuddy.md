@@ -88,7 +88,9 @@ Hy3：Mixture-of-Experts（MoE）是一种神经网络架构，
 1. **API Key 安全**：Key 不要提交到仓库或公开发到 Issue。本地用环境变量或 WorkBuddy 的密钥管理存储。
 2. **推理模式**：Hy3 默认 `no_think` 直答模式。
 3. **工具调用**：Hy3 工具调用稳定，适合 Agent 场景（如让 WorkBuddy 自动读文件、跑命令）。
-4. **如果填了 Key 却报 401 怎么办**:检查api_key是否到期或者未打开，token不够
+4. **如果填了 Key 却报 401 怎么办**:检查 API Key 是否正确（确保是 sk-... 格式，前后无空格）
+确认 API Key 未过期且账户有余额/额度
+如果是 OpenRouter，检查 :free 模型是否还有免费调用次数
 ---
 
 ## 五、小结
