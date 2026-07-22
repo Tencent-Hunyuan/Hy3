@@ -22,6 +22,7 @@ class RepairingProvider:
     def __init__(self, repaired: dict[str, object]) -> None:
         self.repaired = repaired
         self.repair_calls = 0
+        self.failure_codes: list[str] = []
 
     async def analyze(self, task: TaskSpec) -> str:
         del task
@@ -34,7 +35,7 @@ class RepairingProvider:
         failure_code: str,
     ) -> dict[str, object]:
         del task, invalid_output
-        assert failure_code == "schema_or_reference_validation_failed"
+        self.failure_codes.append(failure_code)
         self.repair_calls += 1
         return self.repaired
 
@@ -48,6 +49,9 @@ async def test_invalid_provider_json_gets_exactly_one_controlled_repair() -> Non
 
     assert report.finding.first_divergence_step_id == "step-006-repeat-patch"
     assert provider.repair_calls == 1
+    assert provider.failure_codes == [
+        "schema_or_reference_validation_failed:invalid_json_or_schema"
+    ]
 
 
 class RecordingProvider(RepairingProvider):
@@ -132,6 +136,9 @@ async def test_unknown_output_reference_triggers_controlled_repair() -> None:
     report = await ReplayLabService(provider).analyze(task)
 
     assert provider.repair_calls == 1
+    assert provider.failure_codes == [
+        "schema_or_reference_validation_failed:unknown_reference"
+    ]
     assert report.finding.first_divergence_step_id == "step-006-repeat-patch"
 
 
@@ -141,8 +148,13 @@ async def test_future_evidence_cannot_justify_the_first_divergence() -> None:
     invalid = load_json("fixtures/coding-loop/provider-output.json")
     invalid["finding"]["evidence_ids"] = ["ev-second-failure"]
 
+    provider = RecordingProvider(invalid)
     with pytest.raises(ProviderOutputError, match="failed controlled repair"):
-        await ReplayLabService(RecordingProvider(invalid)).analyze(task)
+        await ReplayLabService(provider).analyze(task)
+
+    assert provider.failure_codes == [
+        "schema_or_reference_validation_failed:finding_evidence_after_divergence"
+    ]
 
 
 @pytest.mark.asyncio

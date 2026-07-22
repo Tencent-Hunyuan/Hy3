@@ -4,7 +4,7 @@ This table maps the Issue #4 and task-prompt requirements to reviewable implemen
 
 | Requirement | Implementation | Verification evidence | Status |
 | --- | --- | --- | --- |
-| Interactive application powered by Hy3 | [`App.tsx`](../frontend/src/App.tsx), [`main.py`](../backend/src/replaylab/main.py), [`hy3.py`](../backend/src/replaylab/hy3.py) | [two-fixture live report](../evals/results/live-fixtures-2026-07-22.md) | pass |
+| Interactive application powered by Hy3 | [`App.tsx`](../frontend/src/App.tsx), [`main.py`](../backend/src/replaylab/main.py), [`hy3.py`](../backend/src/replaylab/hy3.py) | [current 2/2 live report](../evals/results/live-fixtures-hy3-preview-2026-07-22.md), [live browser record](../evals/results/live-ui-demo-2026-07-22.md) | pass |
 | Hy3/deterministic responsibility boundary | strict structured provider plus local schemas, redaction, reference/ordering validation | [architecture](architecture.md), backend tests | pass |
 | Stable timeline and acceptance coverage | [`schemas.py`](../backend/src/replaylab/schemas.py), [`Timeline.tsx`](../frontend/src/components/Timeline.tsx), [`CoverageMatrix.tsx`](../frontend/src/components/CoverageMatrix.tsx) | normalization and component tests | pass |
 | Evidence-grounded first divergence | [`validation.py`](../backend/src/replaylab/validation.py), [`EvidenceDrawer.tsx`](../frontend/src/components/EvidenceDrawer.tsx) | historical live exact-step matches; reference-closure and evidence-timing tests | pass |
@@ -20,8 +20,8 @@ This table maps the Issue #4 and task-prompt requirements to reviewable implemen
 | Loading/stop-wait/retry/rate-limit/mobile UI | React state machine and responsive CSS; stop-wait is explicitly browser-side | component tests; 390×844 Playwright test | pass |
 | Simplified-Chinese product and polished visual system | Chinese UI/API/export copy, localized fixtures, graphite/ivory three-column dashboard | [ChatGPT Web reference](design/README.md), regenerated actual-UI frames, frontend/backend/E2E tests | pass |
 | Two auditable CodeBuddy collaborations | one scoped accessibility edit and one read-only mobile/error audit | [collaboration record](codebuddy-collaboration.md) | pass |
-| Real Hy3 E2E for both fixtures | `replaylab-live-fixtures` | historical v1 2/2 [recorded result](../evals/results/live-fixtures-2026-07-22.md); [current smoke](../evals/results/live-ui-smoke-2026-07-22.md) | historical gate passed; current full-annotation rerun pending |
-| Actual UI demo under two minutes | opt-in Playwright capture and GIF builder; 12-second, two-flow offline recording | [demo provenance](demo/README.md) | partial: actual UI and duration pass; live capture outstanding |
+| Real Hy3 E2E for both fixtures | `replaylab-live-fixtures` | current full-annotation `hy3-preview` [2/2 result](../evals/results/live-fixtures-hy3-preview-2026-07-22.md) | pass |
+| Actual UI demo under two minutes | opt-in live Playwright capture and GIF builder; two live analyses in 64,719 ms and a 12-second recording | [demo provenance](demo/README.md), [browser record](../evals/results/live-ui-demo-2026-07-22.md) | pass |
 | README English/Chinese, architecture, security, evaluation, verification | project documentation set | 108 local Markdown targets checked | pass |
 | Build/test/clean-install/browser gates | locked Python/npm dependencies and reproducible commands | [verification ledger](verification.md) | pass; npm vulnerability endpoint separately noted as unavailable |
 | Open source | repository Apache-2.0 license | [LICENSE](../../../LICENSE) | pass |

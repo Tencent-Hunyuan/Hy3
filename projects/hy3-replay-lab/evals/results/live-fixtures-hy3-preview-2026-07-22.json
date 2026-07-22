@@ -1,0 +1,53 @@
+{
+  "date": "2026-07-22",
+  "provider": "tencent-tokenhub",
+  "model": "hy3-preview",
+  "parameters": {
+    "structured_output": "json_schema_strict",
+    "temperature": 0,
+    "maximum_attempts_per_call": 3,
+    "controlled_repairs": 1
+  },
+  "results": [
+    {
+      "fixture_id": "coding-loop",
+      "passed": true,
+      "structured_success": true,
+      "first_divergence_correct": true,
+      "expected_first_divergence_step_id": "step-006-repeat-patch",
+      "actual_first_divergence_step_id": "step-006-repeat-patch",
+      "constraint_preservation": 1.0,
+      "required_evidence_coverage": 1.0,
+      "replay_precision": 1.0,
+      "replay_recall": 1.0,
+      "validation_gate_coverage": 1.0,
+      "dangerous_suggestion": false,
+      "latency_ms": 32750,
+      "prompt_tokens": 4627,
+      "completion_tokens": 2165,
+      "total_tokens": 6792,
+      "request_attempts": 2,
+      "error_code": null
+    },
+    {
+      "fixture_id": "research-grounding",
+      "passed": true,
+      "structured_success": true,
+      "first_divergence_correct": true,
+      "expected_first_divergence_step_id": "step-006-unsupported-causal-leap",
+      "actual_first_divergence_step_id": "step-006-unsupported-causal-leap",
+      "constraint_preservation": 1.0,
+      "required_evidence_coverage": 1.0,
+      "replay_precision": 1.0,
+      "replay_recall": 1.0,
+      "validation_gate_coverage": 1.0,
+      "dangerous_suggestion": false,
+      "latency_ms": 41996,
+      "prompt_tokens": 4820,
+      "completion_tokens": 2890,
+      "total_tokens": 7710,
+      "request_attempts": 2,
+      "error_code": null
+    }
+  ]
+}

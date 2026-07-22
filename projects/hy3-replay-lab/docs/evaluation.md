@@ -64,13 +64,28 @@ For the optional broad live batch:
 uv run replaylab-eval --mode live-hy3
 ```
 
-Live mode uses `temperature=0`, strict JSON Schema output, a 60-second provider request timeout, at most three attempts, at most one controlled repair, concurrency two, and a 90-second per-case ceiling. Use `--output-dir <directory>` when preserving an earlier same-day result; the default filename is date-based. The fixture command now passes only when every full-annotation metric is 1.0 and no dangerous suggestion is present.
+Both live commands use `temperature=0`, strict JSON Schema output, a 60-second provider request timeout, at most three attempts per call, and at most one controlled repair. The two-fixture command runs sequentially. Only the optional 12-case batch uses concurrency two and a 90-second per-case outer ceiling. Use `--output-dir <directory>` when preserving an earlier same-day result; the default filename is date-based. The fixture command passes only when every full-annotation metric is 1.0 and no dangerous suggestion is present.
 
 ## Recorded results: 2026-07-22
 
 ### Offline contract gate
 
 The [offline JSON](../evals/results/offline-golden-contract-2026-07-22.json) and [Markdown report](../evals/results/offline-golden-contract-2026-07-22.md) contain 12/12 structured outcomes and 100% contract metrics. This is the expected golden-contract result and is explicitly labeled as such.
+
+### Current full-annotation Hy3 Preview gate
+
+The current [fixture JSON](../evals/results/live-fixtures-hy3-preview-2026-07-22.json) and [Markdown report](../evals/results/live-fixtures-hy3-preview-2026-07-22.md) record real TokenHub `hy3-preview` calls after provider-schema compatibility and bounded repair hints were tightened:
+
+| Fixture | Gate | First divergence | Criteria | Evidence | Replay P/R | Gates | Unsafe | Latency | Tokens | Calls |
+| --- | --- | --- | ---: | ---: | ---: | ---: | --- | ---: | ---: | ---: |
+| `coding-loop` | pass | `step-006-repeat-patch` | 1.00 | 1.00 | 1.00/1.00 | 1.00 | no | 32,750 ms | 6,792 | 2 |
+| `research-grounding` | pass | `step-006-unsupported-causal-leap` | 1.00 | 1.00 | 1.00/1.00 | 1.00 | no | 41,996 ms | 7,710 | 2 |
+
+Both fixtures passed every full-annotation condition. The second call for each row was the single controlled repair, guided only by a bounded deterministic failure category; neither human annotations nor expected answers were sent to the provider.
+
+### Current live UI gate
+
+The [live UI record](../evals/results/live-ui-demo-2026-07-22.md) covers the same two public fixtures through the running React/FastAPI application. Playwright selected `在线 Hy3`, confirmed live metadata and both annotated divergence IDs, opened the required evidence, and downloaded JSON and Markdown. The two analysis requests completed in 64,719 ms combined, below the two-minute gate, and produced the [12-second live UI GIF](demo/replaylab-live-demo.gif).
 
 ### Historical two-fixture live gate (v1)
 
@@ -87,14 +102,14 @@ Both outputs passed strict schema, reference closure, deterministic replay invar
 
 The subsequent [broad live JSON](../evals/results/live-hy3-2026-07-22.json) and [Markdown report](../evals/results/live-hy3-2026-07-22.md) retained 2 structured successes and 10 bounded `provider_request_failed` outcomes under the hosted quota/transport available after the fixture run. Aggregate structured success and quality metrics are therefore 16.7%; total recorded usage is 3,296 tokens. This run is useful failure-path evidence, not a stable Hy3 quality estimate. It must be rerun with sufficient fresh quota before publishing comparative model claims.
 
-### Current live UI smoke
+### Earlier allocation failure retained
 
-The [UI smoke record](../evals/results/live-ui-smoke-2026-07-22.md) captures the latest availability check. Two explicit `coding-loop` analysis attempts returned the bounded product error. A read-only model-catalog probe returned HTTP 200, but no analysis report completed. The full-annotation two-fixture gate therefore remains outstanding.
+The earlier [UI smoke record](../evals/results/live-ui-smoke-2026-07-22.md) remains unchanged: two `coding-loop` attempts returned the bounded product error. A later status-only probe identified HTTP 402 / TokenHub business code `401008` for model `hy3`, meaning that service's free allowance was exhausted without postpaid access. The release gate did not hide or relabel those failures; it used the documented `HY3_MODEL` boundary to select the supported Hy3 Preview service with available allocation.
 
 ## Interpretation rules
 
 - Use the historical v1 run only as evidence that both fixtures once completed with the annotated first divergence; it is not current availability or a full-annotation result.
-- Require a fresh 2/2 full-annotation fixture run before treating the draft as release-ready.
+- Release readiness requires the current 2/2 full-annotation result and the recorded live UI flow; both are documented above.
 - Use the offline suite to detect schema/metric regressions, not to claim model accuracy.
-- Treat the broad live batch as failed/incomplete benchmark evidence until it completes under a declared quota and endpoint condition.
+- Treat the broad live batch as failed/incomplete comparative-benchmark evidence; it is not substituted for the required two-fixture gate.
 - Never infer success from an explanation alone; acceptance requires schema, references, replay invariants, and the annotation comparison.

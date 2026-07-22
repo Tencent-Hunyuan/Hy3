@@ -19,6 +19,25 @@ def task() -> TaskSpec:
     return TaskSpec.model_validate(load_json("fixtures/coding-loop/input.json"))
 
 
+def assert_provider_compatible_schema(node: object) -> None:
+    if isinstance(node, list):
+        for item in node:
+            assert_provider_compatible_schema(item)
+        return
+    if not isinstance(node, dict):
+        return
+    assert "$defs" not in node
+    assert "$ref" not in node
+    assert "title" not in node
+    assert "default" not in node
+    if node.get("type") == "object":
+        properties = node.get("properties", {})
+        assert node.get("additionalProperties") is False
+        assert node.get("required") == list(properties)
+    for value in node.values():
+        assert_provider_compatible_schema(value)
+
+
 def success_response(*, prompt_tokens: int = 100, completion_tokens: int = 40) -> httpx.Response:
     output = load_json("fixtures/coding-loop/provider-output.json")
     return httpx.Response(
@@ -72,11 +91,25 @@ async def test_hy3_uses_openai_compatible_structured_output_without_leaking_the_
     assert payload["model"] == "hy3"
     assert payload["response_format"]["type"] == "json_schema"
     assert payload["response_format"]["json_schema"]["strict"] is True
+    assert_provider_compatible_schema(
+        payload["response_format"]["json_schema"]["schema"]
+    )
     assert "untrusted data" in payload["messages"][0]["content"].lower()
     assert "hidden chain-of-thought" in payload["messages"][0]["content"].lower()
     assert "do not use later evidence to retroactively" in payload["messages"][0][
         "content"
     ].lower()
+    assert '"coverage"' in payload["messages"][0]["content"]
+    assert '"finding"' in payload["messages"][0]["content"]
+    assert '"replay_plan"' in payload["messages"][0]["content"]
+    assert "no extra top-level keys" in payload["messages"][0]["content"].lower()
+    assert "covered, violated, or unknown" in payload["messages"][0]["content"]
+    assert "stop_conditions item must be a validation_gate object" in payload[
+        "messages"
+    ][0]["content"]
+    assert "strictly after the first divergence" in payload["messages"][0]["content"]
+    assert "governing requirement evidence" in payload["messages"][0]["content"]
+    assert "delete it from finding.evidence_ids" in payload["messages"][0]["content"]
     assert provider.last_metrics.prompt_tokens == 100
     assert provider.last_metrics.completion_tokens == 40
     assert provider.last_metrics.total_tokens == 140
@@ -229,4 +262,5 @@ async def test_controlled_repair_redacts_and_bounds_invalid_output() -> None:
     body = json.dumps(request_bodies[0])
     assert "repair-secret" not in body
     assert "[REDACTED]" in body
+    assert "rewrite the object from scratch" in body.lower()
     assert len(body) < 100_000

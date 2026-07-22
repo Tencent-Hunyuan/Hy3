@@ -22,8 +22,11 @@ def main() -> None:
         type=Path,
         default=Path(__file__).resolve().parents[1] / "docs" / "demo",
     )
+    parser.add_argument("--mode", choices=("offline", "live"), default="offline")
     arguments = parser.parse_args()
-    frames_dir = arguments.demo_dir / "frames"
+    frames_dir = arguments.demo_dir / (
+        "frames" if arguments.mode == "offline" else "live-frames"
+    )
     source_paths = [frames_dir / name for name in FRAME_NAMES]
     missing = [path.name for path in source_paths if not path.is_file()]
     if missing:
@@ -41,7 +44,7 @@ def main() -> None:
                 resized.quantize(colors=192, method=Image.Quantize.MEDIANCUT)
             )
 
-    output = arguments.demo_dir / "replaylab-offline-demo.gif"
+    output = arguments.demo_dir / f"replaylab-{arguments.mode}-demo.gif"
     frames[0].save(
         output,
         save_all=True,

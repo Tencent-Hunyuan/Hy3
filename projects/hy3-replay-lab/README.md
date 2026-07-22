@@ -10,9 +10,9 @@ ReplayLab is deliberately not a code-review tool, incident-RCA system, project p
 
 ## 30-second preview
 
-![ReplayLab actual-UI offline demo](docs/demo/replaylab-offline-demo.gif)
+![ReplayLab live Hy3 actual-UI demo](docs/demo/replaylab-live-demo.gif)
 
-This 12-second GIF records the running Web UI for both public fixtures. It is an **offline fixture demo** backed by deterministic provider outputs, not a live-model recording. See the [demo provenance](docs/demo/README.md).
+This 12-second GIF records the running Web UI with **Live Hy3** selected. Both public fixtures were analyzed through TokenHub `hy3-preview` in 64,719 ms combined. A key-free [offline demo](docs/demo/replaylab-offline-demo.gif) remains separate. See the [demo provenance](docs/demo/README.md).
 
 Each report contains:
 
@@ -117,11 +117,13 @@ The 12 public cases cover two no-divergence controls, repeated loops, omitted co
 | 2026-07-22 run | Result | Interpretation |
 | --- | --- | --- |
 | Offline golden contract | 12/12 structured, all metric checks 100% | Validates schemas and scoring plumbing; **not** a model-quality claim |
+| Current full Hy3 Preview fixture gate | 2/2 passed the complete human annotation | Exact divergence, criteria, required evidence, replay precision/recall, and gate coverage were all 100%; unsafe-suggestion rate was zero |
+| Current live UI gate | Both flows passed; combined live analysis was 64,719 ms | UI metadata confirmed `mode=live`; evidence and JSON/Markdown downloads were exercised; a 12-second live GIF was generated |
 | Historical live Hy3 fixture v1 | 2/2 structurally accepted with exact first-divergence matches | `coding-loop`: 12,062 ms / 2,348 tokens; `research-grounding`: 72,893 ms / 2,460 tokens; the saved artifact predates the full-annotation gate |
 | Optional broad live Hy3 batch | 2/12 structured, aggregate quality metrics 16.7% | Ten requests ended as bounded provider failures under the available hosted quota/transport; retained as failures, not replaced or hidden |
-| Current live UI smoke | Two `coding-loop` attempts produced bounded provider failures | The model catalog probe returned HTTP 200, but analysis completion did not reproduce; the current two-fixture full gate is still pending |
+| Earlier `hy3` quota check | HTTP 402 / `401008` | Retained as an exhausted free allowance for that service; the current gate used configurable `hy3-preview`, also in the Hy3 family, without relabeling a failed run |
 
-See [evaluation methodology](docs/evaluation.md), the [offline report](evals/results/offline-golden-contract-2026-07-22.md), the [historical fixture report](evals/results/live-fixtures-2026-07-22.md), the [bounded broad report](evals/results/live-hy3-2026-07-22.md), and the [current UI smoke check](evals/results/live-ui-smoke-2026-07-22.md).
+See [evaluation methodology](docs/evaluation.md), the [current full fixture report](evals/results/live-fixtures-hy3-preview-2026-07-22.md), the [live UI gate](evals/results/live-ui-demo-2026-07-22.md), the [offline report](evals/results/offline-golden-contract-2026-07-22.md), the [historical fixture report](evals/results/live-fixtures-2026-07-22.md), and the [bounded broad report](evals/results/live-hy3-2026-07-22.md).
 
 ## Security and limitations
 
@@ -130,7 +132,7 @@ See [evaluation methodology](docs/evaluation.md), the [offline report](evals/res
 - Credential-like input and output are redacted before provider use and before report assembly. Bounded errors omit request IDs, raw prompts, complete inputs, authorization material, and upstream response bodies.
 - Provider output is capped at 256,000 bytes. Calls use a 10-second connect timeout, 60-second request timeout, at most three attempts, and `Retry-After`-aware retry only for network failures and 429/502/503/504. HTTP 400/401/403 fail immediately.
 - This local MVP has no login, cloud storage, repository access, background agent, or collaboration service. It does not prove that a model explanation is causally true; it proves that every accepted output satisfies the explicit schema, supplied references, and replay invariants.
-- The actual-UI GIF remains offline-labeled. Historical and current live evidence are separated in the [verification ledger](docs/verification.md); no offline response is relabeled as live.
+- Live and offline GIFs are stored and labeled separately. The [verification ledger](docs/verification.md) retains the earlier quota failure alongside the current 2/2 and live-browser pass; no offline response is relabeled as live.
 
 See the full [security model](docs/security.md), [verification ledger](docs/verification.md), [requirements mapping](docs/requirements-mapping.md), and [CodeBuddy collaboration record](docs/codebuddy-collaboration.md).
 

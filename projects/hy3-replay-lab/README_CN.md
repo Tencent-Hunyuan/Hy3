@@ -10,9 +10,9 @@ ReplayLab 不是代码评审、事故 RCA、项目规划、跨会话记忆或 Ag
 
 ## 30 秒预览
 
-![ReplayLab 真实 UI 离线演示](docs/demo/replaylab-offline-demo.gif)
+![ReplayLab 真实 Hy3 在线 UI 演示](docs/demo/replaylab-live-demo.gif)
 
-这段 12 秒 GIF 录制了运行中的中文 Web UI 和两条公开案例。它明确标记为**离线演示**，使用确定性的预置输出，不冒充在线模型录制。参见[演示来源说明](docs/demo/README.md)。
+这段 12 秒 GIF 录制了运行中的中文 Web UI。两条公开案例均通过 TokenHub `hy3-preview` 实时分析，界面明确显示**在线 Hy3**；两次分析合计 64,719 毫秒。无需 Key 的[离线演示](docs/demo/replaylab-offline-demo.gif)也单独保留。参见[演示来源说明](docs/demo/README.md)。
 
 想直接动手验证，可按[中文手动测试用例](docs/manual-test-cases-cn.md)依次测试两条离线场景、证据与导出、在线 Hy3、自定义导入、非法输入和移动端布局。
 
@@ -119,11 +119,13 @@ uv run replaylab-eval --mode live-hy3
 | 2026-07-22 运行 | 结果 | 含义 |
 | --- | --- | --- |
 | 离线 golden contract | 12/12 结构化成功，指标检查均为 100% | 只验证 Schema 和评分管道，**不是**模型质量结论 |
+| 当前完整 Hy3 Preview fixture 门禁 | 2/2 通过完整人工标注 | 两条案例的首个偏航、约束、必需证据、重放 precision/recall、验证门均为 100%，危险建议率为 0 |
+| 当前在线 UI 门禁 | 两条流程通过，在线分析合计 64,719 ms | 界面确认 `mode=live`，完成证据查看以及 JSON/Markdown 下载，生成 12 秒在线 GIF |
 | 历史 Hy3 fixture v1 | 2/2 通过结构校验并精确命中首个偏航点 | `coding-loop`：12,062 ms / 2,348 tokens；`research-grounding`：72,893 ms / 2,460 tokens；保存结果早于完整标注门禁 |
 | 可选的 12 条真实 Hy3 扩展批次 | 2/12 结构化成功，聚合质量指标 16.7% | 其余十条在当时可用 Hosted 配额/传输条件下以受限 provider 失败结束；全部保留为失败，不替换、不隐藏 |
-| 当前在线 UI 冒烟 | `coding-loop` 两次尝试均受限失败 | 模型目录探针返回 HTTP 200，但分析未能复现；当前两场景完整门禁仍待运行 |
+| 先前 `hy3` 配额检查 | HTTP 402 / `401008` | 如实保留为该服务免费额度耗尽；当前门禁使用同属 Hy3 的可配置 `hy3-preview`，没有把失败改写为成功 |
 
-详见[评测方法](docs/evaluation.md)、[离线报告](evals/results/offline-golden-contract-2026-07-22.md)、[历史 fixture 报告](evals/results/live-fixtures-2026-07-22.md)、[受限扩展报告](evals/results/live-hy3-2026-07-22.md)和[当前 UI 冒烟记录](evals/results/live-ui-smoke-2026-07-22.md)。
+详见[评测方法](docs/evaluation.md)、[当前完整 fixture 报告](evals/results/live-fixtures-hy3-preview-2026-07-22.md)、[在线界面门禁](evals/results/live-ui-demo-2026-07-22.md)、[离线报告](evals/results/offline-golden-contract-2026-07-22.md)、[历史 fixture 报告](evals/results/live-fixtures-2026-07-22.md)和[受限扩展报告](evals/results/live-hy3-2026-07-22.md)。
 
 ## 安全与限制
 
@@ -132,7 +134,7 @@ uv run replaylab-eval --mode live-hy3
 - 凭据形态的输入/输出在 provider 调用和报告装配前脱敏；受限错误不包含请求 ID、原始 prompt、完整输入、鉴权材料或上游响应体。
 - provider 输出最多 256,000 字节；连接超时 10 秒、请求超时 60 秒、最多三次尝试；只对网络错误及 429/502/503/504 有限重试并尊重 `Retry-After`，400/401/403 立即失败。
 - 本地 MVP 没有登录、云存储、仓库访问、后台 Agent 或协作服务。它不能证明模型解释在现实中必然具有因果性；它能保证被接受的结果满足显式 Schema、用户提供的引用和重放不变量。
-- 真实 UI GIF 保持离线标记；[验证台账](docs/verification.md)分别记录历史成功与当前失败，没有把离线响应改标为 live。
+- 在线与离线 GIF 分开保存并显示各自模式；[验证台账](docs/verification.md)保留先前配额失败，也记录当前 2/2 与真实在线界面通过，没有把离线响应改标为 live。
 
 更多信息见 [安全模型](docs/security.md)、[验证台账](docs/verification.md)、[需求映射](docs/requirements-mapping.md) 和 [CodeBuddy 协作记录](docs/codebuddy-collaboration.md)。
 

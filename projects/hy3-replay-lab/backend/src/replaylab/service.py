@@ -24,11 +24,11 @@ class ReplayLabService:
         raw_draft = await self._provider.analyze(safe_task)
         try:
             draft = _parse_and_validate(safe_task, raw_draft)
-        except (ProviderOutputError, OutputValidationError):
+        except (ProviderOutputError, OutputValidationError) as error:
             repaired = await self._provider.repair(
                 safe_task,
                 raw_draft,
-                "schema_or_reference_validation_failed",
+                _repair_failure_code(error),
             )
             try:
                 draft = _parse_and_validate(safe_task, repaired)
@@ -77,6 +77,37 @@ def _parse_and_validate(task: TaskSpec, raw_draft: Mapping[str, Any] | str) -> A
     draft = _parse_draft(raw_draft)
     validate_analysis_draft(task, draft)
     return draft
+
+
+def _repair_failure_code(error: ProviderOutputError | OutputValidationError) -> str:
+    prefix = "schema_or_reference_validation_failed:"
+    if isinstance(error, ProviderOutputError):
+        return prefix + "invalid_json_or_schema"
+
+    message = str(error)
+    if "unknown IDs" in message:
+        hint = "unknown_reference"
+    elif "references must be unique" in message:
+        hint = "duplicate_reference"
+    else:
+        hints = {
+            "coverage must contain every criterion once in input order": "coverage_order",
+            "finding evidence must exist at or before the first divergent step": (
+                "finding_evidence_after_divergence"
+            ),
+            "finding impact steps must follow the first divergent step": (
+                "impact_not_after_divergence"
+            ),
+            "finding impact steps must follow timeline order": "impact_order",
+            "replay must begin at the first divergent step": "rerun_origin",
+            "rerun steps must begin at the first divergent step": "rerun_origin",
+            "a divergence replay plan must contain an action": "missing_action",
+            "preserved steps must be the exact prefix before divergence": "preserved_prefix",
+            "rerun steps must follow timeline order": "rerun_order",
+            "replay actions must be numbered consecutively from one": "action_order",
+        }
+        hint = hints.get(message, "deterministic_rule_failed")
+    return prefix + hint
 
 
 def _stable_report_id(task: TaskSpec, draft: AnalysisDraft) -> str:

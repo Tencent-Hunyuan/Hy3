@@ -28,6 +28,7 @@ Model instructions are not the security boundary. Deterministic validation rejec
 - missing, duplicate, unknown, or out-of-order references;
 - coverage that does not exactly match criterion order;
 - a divergence that is not a supplied step;
+- finding evidence created after the claimed first divergence, and impact steps at or before it;
 - a preserved set that is not the exact prefix before the divergence;
 - a replay set that is not chronologically ordered;
 - findings, actions, validation gates, stop conditions, or prohibited actions without valid evidence;
@@ -61,6 +62,6 @@ The browser's stop-wait control aborts its own response handling. It does not pr
 - Redaction is defense in depth, not a universal data-loss-prevention engine. Do not import secrets or private traces unless their disclosure to the configured provider is authorized.
 - Evidence closure proves that a citation exists in the imported bundle, not that its real-world content is true.
 - Hy3 explanations remain probabilistic. Deterministic invariants constrain structure and provenance but cannot guarantee causal correctness.
-- The recorded UI GIF is an offline run. The historical v1 fixture run and latest bounded live failure are recorded separately; a current full-annotation fixture run and live UI recording remain outstanding.
+- Live and offline UI recordings are stored separately with visible mode labels. The earlier bounded `hy3` allocation failure, current 2/2 `hy3-preview` fixture gate, and live browser evidence are all retained without relabeling results.
 
 Security regression coverage is listed in [verification.md](verification.md), and the execution boundary is illustrated in [architecture.md](architecture.md).
