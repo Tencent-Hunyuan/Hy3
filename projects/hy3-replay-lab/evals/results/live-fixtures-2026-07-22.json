@@ -1,0 +1,40 @@
+{
+  "date": "2026-07-22",
+  "provider": "tencent-tokenhub",
+  "model": "hy3",
+  "gate_version": "legacy-first-divergence-v1",
+  "parameters": {
+    "structured_output": "json_schema_strict",
+    "temperature": 0,
+    "maximum_attempts_per_call": 3,
+    "controlled_repairs": 1
+  },
+  "results": [
+    {
+      "fixture_id": "coding-loop",
+      "passed": true,
+      "structured_success": true,
+      "expected_first_divergence_step_id": "step-006-repeat-patch",
+      "actual_first_divergence_step_id": "step-006-repeat-patch",
+      "latency_ms": 12062,
+      "prompt_tokens": 1395,
+      "completion_tokens": 953,
+      "total_tokens": 2348,
+      "request_attempts": 1,
+      "error_code": null
+    },
+    {
+      "fixture_id": "research-grounding",
+      "passed": true,
+      "structured_success": true,
+      "expected_first_divergence_step_id": "step-006-unsupported-causal-leap",
+      "actual_first_divergence_step_id": "step-006-unsupported-causal-leap",
+      "latency_ms": 72893,
+      "prompt_tokens": 1315,
+      "completion_tokens": 1145,
+      "total_tokens": 2460,
+      "request_attempts": 2,
+      "error_code": null
+    }
+  ]
+}
