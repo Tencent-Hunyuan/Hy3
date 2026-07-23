@@ -1,0 +1,7 @@
+date,region,product,units,revenue,channel
+2026-07-01,North,HyPad,12,14400,Direct
+2026-07-02,South,HyPad,8,9600,Partner
+2026-07-03,North,HyBook,5,7500,Direct
+2026-07-04,East,HyBook,7,10500,Online
+2026-07-05,South,HyPhone,15,18000,Online
+2026-07-06,East,HyPhone,,13200,Partner

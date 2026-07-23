@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hy3-data-analyst-mcp"
+version = "0.1.0"
+description = "A secure local MCP data-analysis server powered by Tencent Hy3"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.27,<2",
+    "openai>=1.0,<3",
+]
+
+[project.scripts]
+hy3-data-analyst = "hy3_data_analyst.server:main"
+
+[dependency-groups]
+dev = [
+    "pillow>=12.2,<13",
+    "pytest>=8.0,<10",
+    "pytest-asyncio>=0.24,<2",
+    "ruff>=0.12,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hy3_data_analyst"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
