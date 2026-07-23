@@ -1,10 +1,5 @@
-.cache/
-.huggingface/
-.modelscope/
-.ms*
-*.swp
-*.log
-.DS_Store
-Thumbs.db
+venv/
+.env
 __pycache__/
 *.pyc
+.DS_Store
