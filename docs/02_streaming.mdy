@@ -1,0 +1,69 @@
+# 示例 2：流式请求
+
+## 功能说明
+流式请求允许模型在生成完整响应之前，逐字、逐块地将内容返回给客户端。这能显著提升用户体验，让用户无需等待全部生成完毕即可开始阅读。
+
+## 适用场景
+- 聊天机器人（实时对话）
+- 内容生成（写作辅助）
+- 任何需要快速反馈的 AI 应用
+
+## 完整请求
+
+```python
+stream = client.chat.completions.create(
+    model=MODEL,
+    messages=[
+        {"role": "user", "content": "用一句话解释什么是 Docker，然后列举 3 个常用命令。"}
+    ],
+    temperature=0.7,
+    max_tokens=200,
+    stream=True,  # 开启流式
+    extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}}
+)
+
+for chunk in stream:
+    if chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+```
+
+## 响应解析
+
+| 字段 | 说明 |
+|------|------|
+| `chunk.choices[0].delta.content` | 当前流式块中的文本片段 |
+| `chunk.choices[0].finish_reason` | 在最后一个块中返回，表示结束原因 |
+| `chunk.id` | 当前块 ID（同一请求的所有块共享相同 ID） |
+| `chunk.model` | 使用的模型名称 |
+
+**关键指标：**
+- **首 Token 时延**：从请求发出到收到第一个内容块的时间，衡量"用户看到第一个字需要等多久"
+- **总耗时**：收到完整响应所需的总时间
+- **总块数**：响应被切分成的数据块数量
+
+## 示例输出
+
+```text
+Docker 是一个将应用及其依赖打包成轻量级、可移植容器的开源平台，实现"一次构建，到处运行"。
+
+常用命令：
+1. `docker run`：创建并启动容器
+2. `docker ps`：查看运行中的容器
+3. `docker build`：根据 Dockerfile 构建镜像
+
+📊 统计信息:
+   - 总块数: 36
+   - 首 Token 时延: 1.72 秒
+   - 总耗时: 2.84 秒
+   - 输出长度: 148 字符
+```
+
+## 与非流式的对比
+
+| 对比项 | 流式 | 非流式 |
+|--------|------|--------|
+| 首 Token 时延 | 短（1-3秒） | 长（需等完整生成） |
+| 用户感知等待 | 几乎即时 | 需等待数秒 |
+| 总耗时 | 略长 | 略短 |
+| 代码复杂度 | 稍复杂 | 简单 |
+| 推荐场景 | 实时交互 | 后台批处理 |
