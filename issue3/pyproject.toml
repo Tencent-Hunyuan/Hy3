@@ -1,0 +1,23 @@
+[project]
+name = "hy3-mcp-data-analysis"
+version = "0.1.0"
+description = "MCP server: CSV/JSON data analysis + web search + Hy3 reasoning"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "mcp>=1.6.0",
+  "openai>=1.40.0",
+  "pandas>=2.0.0",
+  "tavily-python>=0.5.0",
+  "ddgs>=9.0.0",
+]
+
+[project.scripts]
+hy3-mcp-data-analysis = "server:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["server"]
