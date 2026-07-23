@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "hy3-data-analyst": {
+      "type": "stdio",
+      "command": "/ABSOLUTE/PATH/TO/uvx",
+      "args": [
+        "--from",
+        "/ABSOLUTE/PATH/TO/Hy3/mcp-servers/hy3-data-analyst",
+        "hy3-data-analyst"
+      ],
+      "env": {
+        "HY3_API_BASE": "http://127.0.0.1:8000/v1",
+        "HY3_API_KEY": "EMPTY",
+        "HY3_MODEL": "hy3",
+        "HY3_DATA_DIR": "/ABSOLUTE/PATH/TO/DATA"
+      },
+      "description": "Profile local datasets and analyze them with Tencent Hy3"
+    }
+  }
+}
