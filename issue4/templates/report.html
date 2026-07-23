@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>__REPORT_TITLE__ — hy3-research</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --text: #1a1a2e;
+  --text-secondary: #555;
+  --border: #e0e0e0;
+  --accent: #2563eb;
+  --accent-light: #dbeafe;
+  --code-bg: #f5f5f5;
+  --ref-bg: #f8fafc;
+  --tooltip-bg: #1e293b;
+  --tooltip-text: #f1f5f9;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --text: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --border: #334155;
+    --accent: #60a5fa;
+    --accent-light: #1e3a5f;
+    --code-bg: #1e293b;
+    --ref-bg: #1e293b;
+    --tooltip-bg: #f1f5f9;
+    --tooltip-text: #0f172a;
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.8;
+  max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem;
+}
+/* Theme toggle */
+.theme-toggle {
+  position: fixed; top: 1rem; right: 1rem;
+  background: var(--code-bg); border: 1px solid var(--border);
+  border-radius: 2rem; padding: 0.4rem 0.8rem; cursor: pointer;
+  font-size: 0.85rem; color: var(--text-secondary);
+}
+h1 { font-size: 2rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.5rem; }
+h2 { font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: var(--accent); }
+h3 { font-size: 1.2rem; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+p { margin-bottom: 1rem; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { background: var(--code-bg); padding: 0.2em 0.4em; border-radius: 3px; font-size: 0.9em; }
+pre { background: var(--code-bg); padding: 1rem; border-radius: 6px; overflow-x: auto; margin: 1rem 0; }
+pre code { background: none; padding: 0; }
+blockquote { border-left: 3px solid var(--accent); padding: 0.5rem 1rem; margin: 1rem 0; color: var(--text-secondary); background: var(--accent-light); border-radius: 0 4px 4px 0; }
+/* Citation tooltip */
+.citation {
+  display: inline; position: relative; cursor: pointer;
+  color: var(--accent); font-weight: 600;
+}
+.citation .tooltip {
+  display: none; position: absolute; bottom: 1.5em; left: 50%;
+  transform: translateX(-50%);
+  background: var(--tooltip-bg); color: var(--tooltip-text);
+  padding: 0.5rem 0.75rem; border-radius: 4px;
+  font-size: 0.8rem; font-weight: normal;
+  white-space: nowrap; max-width: 400px; overflow: hidden;
+  text-overflow: ellipsis; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.citation:hover .tooltip { display: block; }
+/* References section */
+.references { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+.references ol { padding-left: 1.5rem; }
+.references li { margin-bottom: 0.5rem; font-size: 0.9rem; }
+.references li p { margin-bottom: 0.25rem; }
+.references li a { font-size: 0.8rem; color: var(--text-secondary); word-break: break-all; }
+/* Print */
+@media print {
+  .theme-toggle { display: none; }
+  body { max-width: 100%; padding: 0; font-size: 11pt; }
+}
+/* Responsive */
+@media (max-width: 600px) {
+  body { padding: 1rem; }
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.2rem; }
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" title="切换暗色/亮色模式">🌓 主题</button>
+
+<div id="content"></div>
+
+<script>
+const markdown = `__REPORT_MARKDOWN__`;
+
+// Process citation references to add tooltips and links
+function processCitations(md) {
+  // Replace [N] with clickable citation links
+  return md.replace(/\[(\d+)\]/g, (match, num) => {
+    return `<span class="citation">[${num}]
+      <span class="tooltip">引用 #${num}</span>
+    </span>`;
+  });
+}
+
+// Render markdown
+const processed = processCitations(markdown);
+document.getElementById('content').innerHTML = marked.parse(processed);
+
+// Make citation clicks scroll to references
+document.querySelectorAll('.citation').forEach(cit => {
+  cit.addEventListener('click', function() {
+    const num = this.textContent.match(/\d+/)[0];
+    const refs = document.querySelectorAll('.references li');
+    refs.forEach(li => {
+      if (li.textContent.trim().startsWith('[' + num + ']')) {
+        li.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        li.style.background = 'var(--accent-light)';
+        setTimeout(() => { li.style.background = ''; }, 2000);
+      }
+    });
+  });
+});
+
+// Theme toggle
+function toggleTheme() {
+  const root = document.documentElement;
+  if (root.style.getPropertyValue('--bg') === '#0f172a' ||
+      (root.style.getPropertyValue('--bg') === '' &&
+       window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    // Switch to light
+    root.style.setProperty('--bg', '#ffffff');
+    root.style.setProperty('--text', '#1a1a2e');
+    root.style.setProperty('--text-secondary', '#555');
+    root.style.setProperty('--border', '#e0e0e0');
+    root.style.setProperty('--accent', '#2563eb');
+    root.style.setProperty('--accent-light', '#dbeafe');
+    root.style.setProperty('--code-bg', '#f5f5f5');
+    root.style.setProperty('--ref-bg', '#f8fafc');
+    root.style.setProperty('--tooltip-bg', '#1e293b');
+    root.style.setProperty('--tooltip-text', '#f1f5f9');
+  } else {
+    root.style.setProperty('--bg', '#0f172a');
+    root.style.setProperty('--text', '#e2e8f0');
+    root.style.setProperty('--text-secondary', '#94a3b8');
+    root.style.setProperty('--border', '#334155');
+    root.style.setProperty('--accent', '#60a5fa');
+    root.style.setProperty('--accent-light', '#1e3a5f');
+    root.style.setProperty('--code-bg', '#1e293b');
+    root.style.setProperty('--ref-bg', '#1e293b');
+    root.style.setProperty('--tooltip-bg', '#f1f5f9');
+    root.style.setProperty('--tooltip-text', '#0f172a');
+  }
+}
+</script>
+
+</body>
+</html>

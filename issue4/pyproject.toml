@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "hy3-research"
+version = "0.1.0"
+description = "Deep research assistant powered by Hy3"
+requires-python = ">=3.8"
+dependencies = [
+    "openai>=1.0",
+    "requests>=2.25",
+    "beautifulsoup4>=4.9",
+    "tavily-python>=0.3",
+    "ddgs>=5.0",
+]
+
+[project.scripts]
+hy3research = "hy3research.__main__:main"

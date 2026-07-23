@@ -1,0 +1,6 @@
+openai>=1.0
+requests>=2.25
+beautifulsoup4>=4.9
+tavily-python>=0.3
+ddgs>=5.0
+pytest>=7.0
