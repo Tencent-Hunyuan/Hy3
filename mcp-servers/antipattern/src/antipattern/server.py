@@ -2,6 +2,7 @@
 
 import sys
 import logging
+from typing import AsyncGenerator
 
 # Windows stdio 编码修复：防止中文输出时 ascii/gbk codec 崩溃
 if sys.platform == "win32":
@@ -30,9 +31,15 @@ mcp = FastMCP(
 
 _llm = Hy3Client()
 
+# Per-tool temperature：创造性攻击 > 跨域嫁接 > 加码 > 裁判
+_TEMP_CHALLENGE = 0.9
+_TEMP_REMIX = 1.0
+_TEMP_STRESS = 0.65
+_TEMP_ESCALATE = 0.85
+
 
 @mcp.tool
-async def challenge_design(input: ChallengeInput) -> str:
+async def challenge_design(input: ChallengeInput) -> AsyncGenerator[str, None]:
     """对你的设计方案发起结构化叛逆挑战。
 
     输入你的方案（UI/架构/算法均可），AntiPattern 会：
@@ -56,27 +63,27 @@ async def challenge_design(input: ChallengeInput) -> str:
     )
 
     try:
-        result = await _llm.reason(system, user, deep=True)
+        for chunk in _llm.reason_stream(system, user, deep=True, temperature=_TEMP_CHALLENGE):
+            yield chunk
     except LLMError as e:
         logger.error("challenge_design failed: %s", e)
-        return f"[AntiPattern 开炮失败] {e}\n\n请检查 HY3_BASE_URL / HY3_API_KEY 配置后重试。"
+        yield f"\n\n[AntiPattern 开炮失败] {e}\n\n请检查 HY3_BASE_URL / HY3_API_KEY 配置后重试。"
+        return
 
-    # 附加策略元信息
+    # 流结束后追加策略元信息
     names = "、".join(f"{s.name}（强度{s.intensity}）" for s in strategies)
-    strategy_note = f"\n\n---\n*本次思维武器：{names}*"
-
-    return result + strategy_note
+    yield f"\n\n---\n*本次思维武器：{names}*"
 
 
 @mcp.tool
-async def remix_paradigm(input: RemixInput) -> str:
+async def remix_paradigm(input: RemixInput) -> AsyncGenerator[str, None]:
     """跨域嫁接：用一个完全不相关的领域重新解决你的问题。
 
     输入你的技术问题，AntiPattern 会从一个不相关领域
     （厨房、爵士乐、免疫系统、城市规划、军事参谋...）
     中提取核心原理，做结构化映射，给出迁移方案。
 
-    可以指定 foreign_domain，也可以留空让 AntiPattern 随机选。
+    可以指定 foreign_domain，也可以留空让 AntiPattern 自主选择最同构的领域。
     """
     system, user = build_remix_prompt(
         problem=input.problem,
@@ -85,14 +92,15 @@ async def remix_paradigm(input: RemixInput) -> str:
     )
 
     try:
-        return await _llm.reason(system, user, deep=True)
+        for chunk in _llm.reason_stream(system, user, deep=True, temperature=_TEMP_REMIX):
+            yield chunk
     except LLMError as e:
         logger.error("remix_paradigm failed: %s", e)
-        return f"[AntiPattern 开炮失败] {e}\n\n请检查 HY3_BASE_URL / HY3_API_KEY 配置后重试。"
+        yield f"\n\n[AntiPattern 开炮失败] {e}\n\n请检查 HY3_BASE_URL / HY3_API_KEY 配置后重试。"
 
 
 @mcp.tool
-async def stress_test_orthodoxy(input: StressInput) -> str:
+async def stress_test_orthodoxy(input: StressInput) -> AsyncGenerator[str, None]:
     """对一条'行业共识'发起极端反方论证，找出它的失效边界。
 
     输入你信奉的最佳实践（如"微服务优于单体"、"REST 比 GraphQL 好"），
@@ -105,14 +113,15 @@ async def stress_test_orthodoxy(input: StressInput) -> str:
     )
 
     try:
-        return await _llm.reason(system, user, deep=True)
+        for chunk in _llm.reason_stream(system, user, deep=True, temperature=_TEMP_STRESS):
+            yield chunk
     except LLMError as e:
         logger.error("stress_test_orthodoxy failed: %s", e)
-        return f"[AntiPattern 开炮失败] {e}\n\n请检查 HY3_BASE_URL / HY3_API_KEY 配置后重试。"
+        yield f"\n\n[AntiPattern 开炮失败] {e}\n\n请检查 HY3_BASE_URL / HY3_API_KEY 配置后重试。"
 
 
 @mcp.tool
-async def escalate(input: EscalateInput) -> str:
+async def escalate(input: EscalateInput) -> AsyncGenerator[str, None]:
     """在已有反方案基础上继续加码——'还不够疯'。
 
     把上一轮 AntiPattern 的完整输出传入，
@@ -126,10 +135,11 @@ async def escalate(input: EscalateInput) -> str:
     )
 
     try:
-        return await _llm.reason(system, user, deep=True)
+        for chunk in _llm.reason_stream(system, user, deep=True, temperature=_TEMP_ESCALATE):
+            yield chunk
     except LLMError as e:
         logger.error("escalate failed: %s", e)
-        return f"[AntiPattern 开炮失败] {e}\n\n请检查 HY3_BASE_URL / HY3_API_KEY 配置后重试。"
+        yield f"\n\n[AntiPattern 开炮失败] {e}\n\n请检查 HY3_BASE_URL / HY3_API_KEY 配置后重试。"
 
 
 def main():

@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import random
+from collections import deque
 
 from .models import Strategy
 from .ui import UI_STRATEGIES
 from .architecture import ARCH_STRATEGIES
 from .general import GENERAL_STRATEGIES
+
+# 跨调用去重：记住最近使用的策略 ID，避免连续调用抽到相同策略
+_RECENT_SIZE = 6
 
 
 class StrategyRegistry:
@@ -15,6 +19,7 @@ class StrategyRegistry:
 
     def __init__(self):
         self._strategies: list[Strategy] = []
+        self._recent: deque[str] = deque(maxlen=_RECENT_SIZE)
         self._register_all()
 
     def _register_all(self):
@@ -37,18 +42,39 @@ class StrategyRegistry:
 
         逻辑：
         1. 过滤 domain 匹配（general 策略对所有 domain 可用）
-        2. 排除已用过的（avoid escalate 重复）
+        2. 排除已用过的（avoid escalate 重复）+ 排除近期使用过的（跨调用去重）
         3. 加权：intensity 越接近目标值权重越高
         4. 去重 tags：尽量选不同思维角度
+        5. 如果过滤后候选不足，逐步放宽近期排除
         """
         exclude = set(exclude or [])
 
-        # 候选池：domain 匹配 + general
+        # 候选池：domain 匹配 + general，排除显式 exclude 和近期使用
+        recent_set = set(self._recent)
         candidates = [
             s for s in self._strategies
             if s.id not in exclude
+            and s.id not in recent_set
             and (s.domain == domain or s.domain == "general")
         ]
+
+        # 放宽策略：如果候选不足 count 条，只排除最近 3 条
+        if len(candidates) < count:
+            recent_relaxed = set(list(self._recent)[-3:])
+            candidates = [
+                s for s in self._strategies
+                if s.id not in exclude
+                and s.id not in recent_relaxed
+                and (s.domain == domain or s.domain == "general")
+            ]
+
+        # 仍然不足则全量（仅排除显式 exclude）
+        if not candidates:
+            candidates = [
+                s for s in self._strategies
+                if s.id not in exclude
+                and (s.domain == domain or s.domain == "general")
+            ]
 
         if not candidates:
             candidates = [s for s in self._strategies if s.id not in exclude]
@@ -82,6 +108,10 @@ class StrategyRegistry:
                     used_tags.update(s.tags)
                     pool.pop(i)
                     break
+
+        # 记录本次使用的策略 ID（跨调用去重）
+        for s in selected:
+            self._recent.append(s.id)
 
         return selected
 

@@ -1,6 +1,6 @@
 """challenge_design 的 prompt 组装。"""
 
-from ..persona import PERSONA_BASE, INTENSITY_MODIFIERS, CHALLENGE_OUTPUT_STRUCTURE
+from ..persona import PERSONA_BASE, INTENSITY_MODIFIERS, get_challenge_structure
 from ..strategies.registry import Strategy
 
 
@@ -22,6 +22,7 @@ def build_challenge_prompt(
 
     strategies_block = "\n".join(strategy_lines)
     intensity_note = INTENSITY_MODIFIERS.get(intensity, INTENSITY_MODIFIERS[3])
+    output_structure = get_challenge_structure(intensity)
 
     system = f"""{PERSONA_BASE}
 
@@ -37,7 +38,7 @@ def build_challenge_prompt(
 
 ---
 
-{CHALLENGE_OUTPUT_STRUCTURE}"""
+{output_structure}"""
 
     user = f"""以下是我要你挑战的设计方案：
 
