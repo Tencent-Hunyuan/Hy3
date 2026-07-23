@@ -72,8 +72,9 @@ results reproducible.
 
 Registered target IDs must match `^[a-z][a-z0-9._-]{0,63}$`. Discovered MCP tool
 names are evaluated against a project interoperability policy of 1 to 128 ASCII
-letters, digits, underscores, hyphens, or dots. These checks do not rewrite names;
-they emit evidence-backed findings so the original contract remains inspectable.
+letters, digits, underscores, hyphens, or dots. These checks do not rewrite names
+unless mandatory credential or personal-path redaction applies; they otherwise emit
+evidence-backed findings so the original contract remains inspectable.
 
 ### 6.1 Finding
 
@@ -148,7 +149,7 @@ Structured output:
 
 | Field | Type | Meaning |
 | --- | --- | --- |
-| `status` | `pass \| fail` | Whether deterministic inspection completed without error-level findings. |
+| `status` | `pass \| fail` | Whether deterministic inspection completed and produced a snapshot without error-level findings. |
 | `target_id` | string | Resolved registry target. |
 | `protocol_version` | string or null | Negotiated version, if initialization succeeded. |
 | `server_info` | object or null | Redacted MCP server information. |

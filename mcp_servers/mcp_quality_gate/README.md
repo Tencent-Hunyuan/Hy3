@@ -1,7 +1,7 @@
 # Hy3 MCP Quality Gate
 
-> Work in progress: the TypeScript stdio server and four-tool surface are runnable;
-> protocol inspection and semantic stages are tracked below.
+> Work in progress: the TypeScript stdio server, four-tool surface, target registry,
+> and bounded protocol inspector are runnable; semantic stages are tracked below.
 
 Hy3 MCP Quality Gate is a planned local stdio MCP server that inspects other
 pre-registered MCP servers. It combines deterministic protocol and JSON Schema
@@ -37,6 +37,47 @@ as a protocol fact.
 
 The complete inputs, outputs, invariants, and error behavior are defined in
 [`docs/design.md`](docs/design.md).
+
+## Current implementation status
+
+| Capability | Status |
+| --- | --- |
+| TypeScript package and local stdio transport | Available |
+| Four discoverable tools with documented input/output schemas | Available |
+| Strict target registry with allowed roots, environment policy, and hard limits | Available |
+| `mcpq_inspect_server` initialize and `tools/list` workflow | Available |
+| Timeout, malformed JSON, stdout pollution, output limit, and process cleanup controls | Available |
+| Deterministic contract scorecard | Planned for Stage 4 |
+| Hy3 semantic audit | Planned for Stage 5 |
+| Contract comparison and probe generation | Planned for Stage 6 |
+
+The three later-stage tools are deliberately registered so clients can validate the
+final public surface, but they currently return an explicit tool error instead of a
+fabricated result.
+
+## Development quickstart
+
+Requirements: Node.js 22 or newer and npm.
+
+```bash
+cd mcp_servers/mcp_quality_gate
+npm ci
+npm run typecheck
+npm run lint
+npm test
+```
+
+Build and start the quality gate over stdio:
+
+```bash
+npm run build
+MCPQ_TARGETS_FILE=/absolute/path/to/targets.json npm start
+```
+
+Start from [`examples/targets.example.json`](examples/targets.example.json), but
+keep the real registry private. Commands, cwd values, fixed environment variables,
+and process limits can only be supplied through that startup registry. MCP callers
+receive only a validated `target_id` parameter.
 
 ## Design principles
 
@@ -102,9 +143,9 @@ compatibility, and robustness families. See
 
 - **Stage 1 — design baseline:** product scope, tool contracts, threat model, rule
   catalogue, and target registry example.
-- **Stage 2 — runnable server:** TypeScript package, stdio server, four registered
-  tools, build, lint, and test commands.
-- **Stage 3 — protocol inspector:** safe target process management and
+- **Stage 2 — runnable server (complete):** TypeScript package, stdio server, four
+  registered tools, build, lint, and test commands.
+- **Stage 3 — protocol inspector (complete):** safe target process management and
   `mcpq_inspect_server`.
 - **Stage 4 — deterministic audit:** evidence model, rules, and reproducible score.
 - **Stage 5 — Hy3 audit:** validated structured semantic findings.

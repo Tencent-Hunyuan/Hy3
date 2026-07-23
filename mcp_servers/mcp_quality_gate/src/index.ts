@@ -4,10 +4,16 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 
 import { loadRuntimeConfig } from './config.js';
 import { createServer } from './server.js';
+import { TargetRegistry } from './target-registry.js';
+import { createToolHandlers } from './tools/inspection-handler.js';
 
 async function main(): Promise<void> {
-  loadRuntimeConfig();
-  const server = createServer();
+  const config = loadRuntimeConfig();
+  const registry =
+    config.targetsFile === undefined
+      ? TargetRegistry.empty()
+      : await TargetRegistry.load(config.targetsFile);
+  const server = createServer(createToolHandlers(registry));
   const transport = new StdioServerTransport();
 
   const shutdown = async (): Promise<void> => {

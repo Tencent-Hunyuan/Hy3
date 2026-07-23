@@ -1,7 +1,7 @@
 {
   "version": 1,
   "allowed_roots": [
-    "."
+    ".."
   ],
   "defaults": {
     "startup_timeout_ms": 5000,
@@ -18,20 +18,20 @@
       "description": "Synthetic conforming MCP server used for local quality-gate tests.",
       "command": "node",
       "args": [
-        "fixtures/good-server/dist/index.js"
+        "dist/fixtures/good-server/index.js"
       ],
-      "cwd": ".",
+      "cwd": "..",
       "env": {
         "NODE_ENV": "test"
       }
     },
-    "fixture-breaking-v2": {
-      "description": "Synthetic second contract version used for compatibility tests.",
+    "fixture-stdout-pollution": {
+      "description": "Synthetic invalid MCP server that writes a startup banner to stdout.",
       "command": "node",
       "args": [
-        "fixtures/breaking-change/v2/dist/index.js"
+        "dist/fixtures/stdout-pollution/index.js"
       ],
-      "cwd": ".",
+      "cwd": "..",
       "env": {
         "NODE_ENV": "test"
       },

@@ -12,6 +12,7 @@
     "hy3-mcp-quality-gate": "dist/src/index.js"
   },
   "files": [
+    "dist/fixtures",
     "dist/src",
     "docs",
     "examples",
