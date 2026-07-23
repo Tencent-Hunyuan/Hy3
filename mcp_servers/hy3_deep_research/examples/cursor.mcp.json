@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "hy3-deep-research": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/Tencent-Hunyuan/Hy3.git@rhinobird2026#subdirectory=mcp_servers/hy3_deep_research",
+        "hy3-deep-research"
+      ],
+      "env": {
+        "HY3_API_KEY": "<YOUR_HY3_API_KEY>",
+        "HY3_BASE_URL": "http://127.0.0.1:8000/v1",
+        "HY3_MODEL": "hy3",
+        "HY3_REASONING_EFFORT": "high"
+      }
+    }
+  }
+}
+

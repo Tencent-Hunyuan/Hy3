@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "hy3-deep-research": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/Tencent-Hunyuan/Hy3.git@rhinobird2026#subdirectory=mcp_servers/hy3_deep_research",
+        "hy3-deep-research"
+      ],
+      "env": {
+        "HY3_API_KEY": "${HY3_API_KEY}",
+        "HY3_BASE_URL": "${HY3_BASE_URL:-http://127.0.0.1:8000/v1}",
+        "HY3_MODEL": "${HY3_MODEL:-hy3}",
+        "HY3_REASONING_EFFORT": "${HY3_REASONING_EFFORT:-high}"
+      },
+      "description": "Search, evidence analysis, cited reports, and claim verification powered by Hy3"
+    }
+  }
+}
+
