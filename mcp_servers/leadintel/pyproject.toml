@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hy3-leadintel-mcp"
+version = "0.1.0"
+description = "Hy3-powered MCP server for B2B lead intelligence, grounded knowledge Q&A, and outreach planning."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "mcp>=1.8.0",
+]
+authors = [
+  { name = "Hanlin-YE" }
+]
+license = { text = "Apache-2.0" }
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "pillow>=10.0",
+]
+
+[project.scripts]
+hy3-leadintel-mcp = "hy3_leadintel_mcp.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

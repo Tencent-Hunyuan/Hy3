@@ -1,0 +1,278 @@
+{
+  "initialize": {
+    "meta": null,
+    "protocolVersion": "2025-11-25",
+    "capabilities": {
+      "experimental": {},
+      "logging": null,
+      "prompts": {
+        "listChanged": false
+      },
+      "resources": {
+        "subscribe": false,
+        "listChanged": false
+      },
+      "tools": {
+        "listChanged": false
+      },
+      "completions": null,
+      "tasks": null
+    },
+    "serverInfo": {
+      "name": "hy3-leadintel-mcp",
+      "title": null,
+      "version": "1.28.1",
+      "websiteUrl": null,
+      "icons": null
+    },
+    "instructions": null
+  },
+  "tools": {
+    "meta": null,
+    "nextCursor": null,
+    "tools": [
+      {
+        "name": "analyze_lead",
+        "title": null,
+        "description": "Analyze a B2B lead with Hy3 and return ICP fit, priority, buying signals, risks, and next action.",
+        "inputSchema": {
+          "properties": {
+            "company": {
+              "title": "Company",
+              "type": "string"
+            },
+            "industry": {
+              "default": "",
+              "title": "Industry",
+              "type": "string"
+            },
+            "website": {
+              "default": "",
+              "title": "Website",
+              "type": "string"
+            },
+            "notes": {
+              "default": "",
+              "title": "Notes",
+              "type": "string"
+            },
+            "product_context": {
+              "default": "",
+              "title": "Product Context",
+              "type": "string"
+            }
+          },
+          "required": [
+            "company"
+          ],
+          "title": "analyze_leadArguments",
+          "type": "object"
+        },
+        "outputSchema": {
+          "additionalProperties": true,
+          "title": "analyze_leadDictOutput",
+          "type": "object"
+        },
+        "icons": null,
+        "annotations": null,
+        "meta": null,
+        "execution": null
+      },
+      {
+        "name": "query_knowledge_base",
+        "title": null,
+        "description": "Search local product or market documents, then ask Hy3 to answer with grounded citations.",
+        "inputSchema": {
+          "properties": {
+            "question": {
+              "title": "Question",
+              "type": "string"
+            },
+            "docs_dir": {
+              "default": "examples/knowledge_base",
+              "title": "Docs Dir",
+              "type": "string"
+            },
+            "top_k": {
+              "default": 4,
+              "title": "Top K",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "question"
+          ],
+          "title": "query_knowledge_baseArguments",
+          "type": "object"
+        },
+        "outputSchema": {
+          "additionalProperties": true,
+          "title": "query_knowledge_baseDictOutput",
+          "type": "object"
+        },
+        "icons": null,
+        "annotations": null,
+        "meta": null,
+        "execution": null
+      },
+      {
+        "name": "generate_outreach_plan",
+        "title": null,
+        "description": "Generate a sales outreach plan with message copy, follow-up cadence, proof points, and CRM actions.",
+        "inputSchema": {
+          "properties": {
+            "company": {
+              "title": "Company",
+              "type": "string"
+            },
+            "objective": {
+              "title": "Objective",
+              "type": "string"
+            },
+            "channel": {
+              "default": "email",
+              "title": "Channel",
+              "type": "string"
+            },
+            "lead_context": {
+              "default": "",
+              "title": "Lead Context",
+              "type": "string"
+            },
+            "evidence": {
+              "default": "",
+              "title": "Evidence",
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "objective"
+          ],
+          "title": "generate_outreach_planArguments",
+          "type": "object"
+        },
+        "outputSchema": {
+          "additionalProperties": true,
+          "title": "generate_outreach_planDictOutput",
+          "type": "object"
+        },
+        "icons": null,
+        "annotations": null,
+        "meta": null,
+        "execution": null
+      },
+      {
+        "name": "batch_score_leads",
+        "title": null,
+        "description": "Read a local CSV or JSON lead list, score every lead, optionally export a JSON report, and summarize with Hy3.",
+        "inputSchema": {
+          "properties": {
+            "input_path": {
+              "title": "Input Path",
+              "type": "string"
+            },
+            "focus": {
+              "default": "",
+              "title": "Focus",
+              "type": "string"
+            },
+            "output_path": {
+              "default": "",
+              "title": "Output Path",
+              "type": "string"
+            }
+          },
+          "required": [
+            "input_path"
+          ],
+          "title": "batch_score_leadsArguments",
+          "type": "object"
+        },
+        "outputSchema": {
+          "additionalProperties": true,
+          "title": "batch_score_leadsDictOutput",
+          "type": "object"
+        },
+        "icons": null,
+        "annotations": null,
+        "meta": null,
+        "execution": null
+      },
+      {
+        "name": "hy3_leadintel_status",
+        "title": null,
+        "description": "Report server configuration, model name, mode, root directory, and available LeadIntel MCP tools.",
+        "inputSchema": {
+          "properties": {},
+          "title": "hy3_leadintel_statusArguments",
+          "type": "object"
+        },
+        "outputSchema": {
+          "additionalProperties": true,
+          "title": "hy3_leadintel_statusDictOutput",
+          "type": "object"
+        },
+        "icons": null,
+        "annotations": null,
+        "meta": null,
+        "execution": null
+      }
+    ]
+  },
+  "status": {
+    "meta": null,
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"server\": \"hy3-leadintel-mcp\",\n  \"root\": \"/ABS/PATH/TO/Hy3/mcp_servers/leadintel\",\n  \"model\": \"hy3\",\n  \"api_base\": \"http://127.0.0.1:8000/v1\",\n  \"api_key_present\": false,\n  \"mode\": \"offline\",\n  \"tools\": [\n    \"analyze_lead\",\n    \"query_knowledge_base\",\n    \"generate_outreach_plan\",\n    \"batch_score_leads\",\n    \"hy3_leadintel_status\"\n  ]\n}",
+        "annotations": null,
+        "meta": null
+      }
+    ],
+    "structuredContent": {
+      "server": "hy3-leadintel-mcp",
+      "root": "/ABS/PATH/TO/Hy3/mcp_servers/leadintel",
+      "model": "hy3",
+      "api_base": "http://127.0.0.1:8000/v1",
+      "api_key_present": false,
+      "mode": "offline",
+      "tools": [
+        "analyze_lead",
+        "query_knowledge_base",
+        "generate_outreach_plan",
+        "batch_score_leads",
+        "hy3_leadintel_status"
+      ]
+    },
+    "isError": false
+  },
+  "analyze_lead": {
+    "meta": null,
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"company\": \"Aurora Motion GmbH\",\n  \"score\": 100,\n  \"priority\": \"P0\",\n  \"positive_signals\": [\n    \"automation\",\n    \"export\",\n    \"manufacturing\",\n    \"motor\",\n    \"rfq\"\n  ],\n  \"risks\": [],\n  \"hy3_analysis\": \"[OFFLINE HY3 MOCK] Drafted a lead intelligence. Set HY3_API_KEY and HY3_API_BASE to call a real Hy3 OpenAI-compatible endpoint.\",\n  \"hy3_mode\": \"offline\",\n  \"model\": \"hy3\"\n}",
+        "annotations": null,
+        "meta": null
+      }
+    ],
+    "structuredContent": {
+      "company": "Aurora Motion GmbH",
+      "score": 100,
+      "priority": "P0",
+      "positive_signals": [
+        "automation",
+        "export",
+        "manufacturing",
+        "motor",
+        "rfq"
+      ],
+      "risks": [],
+      "hy3_analysis": "[OFFLINE HY3 MOCK] Drafted a lead intelligence. Set HY3_API_KEY and HY3_API_BASE to call a real Hy3 OpenAI-compatible endpoint.",
+      "hy3_mode": "offline",
+      "model": "hy3"
+    },
+    "isError": false
+  }
+}

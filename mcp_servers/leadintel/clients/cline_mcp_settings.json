@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "hy3-leadintel": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "/ABS/PATH/TO/Hy3/mcp_servers/leadintel",
+        "hy3-leadintel-mcp"
+      ],
+      "env": {
+        "HY3_API_BASE": "http://127.0.0.1:8000/v1",
+        "HY3_API_KEY": "${HY3_API_KEY}",
+        "HY3_MODEL": "hy3",
+        "HY3_LEADINTEL_ROOT": "/ABS/PATH/TO/Hy3/mcp_servers/leadintel"
+      }
+    }
+  }
+}
