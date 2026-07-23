@@ -1,0 +1,14 @@
+[
+  {"user_id": 1, "name": "张三", "age": 28, "city": "北京", "score": 92.5, "level": "A", "join_date": "2025-03-15"},
+  {"user_id": 2, "name": "李四", "age": 35, "city": "上海", "score": 78.3, "level": "B", "join_date": "2025-06-20"},
+  {"user_id": 3, "name": "王五", "age": 22, "city": "广州", "score": 85.0, "level": "B", "join_date": "2026-01-10"},
+  {"user_id": 4, "name": "赵六", "age": 42, "city": "深圳", "score": 95.8, "level": "A", "join_date": "2024-11-05"},
+  {"user_id": 5, "name": "孙七", "age": 31, "city": "北京", "score": 67.2, "level": "C", "join_date": "2026-04-18"},
+  {"user_id": 6, "name": "周八", "age": 26, "city": "上海", "score": 88.9, "level": "B", "join_date": "2025-09-30"},
+  {"user_id": 7, "name": "吴九", "age": 38, "city": "广州", "score": 73.5, "level": "C", "join_date": "2025-01-22"},
+  {"user_id": 8, "name": "郑十", "age": 29, "city": "深圳", "score": 91.0, "level": "A", "join_date": "2026-02-14"},
+  {"user_id": 9, "name": "冯十一", "age": 45, "city": "北京", "score": 62.8, "level": "D", "join_date": "2024-07-01"},
+  {"user_id": 10, "name": "陈十二", "age": 33, "city": "上海", "score": 81.4, "level": "B", "join_date": "2025-12-25"},
+  {"user_id": 11, "name": "褚十三", "age": 24, "city": "广州", "score": null, "level": null, "join_date": "2026-06-01"},
+  {"user_id": 12, "name": "卫十四", "age": 40, "city": "深圳", "score": 76.0, "level": "C", "join_date": "2025-05-15"}
+]
