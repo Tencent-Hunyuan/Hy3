@@ -1,0 +1,8 @@
+.env
+coverage/
+dist/
+node_modules/
+*.tgz
+targets.json
+*.raw.log
+*.raw.json

@@ -1,16 +1,16 @@
 # Hy3 MCP Quality Gate
 
-> Design baseline for a Hy3-powered quality gate for local MCP servers.
+> Work in progress: the TypeScript stdio server and four-tool surface are runnable;
+> protocol inspection and semantic stages are tracked below.
 
 Hy3 MCP Quality Gate is a planned local stdio MCP server that inspects other
 pre-registered MCP servers. It combines deterministic protocol and JSON Schema
 checks with Hy3 semantic review to produce evidence-backed findings, compatibility
 reports, and safe test cases.
 
-This directory currently contains the Stage 1 product contract. Runtime code is
-intentionally deferred to later stages; the documents here define what the
-implementation must satisfy and must not be read as claims that the server is
-already operational.
+The Stage 1 product contract remains authoritative for the implementation. Current
+runtime status is stated explicitly in the delivery roadmap so incomplete tools are
+not presented as operational.
 
 ## Problem
 
