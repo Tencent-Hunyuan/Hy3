@@ -130,6 +130,24 @@ A normalized snapshot contains:
 Snapshots never contain environment values, credentials, raw personal paths, or
 unbounded stderr.
 
+### 6.4 Hy3 semantic review boundary
+
+Hy3 semantic review is a bounded advisory stage, not a protocol validator or
+runtime security monitor. The quality gate sends only the normalized contract
+snapshot needed to assess documentation and annotation semantics. The prompt
+defines a fixed semantic rule allowlist, marks all contract text as untrusted, and
+requires one strict JSON object.
+
+The local validator accepts at most 32 findings. It rejects unknown fields, unknown
+rule IDs, invalid confidence values, nonexistent JSON Pointers, and tool names that
+do not match their evidence path. Severity, target ID, evidence excerpts, and model
+metadata are supplied or verified locally. One bounded repair request is permitted
+for invalid model output; a second invalid result safely degrades the audit.
+
+Hy3 findings remain separate from deterministic findings. They cannot change the
+numeric score, convert a deterministic failure into a pass, authorize tool
+execution, or expose hidden reasoning.
+
 ## 7. Public MCP tool contracts
 
 ### 7.1 `mcpq_inspect_server`
@@ -171,7 +189,7 @@ Input:
 | Field | Type | Required | Constraints |
 | --- | --- | --- | --- |
 | `target_id` | string | yes | Must resolve in the registry. |
-| `reasoning_effort` | `no_think \| low \| high` | no | Default `high`. |
+| `reasoning_effort` | `no_think \| low \| high` | no | Uses the server's `HY3_REASONING_EFFORT` setting when omitted; that setting defaults to `high`. |
 | `include_hy3` | boolean | no | Default `true`; false enables deterministic offline audit. |
 | `minimum_severity` | `info \| warning \| error \| critical` | no | Default `info`; presentation filter only. |
 
@@ -190,7 +208,7 @@ Structured output:
 | `deterministic_findings` | Finding[] | Rule-engine results. |
 | `hy3_findings` | Finding[] | Validated semantic results. |
 | `summary` | string | Concise report; states when Hy3 was skipped or unavailable. |
-| `model_metadata` | object or null | Model name, effort, latency, and usage when available; no hidden reasoning. |
+| `model_metadata` | object or null | Validated provider (`hy3`), configured model name, effort, total latency, attempt count, and nullable token usage; no hidden reasoning. |
 
 ### 7.3 `mcpq_compare_contracts`
 
@@ -205,7 +223,7 @@ Input:
 | `baseline_target_id` | string | yes | Existing registry target. |
 | `current_target_id` | string | yes | Existing registry target; different from baseline. |
 | `include_non_breaking` | boolean | no | Default `true`. |
-| `reasoning_effort` | `no_think \| low \| high` | no | Default `high`. |
+| `reasoning_effort` | `no_think \| low \| high` | no | Uses the server's `HY3_REASONING_EFFORT` setting when omitted; that setting defaults to `high`. |
 | `include_hy3` | boolean | no | Default `true`. |
 
 Structured output:
@@ -236,7 +254,7 @@ Input:
 | `tool_name` | string | yes | Must exist in the discovered tool list. |
 | `profile` | `normal \| boundary \| error \| adversarial \| balanced` | no | Default `balanced`. |
 | `max_cases` | integer | no | `1..30`, default `12`. |
-| `reasoning_effort` | `no_think \| low \| high` | no | Default `high`. |
+| `reasoning_effort` | `no_think \| low \| high` | no | Uses the server's `HY3_REASONING_EFFORT` setting when omitted; that setting defaults to `high`. |
 
 Structured output:
 

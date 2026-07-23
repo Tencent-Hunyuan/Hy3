@@ -1,4 +1,6 @@
 import type { ResolvedTarget } from '../target-registry.js';
+import type { SemanticReviewer } from '../hy3/reviewer.js';
+import { Hy3ReviewError } from '../hy3/errors.js';
 import {
   auditOutputSchema,
   type AuditInput,
@@ -24,6 +26,7 @@ const SEVERITY_RANK: Record<Severity, number> = {
 export async function auditTarget(
   target: ResolvedTarget,
   input: AuditInput,
+  semanticReviewer?: SemanticReviewer,
 ): Promise<AuditOutput> {
   const inspection = await inspectTarget(target, {
     target_id: input.target_id,
@@ -39,13 +42,41 @@ export async function auditTarget(
       finding.severity === 'error' || finding.severity === 'critical',
   );
   const inspectionComplete = inspection.snapshot_hash !== null;
+  let semanticReview:
+    | Awaited<ReturnType<SemanticReviewer['review']>>
+    | undefined;
+  let semanticFailureCode: string | undefined;
+  if (input.include_hy3 && inspectionComplete) {
+    if (semanticReviewer === undefined) {
+      semanticFailureCode = 'not_configured';
+    } else {
+      try {
+        semanticReview = await semanticReviewer.review(
+          inspection,
+          input.reasoning_effort,
+        );
+      } catch (error: unknown) {
+        semanticFailureCode =
+          error instanceof Hy3ReviewError ? error.code : 'unavailable';
+      }
+    }
+  } else if (input.include_hy3) {
+    semanticFailureCode = 'inspection_incomplete';
+  }
+
   const status: AuditOutput['status'] =
     !inspectionComplete || hasBlockingFinding
       ? 'fail'
-      : input.include_hy3
+      : input.include_hy3 && semanticReview === undefined
         ? 'partial'
         : 'pass';
   const visibleFindings = deterministicFindings.filter(
+    (finding) =>
+      SEVERITY_RANK[finding.severity] >=
+      SEVERITY_RANK[input.minimum_severity],
+  );
+  const semanticFindings = semanticReview?.findings ?? [];
+  const visibleSemanticFindings = semanticFindings.filter(
     (finding) =>
       SEVERITY_RANK[finding.severity] >=
       SEVERITY_RANK[input.minimum_severity],
@@ -55,13 +86,20 @@ export async function auditTarget(
     inspectionComplete
       ? `Deterministic audit completed with score ${scoring.scorecard.overall}/100 and ${deterministicFindings.length} finding(s).`
       : 'Inspection did not produce a contract snapshot; deterministic contract rules could not run.',
-    input.include_hy3
-      ? `Hy3 semantic review was requested with ${input.reasoning_effort} effort but is unavailable until Stage 5.`
-      : 'Hy3 semantic review was explicitly skipped.',
+    semanticReview === undefined
+      ? input.include_hy3
+        ? `Hy3 semantic review did not complete (${semanticFailureCode ?? 'unavailable'}).`
+        : 'Hy3 semantic review was explicitly skipped.'
+      : `Hy3 semantic review completed with ${semanticFindings.length} finding(s). Hy3 summary: ${semanticReview.summary}`,
   ];
-  if (visibleFindings.length !== deterministicFindings.length) {
+  const hiddenFindingCount =
+    deterministicFindings.length -
+    visibleFindings.length +
+    semanticFindings.length -
+    visibleSemanticFindings.length;
+  if (hiddenFindingCount > 0) {
     summaryParts.push(
-      `${deterministicFindings.length - visibleFindings.length} finding(s) were hidden by the presentation severity filter; scoring is unchanged.`,
+      `${hiddenFindingCount} finding(s) were hidden by the presentation severity filter; scoring is unchanged.`,
     );
   }
 
@@ -72,11 +110,14 @@ export async function auditTarget(
     catalog_version: RULE_CATALOG_VERSION,
     scoring_policy_version: SCORING_POLICY_VERSION,
     critical_cap_applied: scoring.criticalCapApplied,
-    scorecard: scoring.scorecard,
+    scorecard: {
+      ...scoring.scorecard,
+      hy3_reviewed: semanticReview !== undefined,
+    },
     deductions: scoring.deductions,
     deterministic_findings: visibleFindings,
-    hy3_findings: [],
+    hy3_findings: visibleSemanticFindings,
     summary: summaryParts.join(' '),
-    model_metadata: null,
+    model_metadata: semanticReview?.metadata ?? null,
   });
 }

@@ -3,6 +3,8 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
 import { loadRuntimeConfig } from './config.js';
+import { Hy3ChatClient } from './hy3/client.js';
+import { Hy3SemanticReviewer } from './hy3/reviewer.js';
 import { createServer } from './server.js';
 import { TargetRegistry } from './target-registry.js';
 import { createToolHandlers } from './tools/inspection-handler.js';
@@ -13,7 +15,22 @@ async function main(): Promise<void> {
     config.targetsFile === undefined
       ? TargetRegistry.empty()
       : await TargetRegistry.load(config.targetsFile);
-  const server = createServer(createToolHandlers(registry));
+  const apiKey = process.env.HY3_API_KEY;
+  const semanticReviewer =
+    config.hy3.apiKeyPresent && apiKey !== undefined
+      ? new Hy3SemanticReviewer(
+          new Hy3ChatClient({
+            apiKey,
+            baseUrl: config.hy3.baseUrl,
+            model: config.hy3.model,
+            timeoutMs: config.hy3.timeoutMs,
+          }),
+          config.hy3.reasoningEffort,
+        )
+      : undefined;
+  const server = createServer(
+    createToolHandlers(registry, semanticReviewer),
+  );
   const transport = new StdioServerTransport();
 
   const shutdown = async (): Promise<void> => {
@@ -32,7 +49,7 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
-  const message = error instanceof Error ? error.message : 'unknown startup error';
-  console.error(`Hy3 MCP Quality Gate failed: ${message}`);
+  void error;
+  console.error('Hy3 MCP Quality Gate failed during startup');
   process.exitCode = 1;
 });

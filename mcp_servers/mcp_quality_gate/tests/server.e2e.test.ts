@@ -3,7 +3,14 @@ import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
+import { Hy3ChatClient } from '../src/hy3/client.js';
+import { Hy3SemanticReviewer } from '../src/hy3/reviewer.js';
+import { createServer } from '../src/server.js';
+import { TargetRegistry } from '../src/target-registry.js';
+import { createToolHandlers } from '../src/tools/inspection-handler.js';
 
 const serverEntry = resolve(process.cwd(), 'dist/src/index.js');
 const exampleRegistry = resolve(process.cwd(), 'examples/targets.example.json');
@@ -164,6 +171,130 @@ describe('stdio server', () => {
       );
     } finally {
       await client.close();
+    }
+  });
+
+  it('calls Hy3 through the complete MCP audit chain', async () => {
+    let authorization = '';
+    let requestBody: Record<string, unknown> | undefined;
+    const fetchImplementation = (async (
+      _input: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      authorization =
+        new Headers(init?.headers).get('authorization') ?? '';
+      requestBody = JSON.parse(String(init?.body)) as Record<
+        string,
+        unknown
+      >;
+      return new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  findings: [
+                    {
+                      rule_id: 'DOC-003',
+                      message:
+                        'The synthetic echo description leaves the output identity slightly ambiguous.',
+                      suggestion:
+                        'Clarify that the returned text is exactly the provided input text.',
+                      tool_name: 'fixture_echo',
+                      evidence_path: '/tools/0/description',
+                      confidence: 0.8,
+                    },
+                  ],
+                  summary:
+                    'One evidence-backed semantic issue was identified.',
+                }),
+                reasoning_content:
+                  'This internal field must never reach the MCP result.',
+              },
+            },
+          ],
+          usage: {
+            prompt_tokens: 40,
+            completion_tokens: 20,
+            total_tokens: 60,
+          },
+        }),
+        { status: 200 },
+      );
+    }) as typeof fetch;
+    const registry = await TargetRegistry.load(exampleRegistry);
+    const reviewer = new Hy3SemanticReviewer(
+      new Hy3ChatClient(
+        {
+          apiKey: 'synthetic-e2e-value',
+          baseUrl: 'http://127.0.0.1:8000/v1',
+          model: 'hy3-e2e',
+          timeoutMs: 5000,
+        },
+        fetchImplementation,
+      ),
+      'low',
+    );
+    const qualityGate = createServer(
+      createToolHandlers(registry, reviewer),
+    );
+    const client = new Client({ name: 'quality-gate-test', version: '0.1.0' });
+    const [clientTransport, serverTransport] =
+      InMemoryTransport.createLinkedPair();
+
+    try {
+      await qualityGate.connect(serverTransport);
+      await client.connect(clientTransport);
+      const result = await client.callTool({
+        name: 'mcpq_audit_contracts',
+        arguments: {
+          target_id: 'fixture-good',
+          include_hy3: true,
+        },
+      });
+      const content = result.structuredContent as
+        | {
+            status: string;
+            scorecard: { overall: number; hy3_reviewed: boolean };
+            hy3_findings: Array<{
+              rule_id: string;
+              source: string;
+              confidence: number;
+            }>;
+            model_metadata: {
+              model: string;
+              reasoning_effort: string;
+              attempts: number;
+            } | null;
+          }
+        | undefined;
+
+      assert.equal(result.isError, undefined);
+      assert.ok(content);
+      assert.equal(content.status, 'pass');
+      assert.equal(content.scorecard.overall, 100);
+      assert.equal(content.scorecard.hy3_reviewed, true);
+      assert.equal(content.hy3_findings[0]?.rule_id, 'DOC-003');
+      assert.equal(content.hy3_findings[0]?.source, 'hy3');
+      assert.equal(content.hy3_findings[0]?.confidence, 0.8);
+      assert.equal(content.model_metadata?.model, 'hy3-e2e');
+      assert.equal(content.model_metadata?.reasoning_effort, 'low');
+      assert.equal(content.model_metadata?.attempts, 1);
+      assert.equal(authorization, 'Bearer synthetic-e2e-value');
+      assert.deepEqual(requestBody?.chat_template_kwargs, {
+        reasoning_effort: 'low',
+      });
+      assert.doesNotMatch(
+        JSON.stringify(content),
+        /internal field must never reach/,
+      );
+      assert.doesNotMatch(
+        JSON.stringify(content),
+        /synthetic-e2e-value/,
+      );
+    } finally {
+      await client.close();
+      await qualityGate.close();
     }
   });
 });

@@ -107,17 +107,28 @@ An operator must not be able to bypass this policy from an MCP tool call.
 ## 6. Data flow to Hy3
 
 Only the minimum normalized contract needed for semantic review is sent to Hy3.
+This is an outbound HTTP(S) request to the operator-configured
+`HY3_BASE_URL`; it is separate from the MCP stdio transport and from target-server
+inspection. Endpoint URLs containing credentials, query strings, fragments, or
+non-HTTP(S) schemes are rejected.
+
 Before transmission:
 
 1. remove environment values, absolute cwd, raw stderr, and process metadata;
 2. redact credential-like text and personal path prefixes;
-3. cap tools, fields, descriptions, and total serialized characters;
-4. wrap target content as untrusted data with a variable-length delimiter;
-5. request a strict structured result without hidden reasoning;
-6. validate locally and permit at most one bounded repair attempt.
+3. reject remaining credential-like values during a preflight scan;
+4. cap the request to 64 tools, 2,000 fields, depth 32, 64 KiB of normalized
+   context, and bounded title and description lengths;
+5. wrap target content as untrusted data with a random variable-length delimiter;
+6. request a strict structured result without hidden reasoning;
+7. validate rule IDs, fields, confidence, tool identity, and JSON Pointer evidence
+   locally;
+8. permit at most one bounded repair attempt.
 
 Provider responses never override deterministic findings, scoring, process policy,
-or execution permissions.
+or execution permissions. The response body is capped at 256 KiB, the complete
+request uses a fixed deadline, and provider bodies or credentials are never copied
+into public errors.
 
 ## 7. Logging and artifacts
 
@@ -149,7 +160,7 @@ The following require a new threat-model review:
 - executing target tools;
 - accepting target commands or registry paths from a caller;
 - automatic patch application;
-- network or HTTP transport;
+- inbound MCP network or HTTP transport (the quality gate remains stdio-only);
 - remote target discovery;
 - persistent report databases;
 - CI credentials or repository write access;

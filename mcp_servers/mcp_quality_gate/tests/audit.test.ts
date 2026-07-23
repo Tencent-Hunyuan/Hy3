@@ -3,6 +3,11 @@ import { rm } from 'node:fs/promises';
 import { afterEach, describe, it } from 'node:test';
 
 import { auditTarget } from '../src/audit/audit.js';
+import { Hy3ReviewError } from '../src/hy3/errors.js';
+import type {
+  SemanticReviewer,
+  SemanticReviewResult,
+} from '../src/hy3/reviewer.js';
 import { TargetRegistry } from '../src/target-registry.js';
 import type { AuditInput } from '../src/tool-contracts.js';
 import { writeTestRegistry } from './helpers/registry.js';
@@ -36,6 +41,41 @@ function auditInput(
     include_hy3: false,
     minimum_severity: 'info',
     ...overrides,
+  };
+}
+
+function successfulSemanticReview(targetId: string): SemanticReviewResult {
+  return {
+    findings: [
+      {
+        rule_id: 'SAFETY-001',
+        severity: 'error',
+        source: 'hy3',
+        message:
+          'The synthetic semantic review identified a possible annotation conflict.',
+        suggestion:
+          'Review the annotation against the documented operation before release.',
+        target_id: targetId,
+        tool_name: 'fixture_echo',
+        evidence_path: '/tools/0/description',
+        evidence_excerpt:
+          'Return the provided synthetic text unchanged for protocol tests.',
+        confidence: 0.91,
+      },
+    ],
+    summary: 'One advisory semantic issue was identified.',
+    metadata: {
+      provider: 'hy3',
+      model: 'hy3-test',
+      reasoning_effort: 'high',
+      latency_ms: 25,
+      attempts: 1,
+      usage: {
+        prompt_tokens: 20,
+        completion_tokens: 10,
+        total_tokens: 30,
+      },
+    },
   };
 }
 
@@ -145,7 +185,7 @@ describe('auditTarget', () => {
     assert.equal(report.scorecard.overall, 100);
     assert.deepEqual(report.hy3_findings, []);
     assert.equal(report.model_metadata, null);
-    assert.match(report.summary, /unavailable until Stage 5/);
+    assert.match(report.summary, /not_configured/);
   });
 
   it('keeps deterministic failure precedence when Hy3 was requested', async () => {
@@ -163,7 +203,81 @@ describe('auditTarget', () => {
 
     assert.equal(report.status, 'fail');
     assert.equal(report.scorecard.hy3_reviewed, false);
-    assert.match(report.summary, /unavailable until Stage 5/);
+    assert.match(report.summary, /not_configured/);
+  });
+
+  it('includes validated Hy3 findings without changing deterministic scoring', async () => {
+    const registry = await registryFor({
+      good: { fixture: 'good-server' },
+    });
+    const reviewer: SemanticReviewer = {
+      review: () =>
+        Promise.resolve(successfulSemanticReview('good')),
+    };
+
+    const report = await auditTarget(
+      registry.get('good'),
+      auditInput('good', {
+        include_hy3: true,
+        reasoning_effort: 'high',
+      }),
+      reviewer,
+    );
+
+    assert.equal(report.status, 'pass');
+    assert.equal(report.scorecard.overall, 100);
+    assert.equal(report.scorecard.hy3_reviewed, true);
+    assert.equal(report.deductions.length, 0);
+    assert.equal(report.hy3_findings.length, 1);
+    assert.equal(report.hy3_findings[0]?.source, 'hy3');
+    assert.equal(report.hy3_findings[0]?.severity, 'error');
+    assert.equal(report.model_metadata?.model, 'hy3-test');
+    assert.match(report.summary, /Hy3 semantic review completed/);
+  });
+
+  it('degrades safely when the Hy3 reviewer times out', async () => {
+    const registry = await registryFor({
+      good: { fixture: 'good-server' },
+    });
+    const reviewer: SemanticReviewer = {
+      review: () => Promise.reject(new Hy3ReviewError('timeout')),
+    };
+
+    const report = await auditTarget(
+      registry.get('good'),
+      auditInput('good', { include_hy3: true }),
+      reviewer,
+    );
+
+    assert.equal(report.status, 'partial');
+    assert.equal(report.scorecard.overall, 100);
+    assert.equal(report.scorecard.hy3_reviewed, false);
+    assert.deepEqual(report.hy3_findings, []);
+    assert.equal(report.model_metadata, null);
+    assert.match(report.summary, /\(timeout\)/);
+  });
+
+  it('does not call Hy3 when semantic review is disabled', async () => {
+    const registry = await registryFor({
+      good: { fixture: 'good-server' },
+    });
+    let calls = 0;
+    const reviewer: SemanticReviewer = {
+      review: () => {
+        calls += 1;
+        return Promise.resolve(successfulSemanticReview('good'));
+      },
+    };
+
+    const report = await auditTarget(
+      registry.get('good'),
+      auditInput('good', { include_hy3: false }),
+      reviewer,
+    );
+
+    assert.equal(report.status, 'pass');
+    assert.equal(report.scorecard.hy3_reviewed, false);
+    assert.equal(calls, 0);
   });
 
   it('preserves protocol findings when no snapshot can be produced', async () => {

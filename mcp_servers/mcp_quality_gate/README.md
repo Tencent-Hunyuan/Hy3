@@ -1,10 +1,10 @@
 # Hy3 MCP Quality Gate
 
 > Work in progress: the TypeScript stdio server, four-tool surface, target registry,
-> bounded protocol inspector, and deterministic contract audit are runnable;
-> semantic stages are tracked below.
+> bounded protocol inspector, deterministic contract audit, and optional Hy3
+> semantic audit are runnable; later stages are tracked below.
 
-Hy3 MCP Quality Gate is a planned local stdio MCP server that inspects other
+Hy3 MCP Quality Gate is a local stdio MCP server that inspects other
 pre-registered MCP servers. It combines deterministic protocol and JSON Schema
 checks with Hy3 semantic review to produce evidence-backed findings, compatibility
 reports, and safe test cases.
@@ -26,6 +26,36 @@ to catch with a single kind of test:
 
 The quality gate keeps those two sources separate. It never presents a Hy3 opinion
 as a protocol fact.
+
+## What “quality gate” means
+
+The name borrows the idea of a physical access gate, but this project is software:
+it does not control a real door, badge reader, or building entrance. It is also not
+a network firewall, intrusion-detection system, antivirus product, or runtime
+sandbox.
+
+Instead, it is a **pre-release and pre-integration checkpoint for MCP contracts**.
+An MCP server is the item approaching the gate. The quality gate starts only a
+pre-registered local server, performs MCP initialization and tool discovery, then
+examines the contracts the server exposes. It asks:
+
+- can the server complete the MCP protocol handshake within fixed limits?
+- are tool names and JSON Schemas structurally valid?
+- do descriptions clearly explain intent, inputs, outputs, side effects, and
+  failure behavior?
+- do safety annotations contradict what the tool says it does?
+- can every reported problem be tied to a concrete protocol event or JSON Pointer?
+
+Deterministic code decides protocol and schema facts and produces the reproducible
+score. Hy3 acts as a bounded semantic reviewer for ambiguity, overlap, missing
+operational meaning, and misleading safety language. Its output is treated as
+untrusted, schema-validated advice and cannot change the deterministic score.
+
+The gate therefore resembles a CI quality check more than a security perimeter.
+Security review is one lane of the check, but the system does not prove that a
+server is harmless at runtime. The initial release never invokes the target's
+business tools, never executes generated probes, and never accepts an arbitrary
+command from an MCP caller.
 
 ## Planned MCP tools
 
@@ -49,12 +79,14 @@ The complete inputs, outputs, invariants, and error behavior are defined in
 | `mcpq_inspect_server` initialize and `tools/list` workflow | Available |
 | Timeout, malformed JSON, stdout pollution, output limit, and process cleanup controls | Available |
 | Deterministic contract rules and reproducible scorecard | Available |
-| Hy3 semantic audit | Planned for Stage 5 |
+| Hy3 semantic audit with strict validation and safe degradation | Available |
 | Contract comparison and probe generation | Planned for Stage 6 |
 
-`mcpq_audit_contracts` is available offline with `include_hy3=false`. When Hy3 is
-requested before Stage 5 and deterministic checks pass, it returns `partial`
-without fabricating semantic findings. The comparison and probe tools remain
+`mcpq_audit_contracts` works offline with `include_hy3=false`. With
+`include_hy3=true`, it calls a configured OpenAI-compatible Hy3 endpoint. If Hy3 is
+not configured, unavailable, times out, or returns invalid output, deterministic
+results remain available and a non-failing deterministic audit returns `partial`;
+no semantic findings are fabricated. The comparison and probe tools remain
 registered but return an explicit tool error until their implementation stages.
 
 ## Development quickstart
@@ -80,6 +112,24 @@ Start from [`examples/targets.example.json`](examples/targets.example.json), but
 keep the real registry private. Commands, cwd values, fixed environment variables,
 and process limits can only be supplied through that startup registry. MCP callers
 receive only a validated `target_id` parameter.
+
+To enable the semantic path, configure an OpenAI-compatible Hy3 endpoint:
+
+```bash
+export HY3_API_KEY=EMPTY
+export HY3_BASE_URL=http://127.0.0.1:8000/v1
+export HY3_MODEL=hy3
+export HY3_REASONING_EFFORT=high
+export HY3_TIMEOUT_MS=60000
+export MCPQ_TARGETS_FILE=/absolute/path/to/targets.json
+npm start
+```
+
+`EMPTY` is appropriate only for a local endpoint that does not authenticate.
+Use the real provider credential when authentication is required, keep it in the
+process environment, and never commit it. `mcpq_audit_contracts` accepts an
+optional per-call `reasoning_effort`; when omitted it uses
+`HY3_REASONING_EFFORT`.
 
 ## Design principles
 
@@ -151,7 +201,8 @@ compatibility, and robustness families. See
   `mcpq_inspect_server`.
 - **Stage 4 — deterministic audit (complete):** evidence model, static contract
   rules, versioned deductions, and reproducible score.
-- **Stage 5 — Hy3 audit:** validated structured semantic findings.
+- **Stage 5 — Hy3 audit (complete):** validated structured semantic findings,
+  evidence resolution, bounded repair, and safe provider degradation.
 - **Stage 6 — compatibility and probes:** contract diff and safe test generation.
 - **Stage 7 — evaluation:** intentionally broken fixture servers and generated
   metrics.
@@ -170,15 +221,15 @@ compatibility, and robustness families. See
 
 ## Configuration policy
 
-Hy3 credentials will be provided only through environment variables:
+Hy3 configuration is provided only through environment variables:
 
-```text
-HY3_API_KEY
-HY3_BASE_URL
-HY3_MODEL
-HY3_REASONING_EFFORT
-HY3_TIMEOUT_MS
-```
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `HY3_API_KEY` | unset | Enables semantic review when non-empty. |
+| `HY3_BASE_URL` | `http://127.0.0.1:8000/v1` | HTTP(S) OpenAI-compatible API root; credentials, query strings, and fragments are rejected. |
+| `HY3_MODEL` | `hy3` | Model identifier sent to the endpoint. |
+| `HY3_REASONING_EFFORT` | `high` | Server default: `no_think`, `low`, or `high`. |
+| `HY3_TIMEOUT_MS` | `60000` | Complete request and response deadline, capped at 300000 ms. |
 
 No credential value may be stored in a target registry, fixture, transcript,
 evaluation result, or committed client configuration.

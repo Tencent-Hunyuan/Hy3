@@ -10,10 +10,17 @@ export const targetIdSchema = z
   )
   .describe('Stable ID of a target declared in the startup registry.');
 
-export const reasoningEffortSchema = z
-  .enum(['no_think', 'low', 'high'])
-  .default('high')
-  .describe('Hy3 reasoning effort for semantic analysis.');
+export const reasoningEffortValueSchema = z.enum([
+  'no_think',
+  'low',
+  'high',
+]);
+
+export const reasoningEffortSchema = reasoningEffortValueSchema
+  .optional()
+  .describe(
+    'Hy3 reasoning effort for semantic analysis. Defaults to the server HY3_REASONING_EFFORT configuration.',
+  );
 
 export const severitySchema = z.enum([
   'info',
@@ -24,18 +31,35 @@ export const severitySchema = z.enum([
 
 export const ruleIdSchema = z.enum(RULE_IDS);
 
-export const findingSchema = z.object({
-  rule_id: ruleIdSchema,
-  severity: severitySchema,
-  source: z.enum(['deterministic', 'hy3']),
-  message: z.string().min(1),
-  suggestion: z.string().min(1),
-  target_id: targetIdSchema,
-  tool_name: z.string().nullable(),
-  evidence_path: z.string().min(1),
-  evidence_excerpt: z.string().nullable(),
-  confidence: z.number().min(0).max(1).nullable(),
-});
+export const findingSchema = z
+  .object({
+    rule_id: ruleIdSchema,
+    severity: severitySchema,
+    source: z.enum(['deterministic', 'hy3']),
+    message: z.string().min(1),
+    suggestion: z.string().min(1),
+    target_id: targetIdSchema,
+    tool_name: z.string().nullable(),
+    evidence_path: z.string().min(1),
+    evidence_excerpt: z.string().nullable(),
+    confidence: z.number().min(0).max(1).nullable(),
+  })
+  .superRefine((value, context) => {
+    if (value.source === 'deterministic' && value.confidence !== null) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['confidence'],
+        message: 'deterministic findings must use null confidence',
+      });
+    }
+    if (value.source === 'hy3' && value.confidence === null) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['confidence'],
+        message: 'Hy3 findings must include confidence',
+      });
+    }
+  });
 
 export const discoveredToolSchema = z.object({
   name: z.string(),
@@ -94,6 +118,23 @@ export const scorecardSchema = z.object({
   hy3_reviewed: z.boolean(),
 });
 
+export const semanticModelMetadataSchema = z
+  .object({
+    provider: z.literal('hy3'),
+    model: z.string().min(1).max(128),
+    reasoning_effort: reasoningEffortValueSchema,
+    latency_ms: z.number().int().nonnegative(),
+    attempts: z.number().int().min(1).max(2),
+    usage: z
+      .object({
+        prompt_tokens: z.number().int().nonnegative().nullable(),
+        completion_tokens: z.number().int().nonnegative().nullable(),
+        total_tokens: z.number().int().nonnegative().nullable(),
+      })
+      .nullable(),
+  })
+  .strict();
+
 export const scoreCategorySchema = z.enum([
   'protocol',
   'schema',
@@ -123,7 +164,7 @@ export const auditOutputSchema = z.object({
   deterministic_findings: z.array(findingSchema),
   hy3_findings: z.array(findingSchema),
   summary: z.string(),
-  model_metadata: z.record(z.unknown()).nullable(),
+  model_metadata: semanticModelMetadataSchema.nullable(),
 });
 
 export const compareInputSchema = z
@@ -196,3 +237,7 @@ export type InspectOutput = z.infer<typeof inspectOutputSchema>;
 export type AuditOutput = z.infer<typeof auditOutputSchema>;
 export type Finding = z.infer<typeof findingSchema>;
 export type Severity = z.infer<typeof severitySchema>;
+export type ReasoningEffort = z.infer<typeof reasoningEffortValueSchema>;
+export type SemanticModelMetadata = z.infer<
+  typeof semanticModelMetadataSchema
+>;
