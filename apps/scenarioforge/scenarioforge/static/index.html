@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="ScenarioForge — 用 Hy3 在现实发生前演练你的计划" />
+    <title>ScenarioForge · Hy3 决策演练台</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="ScenarioForge 首页">
+        <span class="brand-mark">SF</span>
+        <span>
+          <strong>ScenarioForge</strong>
+          <small>powered by Tencent Hy3</small>
+        </span>
+      </a>
+      <div class="status-wrap">
+        <span id="modeBadge" class="mode-badge loading">正在连接</span>
+        <span class="version">v0.1</span>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <div>
+          <p class="kicker">DECISION REHEARSAL WORKSPACE</p>
+          <h1>先让计划经历一次<br /><em>可控的坏结局</em></h1>
+          <p class="hero-copy">
+            输入一份待执行方案，Hy3 会从不同角色出发寻找薄弱点，生成反事实情景，
+            再把风险改写成有负责人、有期限、有退路的执行门禁。
+          </p>
+        </div>
+        <div class="hero-orbit" aria-hidden="true">
+          <span class="orbit-label label-a">约束</span>
+          <span class="orbit-label label-b">情景</span>
+          <span class="orbit-label label-c">护栏</span>
+          <div class="orbit-core">HY3</div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="examples-panel">
+          <div class="section-heading">
+            <span>01</span>
+            <div><strong>选择演练</strong><small>两条端到端样例</small></div>
+          </div>
+          <div id="exampleList" class="example-list" aria-live="polite"></div>
+          <div class="how-it-works">
+            <p class="micro-label">HY3 PIPELINE</p>
+            <ol>
+              <li><span>1</span>约束与假设抽取</li>
+              <li><span>2</span>多角色交叉质询</li>
+              <li><span>3</span>反事实情景生成</li>
+              <li><span>4</span>执行门禁与止损</li>
+            </ol>
+          </div>
+        </aside>
+
+        <section class="input-panel">
+          <div class="section-heading">
+            <span>02</span>
+            <div><strong>定义计划</strong><small>缺失信息会被标记为假设</small></div>
+          </div>
+          <form id="rehearsalForm">
+            <label>
+              <span>计划名称</span>
+              <input id="title" name="title" maxlength="120" required />
+            </label>
+            <label>
+              <span>成功目标</span>
+              <textarea id="goal" name="goal" rows="2" maxlength="800" required></textarea>
+            </label>
+            <label>
+              <span>当前方案</span>
+              <textarea id="plan" name="plan" rows="8" maxlength="12000" required></textarea>
+            </label>
+            <label>
+              <span>不可违反的约束 <small>每行一条</small></span>
+              <textarea id="constraints" name="constraints" rows="5" required></textarea>
+            </label>
+            <div id="formNotice" class="form-notice" hidden></div>
+            <button id="runButton" class="run-button" type="submit">
+              <span>开始压力测试</span><b>↗</b>
+            </button>
+          </form>
+        </section>
+      </section>
+
+      <section id="progressPanel" class="progress-panel" hidden>
+        <div class="scanner"></div>
+        <p class="micro-label">HY3 IS REHEARSING</p>
+        <h2 id="progressTitle">正在拆解约束与隐含假设…</h2>
+        <div class="progress-steps">
+          <span class="active">约束抽取</span><span>角色质询</span><span>反事实</span><span>执行门禁</span>
+        </div>
+      </section>
+
+      <section id="results" class="results" hidden aria-live="polite">
+        <div class="result-header">
+          <div>
+            <p class="kicker">REHEARSAL REPORT</p>
+            <h2 id="resultTitle">演练报告</h2>
+          </div>
+          <button id="exportButton" class="ghost-button" type="button">导出 JSON</button>
+        </div>
+
+        <div class="decision-card">
+          <div>
+            <p class="micro-label">HY3 VERDICT</p>
+            <span id="recommendation" class="verdict">—</span>
+          </div>
+          <p id="rationale" class="rationale"></p>
+          <div id="providerMeta" class="provider-meta"></div>
+        </div>
+
+        <div class="result-grid">
+          <article class="result-card wide">
+            <div class="card-title"><span>Ⅰ</span><h3>任务简报</h3></div>
+            <p id="objective" class="objective"></p>
+            <div class="split-list">
+              <div><h4>不可妥协</h4><ul id="nonNegotiables"></ul></div>
+              <div><h4>待验证假设</h4><ul id="assumptions"></ul></div>
+            </div>
+          </article>
+
+          <article class="result-card wide">
+            <div class="card-title"><span>Ⅱ</span><h3>角色交叉质询</h3></div>
+            <div id="perspectives" class="perspective-grid"></div>
+          </article>
+
+          <article class="result-card wide">
+            <div class="card-title"><span>Ⅲ</span><h3>反事实情景</h3></div>
+            <div id="scenarios" class="scenario-list"></div>
+          </article>
+
+          <article class="result-card wide">
+            <div class="card-title"><span>Ⅳ</span><h3>执行门禁</h3></div>
+            <div id="gates" class="gate-list"></div>
+          </article>
+
+          <article class="result-card">
+            <div class="card-title"><span>→</span><h3>未来 48 小时</h3></div>
+            <ol id="nextActions" class="number-list"></ol>
+          </article>
+
+          <article class="result-card stop-card">
+            <div class="card-title"><span>×</span><h3>立即止损条件</h3></div>
+            <ul id="stopConditions" class="stop-list"></ul>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>ScenarioForge / Rhinobird 2026</span>
+      <span>模型负责语义判断 · 程序负责边界与验证</span>
+    </footer>
+    <script src="/app.js" defer></script>
+  </body>
+</html>
