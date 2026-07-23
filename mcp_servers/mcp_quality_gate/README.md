@@ -1,7 +1,8 @@
 # Hy3 MCP Quality Gate
 
 > Work in progress: the TypeScript stdio server, four-tool surface, target registry,
-> and bounded protocol inspector are runnable; semantic stages are tracked below.
+> bounded protocol inspector, and deterministic contract audit are runnable;
+> semantic stages are tracked below.
 
 Hy3 MCP Quality Gate is a planned local stdio MCP server that inspects other
 pre-registered MCP servers. It combines deterministic protocol and JSON Schema
@@ -47,13 +48,14 @@ The complete inputs, outputs, invariants, and error behavior are defined in
 | Strict target registry with allowed roots, environment policy, and hard limits | Available |
 | `mcpq_inspect_server` initialize and `tools/list` workflow | Available |
 | Timeout, malformed JSON, stdout pollution, output limit, and process cleanup controls | Available |
-| Deterministic contract scorecard | Planned for Stage 4 |
+| Deterministic contract rules and reproducible scorecard | Available |
 | Hy3 semantic audit | Planned for Stage 5 |
 | Contract comparison and probe generation | Planned for Stage 6 |
 
-The three later-stage tools are deliberately registered so clients can validate the
-final public surface, but they currently return an explicit tool error instead of a
-fabricated result.
+`mcpq_audit_contracts` is available offline with `include_hy3=false`. When Hy3 is
+requested before Stage 5 and deterministic checks pass, it returns `partial`
+without fabricating semantic findings. The comparison and probe tools remain
+registered but return an explicit tool error until their implementation stages.
 
 ## Development quickstart
 
@@ -147,7 +149,8 @@ compatibility, and robustness families. See
   registered tools, build, lint, and test commands.
 - **Stage 3 — protocol inspector (complete):** safe target process management and
   `mcpq_inspect_server`.
-- **Stage 4 — deterministic audit:** evidence model, rules, and reproducible score.
+- **Stage 4 — deterministic audit (complete):** evidence model, static contract
+  rules, versioned deductions, and reproducible score.
 - **Stage 5 — Hy3 audit:** validated structured semantic findings.
 - **Stage 6 — compatibility and probes:** contract diff and safe test generation.
 - **Stage 7 — evaluation:** intentionally broken fixture servers and generated

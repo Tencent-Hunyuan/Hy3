@@ -1,9 +1,10 @@
 import type { z } from 'zod';
 
+import type { RuleId } from '../rules/catalog.js';
 import type { severitySchema } from '../tool-contracts.js';
 
 export type FailureDetails = {
-  ruleId: string;
+  ruleId: RuleId;
   severity: z.infer<typeof severitySchema>;
   message: string;
   suggestion: string;

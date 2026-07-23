@@ -1,8 +1,9 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
+import { auditTarget } from '../audit/audit.js';
 import { inspectTarget } from '../inspector/inspect.js';
 import { TargetRegistry, TargetRegistryError } from '../target-registry.js';
-import type { InspectInput } from '../tool-contracts.js';
+import type { AuditInput, InspectInput } from '../tool-contracts.js';
 import {
   createDefaultHandlers,
   type ToolHandlers,
@@ -10,29 +11,42 @@ import {
 
 export function createToolHandlers(registry: TargetRegistry): ToolHandlers {
   const handlers = createDefaultHandlers();
+  const result = (
+    report: Record<string, unknown>,
+  ): CallToolResult => ({
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify(report, null, 2),
+      },
+    ],
+    structuredContent: report,
+  });
+  const failure = (error: unknown, fallback: string): CallToolResult => {
+    const message =
+      error instanceof TargetRegistryError ? error.message : fallback;
+    return {
+      isError: true,
+      content: [{ type: 'text', text: message }],
+    };
+  };
+
   return {
     ...handlers,
     inspect: async (input: InspectInput): Promise<CallToolResult> => {
       try {
         const report = await inspectTarget(registry.get(input.target_id), input);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(report, null, 2),
-            },
-          ],
-          structuredContent: { ...report },
-        };
+        return result({ ...report });
       } catch (error: unknown) {
-        const message =
-          error instanceof TargetRegistryError
-            ? error.message
-            : 'inspection could not be started';
-        return {
-          isError: true,
-          content: [{ type: 'text', text: message }],
-        };
+        return failure(error, 'inspection could not be started');
+      }
+    },
+    audit: async (input: AuditInput): Promise<CallToolResult> => {
+      try {
+        const report = await auditTarget(registry.get(input.target_id), input);
+        return result({ ...report });
+      } catch (error: unknown) {
+        return failure(error, 'contract audit could not be started');
       }
     },
   };

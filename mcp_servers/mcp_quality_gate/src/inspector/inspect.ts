@@ -1,7 +1,12 @@
 import { createHash } from 'node:crypto';
 
 import type { ResolvedTarget } from '../target-registry.js';
-import { redactText, redactUnknown } from '../security/redaction.js';
+import {
+  redactSchema,
+  redactText,
+  redactUnknown,
+} from '../security/redaction.js';
+import { stableJsonStringify } from '../serialization/stable-json.js';
 import {
   inspectOutputSchema,
   type InspectInput,
@@ -19,6 +24,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   const redacted = redactUnknown(value);
+  return isRecord(redacted) ? redacted : null;
+}
+
+function asSchemaRecord(value: unknown): Record<string, unknown> | null {
+  const redacted = redactSchema(value);
   return isRecord(redacted) ? redacted : null;
 }
 
@@ -90,13 +100,13 @@ function normalizeTools(rawTools: unknown[], targetId: string) {
         }),
       );
     }
-    const inputSchema = asRecord(rawTool.inputSchema);
-    if (inputSchema === null) {
+    const inputSchema = asSchemaRecord(rawTool.inputSchema);
+    if (inputSchema === null || inputSchema.type !== 'object') {
       findings.push(
         finding(targetId, {
           ruleId: 'SCHEMA-001',
           severity: 'error',
-          message: `tool ${visibleName} has no object-shaped input schema`,
+          message: `tool ${visibleName} has no object-typed input schema`,
           suggestion: 'Declare an object inputSchema, even for a tool with no parameters.',
           evidencePath: `/tools/${index}/inputSchema`,
         }),
@@ -111,18 +121,20 @@ function normalizeTools(rawTools: unknown[], targetId: string) {
             ? redactText(rawTool.description)
             : null,
         input_schema: inputSchema ?? {},
-        output_schema: asRecord(rawTool.outputSchema),
+        output_schema: asSchemaRecord(rawTool.outputSchema),
         annotations: asRecord(rawTool.annotations),
       },
     ];
   });
 
-  tools.sort((left, right) => left.name.localeCompare(right.name));
+  tools.sort((left, right) =>
+    left.name < right.name ? -1 : left.name > right.name ? 1 : 0,
+  );
   return { tools, findings };
 }
 
 function contentHash(value: unknown): string {
-  return createHash('sha256').update(JSON.stringify(value)).digest('hex');
+  return createHash('sha256').update(stableJsonStringify(value)).digest('hex');
 }
 
 export async function inspectTarget(

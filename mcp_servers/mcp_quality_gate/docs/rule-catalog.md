@@ -1,5 +1,7 @@
 # Rule Catalogue
 
+Catalogue version: `1.0.0`
+
 ## 1. Rule model
 
 Every finding references a stable rule ID. IDs are never recycled after release.
@@ -117,14 +119,66 @@ Each rule family uses specific evidence:
 
 A rule that cannot provide its required evidence must not emit a finding.
 
-## 9. Scoring policy baseline
+## 9. Scoring policy `1.0.0`
 
-The deterministic score starts at 100 and is projected into the documented category
-weights. Exact deductions will be versioned with the implementation. The following
-constraints already apply:
+The deterministic score starts at 100 across five independently bounded
+categories:
+
+| Category | Maximum |
+| --- | ---: |
+| Protocol | 25 |
+| Schema | 20 |
+| Contract clarity | 20 |
+| Safety | 20 |
+| Robustness | 15 |
+
+Stage 4 applies the following fixed deductions:
+
+| Rule | Category | Points |
+| --- | --- | ---: |
+| `PROTO-001` | protocol | 25 |
+| `PROTO-002` | protocol | 8 |
+| `PROTO-003` | protocol | 25 |
+| `PROTO-004` | protocol | 10 |
+| `PROTO-005` | protocol | 2 |
+| `PROTO-006` | protocol | 10 |
+| `PROTO-007` | protocol | 6 |
+| `PROTO-008` | protocol | 2 |
+| `SCHEMA-001` | schema | 8 |
+| `SCHEMA-002` | schema | 8 |
+| `SCHEMA-003` | schema | 6 |
+| `SCHEMA-004` | schema | 2 |
+| `SCHEMA-006` | schema | 6 |
+| `SCHEMA-007` | schema | 8 |
+| `DOC-001` | contract clarity | 5 |
+| `DOC-002` | contract clarity | 3 |
+| `DOC-006` | contract clarity | 4 |
+| `SAFETY-001` | safety | 8 |
+| `SAFETY-002` | safety | 5 |
+| `SAFETY-005` | safety | 10 |
+| `ROBUST-001` | robustness | 8 |
+| `ROBUST-002` | robustness | 8 |
+| `ROBUST-003` | robustness | 15 |
+| `ROBUST-004` | robustness | 3 |
+| `ROBUST-005` | robustness | 4 |
+
+Findings are deduplicated by rule ID, target ID, tool name, and evidence path,
+then sorted by that stable key. Each deduction is limited by the remaining score
+in its category. Once a category reaches zero, later findings remain visible but
+cannot deduct additional points.
+
+If any critical finding is present, the overall score is capped at 40. The report
+sets `critical_cap_applied` so consumers can distinguish a cap from ordinary point
+deductions.
+
+The following constraints also apply:
 
 - Hy3-only rules never change the numeric score;
 - repeated evidence does not cause duplicate deductions;
 - a critical protocol or process-control failure caps the overall score;
 - severity filtering does not change the score;
 - reports include the catalogue version and every applied deduction.
+
+Rules without a deduction in this table are reserved for later implementation
+stages or intentionally report-only behavior. Adding or changing a deduction
+requires a new scoring-policy version.

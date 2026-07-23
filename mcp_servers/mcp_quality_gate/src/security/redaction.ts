@@ -9,8 +9,9 @@ const WINDOWS_HOME_PATH = /[A-Za-z]:\\Users\\[^\\\s"']+/g;
 
 const MAX_REDACTION_DEPTH = 32;
 
-function looksLikeCredentialKey(key: string): boolean {
-  return CREDENTIAL_KEY.test(key);
+export function isCredentialLikeKey(key: string): boolean {
+  const normalized = key.replace(/([a-z0-9])([A-Z])/g, '$1_$2');
+  return CREDENTIAL_KEY.test(normalized);
 }
 
 export function containsCredentialLikeValue(value: string): boolean {
@@ -43,11 +44,69 @@ export function redactUnknown(value: unknown, depth = 0): unknown {
     return Object.fromEntries(
       Object.entries(value).map(([key, item]) => [
         key,
-        looksLikeCredentialKey(key)
+        isCredentialLikeKey(key)
           ? '[REDACTED_CREDENTIAL]'
           : redactUnknown(item, depth + 1),
       ]),
     );
   }
   return value;
+}
+
+const SENSITIVE_SCHEMA_VALUE_KEYS = new Set([
+  'const',
+  'default',
+  'enum',
+  'example',
+  'examples',
+]);
+
+export function redactSchema(
+  value: unknown,
+  sensitiveParameter = false,
+  depth = 0,
+): unknown {
+  if (depth >= MAX_REDACTION_DEPTH) {
+    return '[REDACTED_DEPTH_LIMIT]';
+  }
+  if (typeof value === 'string') {
+    return redactText(value);
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) =>
+      redactSchema(item, sensitiveParameter, depth + 1),
+    );
+  }
+  if (typeof value !== 'object' || value === null) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => {
+      if (sensitiveParameter && SENSITIVE_SCHEMA_VALUE_KEYS.has(key)) {
+        return [
+          key,
+          Array.isArray(item)
+            ? item.map((_, index) => `[REDACTED_CREDENTIAL_${index}]`)
+            : '[REDACTED_CREDENTIAL]',
+        ];
+      }
+      if (key === 'properties' && typeof item === 'object' && item !== null) {
+        return [
+          key,
+          Object.fromEntries(
+            Object.entries(item).map(([propertyName, propertySchema]) => [
+              propertyName,
+              redactSchema(
+                propertySchema,
+                isCredentialLikeKey(propertyName),
+                depth + 2,
+              ),
+            ]),
+          ),
+        ];
+      }
+      return [key, redactSchema(item, sensitiveParameter, depth + 1)];
+    }),
+  );
 }

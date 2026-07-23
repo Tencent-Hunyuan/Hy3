@@ -135,7 +135,8 @@ Hy3 is optional for deterministic inspection. If its credentials are absent, the
 provider is unavailable, or its output fails validation:
 
 - `mcpq_inspect_server` remains fully deterministic;
-- `mcpq_audit_contracts` returns `partial` with deterministic findings;
+- `mcpq_audit_contracts` returns `partial` with deterministic findings when those
+  checks pass; a deterministic error remains `fail` even if Hy3 is unavailable;
 - `mcpq_compare_contracts` preserves deterministic compatibility findings and an
   empty migration plan;
 - `mcpq_generate_probe_suite` fails safely because generation is its core operation;

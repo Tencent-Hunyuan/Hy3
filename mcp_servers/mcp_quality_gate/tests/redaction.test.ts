@@ -3,6 +3,8 @@ import { describe, it } from 'node:test';
 
 import {
   containsCredentialLikeValue,
+  isCredentialLikeKey,
+  redactSchema,
   redactText,
   redactUnknown,
 } from '../src/security/redaction.js';
@@ -21,6 +23,7 @@ describe('redaction', () => {
     assert.match(result, /REDACTED_CREDENTIAL/);
     assert.match(result, /REDACTED_HOME/);
     assert.equal(containsCredentialLikeValue(credential), true);
+    assert.equal(isCredentialLikeKey('accessToken'), true);
   });
 
   it('redacts values under secret-like object keys recursively', () => {
@@ -40,6 +43,37 @@ describe('redaction', () => {
           ordinary: { default: 'visible-value' },
         },
       },
+    });
+  });
+
+  it('preserves credential parameter schemas while redacting their values', () => {
+    const result = redactSchema({
+      type: 'object',
+      properties: {
+        api_key: {
+          type: 'string',
+          description: 'Credential used by the synthetic fixture.',
+          default: 'synthetic-value',
+          examples: ['first-value', 'second-value'],
+        },
+      },
+      required: ['api_key'],
+    });
+
+    assert.deepEqual(result, {
+      type: 'object',
+      properties: {
+        api_key: {
+          type: 'string',
+          description: 'Credential used by the synthetic fixture.',
+          default: '[REDACTED_CREDENTIAL]',
+          examples: [
+            '[REDACTED_CREDENTIAL_0]',
+            '[REDACTED_CREDENTIAL_1]',
+          ],
+        },
+      },
+      required: ['api_key'],
     });
   });
 });

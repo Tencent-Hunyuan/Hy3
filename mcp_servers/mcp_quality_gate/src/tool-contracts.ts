@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { RULE_IDS } from './rules/catalog.js';
+
 export const targetIdSchema = z
   .string()
   .regex(
@@ -20,8 +22,10 @@ export const severitySchema = z.enum([
   'critical',
 ]);
 
+export const ruleIdSchema = z.enum(RULE_IDS);
+
 export const findingSchema = z.object({
-  rule_id: z.string().min(1),
+  rule_id: ruleIdSchema,
   severity: severitySchema,
   source: z.enum(['deterministic', 'hy3']),
   message: z.string().min(1),
@@ -80,7 +84,7 @@ export const auditInputSchema = z.object({
     .describe('Minimum finding severity to include in presentation.'),
 });
 
-const scorecardSchema = z.object({
+export const scorecardSchema = z.object({
   overall: z.number().int().min(0).max(100),
   protocol: z.number().int().min(0).max(25),
   schema: z.number().int().min(0).max(20),
@@ -90,11 +94,32 @@ const scorecardSchema = z.object({
   hy3_reviewed: z.boolean(),
 });
 
+export const scoreCategorySchema = z.enum([
+  'protocol',
+  'schema',
+  'contract_clarity',
+  'safety',
+  'robustness',
+]);
+
+export const deductionSchema = z.object({
+  rule_id: ruleIdSchema,
+  category: scoreCategorySchema,
+  points: z.number().int().positive(),
+  target_id: targetIdSchema,
+  tool_name: z.string().nullable(),
+  evidence_path: z.string().min(1),
+});
+
 export const auditOutputSchema = z.object({
   status: z.enum(['pass', 'fail', 'partial']),
   target_id: targetIdSchema,
-  snapshot_hash: z.string(),
+  snapshot_hash: z.string().nullable(),
+  catalog_version: z.string().min(1),
+  scoring_policy_version: z.string().min(1),
+  critical_cap_applied: z.boolean(),
   scorecard: scorecardSchema,
+  deductions: z.array(deductionSchema),
   deterministic_findings: z.array(findingSchema),
   hy3_findings: z.array(findingSchema),
   summary: z.string(),
@@ -168,3 +193,6 @@ export type AuditInput = z.infer<typeof auditInputSchema>;
 export type CompareInput = z.infer<typeof compareInputSchema>;
 export type ProbeInput = z.infer<typeof probeInputSchema>;
 export type InspectOutput = z.infer<typeof inspectOutputSchema>;
+export type AuditOutput = z.infer<typeof auditOutputSchema>;
+export type Finding = z.infer<typeof findingSchema>;
+export type Severity = z.infer<typeof severitySchema>;

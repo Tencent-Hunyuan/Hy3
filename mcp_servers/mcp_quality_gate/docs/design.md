@@ -179,10 +179,14 @@ Structured output:
 
 | Field | Type | Meaning |
 | --- | --- | --- |
-| `status` | `pass \| fail \| partial` | `partial` means deterministic audit succeeded but Hy3 did not. |
+| `status` | `pass \| fail \| partial` | `fail` takes precedence for deterministic errors; otherwise `partial` means deterministic audit passed but requested Hy3 review was unavailable. |
 | `target_id` | string | Audited target. |
-| `snapshot_hash` | string | Snapshot used for both audit paths. |
+| `snapshot_hash` | string or null | Snapshot used for both audit paths, or `null` when inspection could not complete. |
+| `catalog_version` | string | Version of the accepted rule-ID catalogue. |
+| `scoring_policy_version` | string | Version of the fixed deduction table. |
+| `critical_cap_applied` | boolean | Whether a critical finding capped the overall score. |
 | `scorecard` | Scorecard | Reproducible deterministic score. |
+| `deductions` | array | Every applied deterministic deduction with rule, category, points, and evidence path. |
 | `deterministic_findings` | Finding[] | Rule-engine results. |
 | `hy3_findings` | Finding[] | Validated semantic results. |
 | `summary` | string | Concise report; states when Hy3 was skipped or unavailable. |
@@ -271,12 +275,21 @@ unsanitized local absolute paths.
 ## 9. Scoring invariants
 
 - deterministic rules alone determine the numeric score;
-- critical failures cap the overall score according to the versioned scoring policy;
+- category maxima are protocol 25, schema 20, contract clarity 20, safety 20,
+  and robustness 15;
+- deductions are applied in stable finding-key order and no category can fall
+  below zero;
+- a critical finding caps the overall score at 40 under scoring policy `1.0.0`;
 - duplicate findings from multiple deterministic checks are deduplicated by rule ID,
   target, tool, and evidence path;
 - filtering by severity changes presentation only, never the score;
 - Hy3 failure cannot improve or reduce the deterministic score;
 - the report records the rule-catalogue version used for scoring.
+
+The overall score normally equals the sum of the five category scores. When
+`critical_cap_applied` is true, the overall score is capped independently and may
+therefore be lower than that sum. The full versioned deduction table is published
+in [`rule-catalog.md`](rule-catalog.md).
 
 ## 10. Acceptance gates for implementation stages
 

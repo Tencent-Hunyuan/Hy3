@@ -39,6 +39,17 @@
         "request_timeout_ms": 3000,
         "max_stderr_bytes": 131072
       }
+    },
+    "fixture-audit-bad": {
+      "description": "Synthetic MCP server containing deterministic contract defects.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/audit-bad-server/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      }
     }
   }
 }

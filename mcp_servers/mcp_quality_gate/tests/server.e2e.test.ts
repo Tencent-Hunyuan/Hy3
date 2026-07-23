@@ -41,7 +41,7 @@ describe('stdio server', () => {
     }
   });
 
-  it('returns a controlled error for a later-stage tool', async () => {
+  it('returns a controlled error for a later-stage comparison tool', async () => {
     const client = new Client({ name: 'quality-gate-test', version: '0.1.0' });
     const transport = new StdioClientTransport({
       command: process.execPath,
@@ -52,8 +52,11 @@ describe('stdio server', () => {
     try {
       await client.connect(transport);
       const result = await client.callTool({
-        name: 'mcpq_audit_contracts',
-        arguments: { target_id: 'fixture-good' },
+        name: 'mcpq_compare_contracts',
+        arguments: {
+          baseline_target_id: 'fixture-good',
+          current_target_id: 'fixture-current',
+        },
       });
 
       assert.equal(result.isError, true);
@@ -99,6 +102,65 @@ describe('stdio server', () => {
       assert.equal(pollutedContent.status, 'fail');
       assert.ok(
         pollutedContent.findings.some((item) => item.rule_id === 'PROTO-002'),
+      );
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('calls the deterministic audit through the complete MCP stdio chain', async () => {
+    const client = new Client({ name: 'quality-gate-test', version: '0.1.0' });
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [serverEntry],
+      env: { MCPQ_TARGETS_FILE: exampleRegistry },
+      stderr: 'pipe',
+    });
+
+    try {
+      await client.connect(transport);
+      const good = await client.callTool({
+        name: 'mcpq_audit_contracts',
+        arguments: {
+          target_id: 'fixture-good',
+          include_hy3: false,
+        },
+      });
+      const bad = await client.callTool({
+        name: 'mcpq_audit_contracts',
+        arguments: {
+          target_id: 'fixture-audit-bad',
+          include_hy3: false,
+        },
+      });
+      const goodContent = good.structuredContent as
+        | {
+            status: string;
+            scorecard: { overall: number };
+            catalog_version: string;
+          }
+        | undefined;
+      const badContent = bad.structuredContent as
+        | {
+            status: string;
+            scorecard: { overall: number };
+            deterministic_findings: Array<{ rule_id: string }>;
+          }
+        | undefined;
+
+      assert.equal(good.isError, undefined);
+      assert.ok(goodContent);
+      assert.equal(goodContent.status, 'pass');
+      assert.equal(goodContent.scorecard.overall, 100);
+      assert.equal(goodContent.catalog_version, '1.0.0');
+      assert.equal(bad.isError, undefined);
+      assert.ok(badContent);
+      assert.equal(badContent.status, 'fail');
+      assert.ok(badContent.scorecard.overall < 100);
+      assert.ok(
+        badContent.deterministic_findings.some(
+          (finding) => finding.rule_id === 'SAFETY-001',
+        ),
       );
     } finally {
       await client.close();
