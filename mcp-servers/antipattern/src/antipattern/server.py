@@ -1,6 +1,9 @@
 """AntiPattern MCP Server 入口。"""
 
 import sys
+import os
+import signal
+import atexit
 import logging
 from typing import AsyncGenerator
 
@@ -23,6 +26,25 @@ from .prompts import (
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 logger = logging.getLogger("antipattern")
+
+
+# ─── 防御性日志：确保进程被杀/崩溃时 stderr 留痕 ───
+
+def _on_exit():
+    logger.info("antipattern process exiting (pid=%d)", os.getpid())
+
+
+def _on_signal(signum, frame):
+    logger.warning("antipattern killed by signal %d (pid=%d)", signum, os.getpid())
+    sys.exit(128 + signum)
+
+
+atexit.register(_on_exit)
+signal.signal(signal.SIGTERM, _on_signal)
+if sys.platform == "win32":
+    signal.signal(signal.SIGBREAK, _on_signal)  # type: ignore[attr-defined]
+
+logger.info("antipattern server starting (pid=%d, python=%s)", os.getpid(), sys.version.split()[0])
 
 mcp = FastMCP(
     "AntiPattern",
@@ -144,7 +166,13 @@ async def escalate(input: EscalateInput) -> AsyncGenerator[str, None]:
 
 def main():
     """CLI 入口。"""
-    mcp.run()
+    try:
+        mcp.run()
+    except (KeyboardInterrupt, SystemExit):
+        logger.info("antipattern interrupted (pid=%d)", os.getpid())
+    except BaseException as e:
+        logger.critical("antipattern crashed: %s: %s (pid=%d)", type(e).__name__, e, os.getpid(), exc_info=True)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
