@@ -134,6 +134,9 @@ print(response.choices[0].message.content)
 
 具体部署方式请参考下方[推理和部署](#推理和部署)章节。
 
+如需可直接复制的环境配置、参数说明、故障排查和六组可运行示例，请参阅
+[Hy3 API 快速开始](./quickstart.md)与 [API 示例](./examples/api/)。
+
 ## 推理和部署
 
 Hy3 总参数量为 295B，当使用 8 张 GPU 时，建议使用 H20-3e 或其他有更大显存的卡型。
