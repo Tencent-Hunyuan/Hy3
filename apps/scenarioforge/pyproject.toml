@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hy3-scenarioforge"
+version = "0.1.0"
+description = "A Hy3-powered plan stress-testing and decision rehearsal workspace"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [{ name = "dujujin" }]
+dependencies = []
+
+[project.scripts]
+scenarioforge = "scenarioforge.server:main"
+
+[tool.setuptools]
+packages = ["scenarioforge", "scenarioforge.static"]
+
+[tool.setuptools.package-data]
+scenarioforge = ["static/*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
