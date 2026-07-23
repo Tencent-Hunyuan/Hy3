@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Hy3 tool-calling evidence research showcase">
+  <title>Hy3 Evidence Board</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">TENCENT HY3 · TOOL CALLING SHOWCASE</p>
+        <h1>Evidence Board</h1>
+        <p class="lede">先检索，再回答。让每条结论都能回到来源。</p>
+      </div>
+      <div id="modeBadge" class="mode-badge pending">检查服务…</div>
+    </header>
+
+    <section id="offlineNotice" class="notice hidden" aria-live="polite">
+      <strong>离线演示模式</strong>
+      <span>当前未调用 Hy3；页面只验证工具链、检索和界面。</span>
+    </section>
+
+    <section class="query-card">
+      <label for="question">研究问题</label>
+      <textarea id="question" maxlength="500" rows="4">请根据内置资料解释 Hy3 为什么适合 Agent，并列出模型规模、上下文和部署时的工具调用要求。每条结论必须带来源。</textarea>
+      <div class="query-footer">
+        <span id="counter">0 / 500</span>
+        <button id="submitButton" type="button">开始研究 <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
+    <section id="status" class="status hidden" aria-live="polite"></section>
+
+    <section id="results" class="results hidden">
+      <article class="report-card">
+        <div class="section-heading">
+          <span>01</span>
+          <h2>研究报告</h2>
+        </div>
+        <div id="answer" class="answer"></div>
+      </article>
+
+      <aside class="side-column">
+        <section class="trace-card">
+          <div class="section-heading compact">
+            <span>02</span>
+            <h2>工具轨迹</h2>
+          </div>
+          <ol id="trace" class="trace-list"></ol>
+        </section>
+
+        <section class="source-card">
+          <div class="section-heading compact">
+            <span>03</span>
+            <h2>证据来源</h2>
+          </div>
+          <div id="sources" class="source-list"></div>
+        </section>
+      </aside>
+    </section>
+
+    <footer>
+      <span>API Key 仅保存在服务端环境变量</span>
+      <span>OpenAI-compatible · No browser storage</span>
+    </footer>
+  </main>
+  <script src="/app.js" defer></script>
+</body>
+</html>
