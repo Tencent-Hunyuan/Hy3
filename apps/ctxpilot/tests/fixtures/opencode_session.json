@@ -1,0 +1,33 @@
+{
+  "id": "sess-opencode-001",
+  "createdAt": "2026-07-15T10:00:00Z",
+  "updatedAt": "2026-07-15T10:45:00Z",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Refactor core.py to add a facade",
+      "toolCalls": []
+    },
+    {
+      "role": "assistant",
+      "content": "I'll add the CtxPilot facade and wire services.",
+      "toolCalls": [
+        {"name": "edit", "files": ["src/ctxpilot/core.py"]}
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {"text": "Also update the README with the Hy3 role."}
+      ],
+      "toolCalls": []
+    },
+    {
+      "role": "assistant",
+      "content": "Done. Need to confirm the API key handling.",
+      "toolCalls": [
+        {"name": "edit", "files": ["README.md", "src/ctxpilot/config.py"]}
+      ]
+    }
+  ]
+}

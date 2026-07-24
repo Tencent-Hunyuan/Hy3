@@ -1,0 +1,5 @@
+{"type":"message","role":"user","content":[{"type":"input_text","text":"Write a function to sum a list"}],"timestamp":"2026-07-15T11:00:00Z"}
+{"type":"tool_call","name":"shell","arguments":"python -c 'print(sum([1,2,3]))'"}
+{"type":"message","role":"assistant","content":[{"type":"output_text","text":"Here is the function:\ndef total(xs):\n    return sum(xs)"}],"timestamp":"2026-07-15T11:00:12Z"}
+{"type":"tool_call","name":"edit","arguments":"src/calc.py","files":["src/calc.py"]}
+{"type":"message","role":"user","content":"Now add a test for it","timestamp":"2026-07-15T11:01:00Z"}
