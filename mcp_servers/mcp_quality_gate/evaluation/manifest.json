@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "targets_file": "evaluation/targets.json",
+  "baseline_file": "evaluation/baseline.json",
+  "minimums": {
+    "status_accuracy": 1,
+    "exact_rule_set_accuracy": 1,
+    "rule_precision": 1,
+    "rule_recall": 1,
+    "rule_f1": 1,
+    "probe_policy_accuracy": 1
+  },
+  "cases": [
+    {
+      "id": "inspect-good",
+      "kind": "inspection",
+      "target_id": "eval-good",
+      "expected": {
+        "status": "pass",
+        "rules": []
+      }
+    },
+    {
+      "id": "inspect-stdout-pollution",
+      "kind": "inspection",
+      "target_id": "eval-stdout-pollution",
+      "expected": {
+        "status": "fail",
+        "rules": [
+          "PROTO-002"
+        ]
+      }
+    },
+    {
+      "id": "inspect-malformed-json",
+      "kind": "inspection",
+      "target_id": "eval-malformed-json",
+      "expected": {
+        "status": "fail",
+        "rules": [
+          "PROTO-003"
+        ]
+      }
+    },
+    {
+      "id": "inspect-excess-output",
+      "kind": "inspection",
+      "target_id": "eval-excess-output",
+      "expected": {
+        "status": "fail",
+        "rules": [
+          "ROBUST-002"
+        ]
+      }
+    },
+    {
+      "id": "inspect-early-exit",
+      "kind": "inspection",
+      "target_id": "eval-early-exit",
+      "expected": {
+        "status": "fail",
+        "rules": [
+          "ROBUST-004"
+        ]
+      }
+    },
+    {
+      "id": "audit-contract-defects",
+      "kind": "audit",
+      "target_id": "eval-audit-bad",
+      "expected": {
+        "status": "fail",
+        "rules": [
+          "DOC-001",
+          "DOC-002",
+          "DOC-006",
+          "SAFETY-001",
+          "SAFETY-002",
+          "SAFETY-005",
+          "SCHEMA-002",
+          "SCHEMA-003",
+          "SCHEMA-004",
+          "SCHEMA-006",
+          "SCHEMA-007"
+        ]
+      }
+    },
+    {
+      "id": "audit-contract-limit",
+      "kind": "audit",
+      "target_id": "eval-oversized",
+      "expected": {
+        "status": "pass",
+        "rules": [
+          "ROBUST-005"
+        ]
+      }
+    },
+    {
+      "id": "compare-compatible",
+      "kind": "comparison",
+      "baseline_target_id": "eval-compat-baseline",
+      "current_target_id": "eval-compat-compatible",
+      "include_non_breaking": true,
+      "expected": {
+        "status": "compatible",
+        "rules": [
+          "COMPAT-009"
+        ]
+      }
+    },
+    {
+      "id": "compare-breaking",
+      "kind": "comparison",
+      "baseline_target_id": "eval-compat-baseline",
+      "current_target_id": "eval-compat-breaking",
+      "include_non_breaking": false,
+      "expected": {
+        "status": "breaking",
+        "rules": [
+          "COMPAT-001",
+          "COMPAT-002",
+          "COMPAT-003",
+          "COMPAT-004",
+          "COMPAT-005",
+          "COMPAT-006",
+          "COMPAT-007"
+        ]
+      }
+    },
+    {
+      "id": "probe-local-policy",
+      "kind": "probe",
+      "target_id": "eval-good",
+      "tool_name": "fixture_echo",
+      "profile": "balanced",
+      "max_cases": 12,
+      "recorded_response": {
+        "cases": [
+          {
+            "category": "normal",
+            "purpose": "Verify an ordinary harmless synthetic echo operation.",
+            "arguments": {
+              "text": "synthetic hello"
+            },
+            "expected_outcome": "success",
+            "safety_note": "This case contains inert synthetic data only.",
+            "evidence_path": "/input_schema/properties/text"
+          },
+          {
+            "category": "adversarial",
+            "purpose": "Exercise local rejection of an unsafe absolute path.",
+            "arguments": {
+              "text": "/etc/passwd"
+            },
+            "expected_outcome": "guarded_rejection",
+            "safety_note": "The local policy must reject this unsafe candidate.",
+            "evidence_path": "/input_schema/properties/text"
+          },
+          {
+            "category": "normal",
+            "purpose": "Exercise local rejection of missing required input.",
+            "arguments": {},
+            "expected_outcome": "success",
+            "safety_note": "The local schema validator must reject this candidate.",
+            "evidence_path": "/input_schema/required"
+          },
+          {
+            "category": "boundary",
+            "purpose": "Exercise local rejection of nonexistent evidence.",
+            "arguments": {
+              "text": "synthetic boundary"
+            },
+            "expected_outcome": "success",
+            "safety_note": "The evidence resolver must reject this candidate.",
+            "evidence_path": "/input_schema/properties/not_present"
+          }
+        ]
+      },
+      "expected": {
+        "status": "partial",
+        "accepted_cases": 1,
+        "rejected_cases": 3
+      }
+    }
+  ]
+}

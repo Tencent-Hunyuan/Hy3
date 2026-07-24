@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "allowed_roots": [
+    ".."
+  ],
+  "defaults": {
+    "startup_timeout_ms": 1000,
+    "request_timeout_ms": 1000,
+    "total_timeout_ms": 3000,
+    "max_stdout_bytes": 262144,
+    "max_stderr_bytes": 65536,
+    "inherit_env": [
+      "PATH"
+    ]
+  },
+  "targets": {
+    "eval-good": {
+      "description": "Conforming control fixture for false-positive measurement.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/good-server/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    "eval-stdout-pollution": {
+      "description": "Fixture that emits a non-protocol startup banner.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/stdout-pollution/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    "eval-malformed-json": {
+      "description": "Fixture that emits malformed JSON-RPC bytes.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/malformed-stdout/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    "eval-excess-output": {
+      "description": "Fixture that exceeds the configured stdout limit.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/excess-output/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      },
+      "limits": {
+        "max_stdout_bytes": 1024
+      }
+    },
+    "eval-early-exit": {
+      "description": "Fixture that exits before MCP initialization.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/early-exit/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    "eval-audit-bad": {
+      "description": "Fixture containing deterministic schema, documentation, and safety defects.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/audit-bad-server/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    "eval-oversized": {
+      "description": "Fixture exceeding normalized contract field limits.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/oversized-contract-server/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    "eval-compat-baseline": {
+      "description": "Baseline fixture for compatibility classification.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/compat-baseline-server/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    "eval-compat-breaking": {
+      "description": "Fixture with known deterministic breaking changes.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/compat-breaking-server/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    "eval-compat-compatible": {
+      "description": "Fixture with compatible additions and widenings.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/compat-compatible-server/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+Cursor Agent CLI 2026.07.20-8cc9c0b
+Platform: macOS 26.3.2 arm64
+Artifact: clean tarball installation
+
+$ agent mcp list
+hy3-mcp-quality-gate-clean: ready
+
+$ agent mcp list-tools hy3-mcp-quality-gate-clean
+Tools for hy3-mcp-quality-gate-clean (4):
+- mcpq_audit_contracts (target_id, reasoning_effort, include_hy3, minimum_severity)
+- mcpq_compare_contracts (baseline_target_id, current_target_id, include_non_breaking, reasoning_effort, include_hy3)
+- mcpq_generate_probe_suite (target_id, tool_name, profile, max_cases, reasoning_effort)
+- mcpq_inspect_server (target_id, include_schemas, timeout_ms)
+
+Paths were normalized before commit. No provider conversation is recorded.
+
+Model-mediated fixture call:
+  artifact: clean tarball installation
+  tool: mcpq_inspect_server
+  target_id: fixture-good
+  include_schemas: false
+  status: pass
+  discovered tools: fixture_echo, fixture_sum
+  approval: explicit, run once

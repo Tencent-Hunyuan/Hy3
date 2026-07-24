@@ -1,0 +1,45 @@
+{
+  "name": "hy3-mcp-quality-gate",
+  "version": "0.1.0",
+  "description": "Hy3-powered evidence-based quality gate for local MCP servers",
+  "type": "module",
+  "private": true,
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "hy3-mcp-quality-gate": "dist/src/index.js"
+  },
+  "files": [
+    "assets",
+    "dist/fixtures",
+    "dist/src",
+    "docs",
+    "evaluation",
+    "examples",
+    "README.md",
+    "README_CN.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "demo": "npm run build && node scripts/demo.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "node scripts/lint.mjs",
+    "evaluate": "npm run build && node dist/src/evaluation/cli.js",
+    "pretest": "npm run build",
+    "test": "node --test dist/tests/*.test.js",
+    "start": "node dist/src/index.js",
+    "verify:delivery": "npm run build && node scripts/verify-delivery.mjs",
+    "verify:release": "node scripts/verify-release.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "ajv": "8.20.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "typescript": "^5.9.3"
+  }
+}

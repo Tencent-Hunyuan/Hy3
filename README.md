@@ -36,11 +36,13 @@
 - [Benchmark Appendix](#benchmark-appendix)
 - [News](#news)
 - [Model Links](#model-links)
+- [MCP Servers](#mcp-servers)
 - [Quickstart](#quickstart)
 - [Deployment](#deployment)
   - [vLLM](#vllm)
   - [SGLang](#sglang)
 - [Finetuning](#finetuning)
+- [RL Post-training](#rl-post-training)
 - [Quantization](#quantization)
 - [License](#license)
 - [Contact Us](#contact-us)
@@ -108,6 +110,14 @@ Model usefulness is not fully captured by benchmarks. Based on extensive product
 |:---|:---|:---:|:---:|:---:|:---:|
 | Hy3 | Instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3) | [Model](https://cnb.cool/ai-models/tencent/Hy3) |
 | Hy3-FP8 | FP8 quantized instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3-FP8) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3-FP8) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3-FP8) | [Model](https://cnb.cool/ai-models/tencent/Hy3-FP8) |
+
+## MCP Servers
+
+- [Hy3 MCP Quality Gate](mcp_servers/mcp_quality_gate/README.md) — an
+  evidence-based local stdio MCP Server that inspects, audits, compares, and
+  generates inert probes for pre-registered MCP Server contracts. Includes
+  Cursor and CodeBuddy project configurations, bilingual documentation, and a
+  reproducible fixture evaluation.
 
 ## Quickstart
 
@@ -204,6 +214,10 @@ python3 -m sglang.launch_server \
 ## Finetuning
 
 Hy3 provides a complete model finetuning pipeline. For detailed documentation, please refer to: [Finetuning Guide](./finetune/README.md)
+
+## RL Post-training
+
+Hy3 supports GRPO reinforcement learning training with [verl](https://github.com/volcengine/verl), training on Megatron-LM (model conversion via NVIDIA Megatron-Bridge) with vLLM rollout. For detailed documentation, please refer to: [RL Training Guide](./rl/README.md)
 
 ## Quantization
 

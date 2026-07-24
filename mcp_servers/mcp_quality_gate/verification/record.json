@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "recorded_on": "2026-07-24",
+  "result": "pass",
+  "platform": {
+    "operating_system": "macOS 26.3.2",
+    "build": "25D2140",
+    "architecture": "arm64"
+  },
+  "package": {
+    "name": "hy3-mcp-quality-gate",
+    "version": "0.1.0",
+    "tarball": "hy3-mcp-quality-gate-0.1.0.tgz",
+    "sha256": "8b40d02667c9103d939810791f24ae38b155578322f3f255ddd08129f347c594",
+    "packed_size_bytes": 132775,
+    "file_count": 170,
+    "clean_install": "pass",
+    "installed_dependency_count": 94,
+    "stdio_handshake": "pass",
+    "tool_count": 4,
+    "fixture_call": {
+      "tool": "mcpq_inspect_server",
+      "target_id": "fixture-good",
+      "status": "pass"
+    }
+  },
+  "clients": {
+    "cursor": {
+      "distribution": "official Cursor Agent CLI",
+      "version": "2026.07.20-8cc9c0b",
+      "configuration": ".cursor/mcp.json",
+      "configuration_scope": "project",
+      "clean_install_status": "ready",
+      "tool_discovery": "pass",
+      "tool_count": 4,
+      "compare_argument_surface": "pass",
+      "fixture_call": {
+        "tool": "mcpq_inspect_server",
+        "target_id": "fixture-good",
+        "include_schemas": false,
+        "status": "pass",
+        "discovered_tools": [
+          "fixture_echo",
+          "fixture_sum"
+        ]
+      },
+      "evidence": "verification/cursor.txt"
+    },
+    "codebuddy": {
+      "distribution": "official CodeBuddy Code CLI",
+      "version": "2.125.5",
+      "configuration": ".mcp.json",
+      "configuration_scope": "project",
+      "clean_install_status": "connected",
+      "tool_discovery": "pass",
+      "tool_count": 4,
+      "fixture_call": {
+        "tool": "mcpq_inspect_server",
+        "target_id": "fixture-good",
+        "include_schemas": false,
+        "status": "pass",
+        "discovered_tools": [
+          "fixture_echo",
+          "fixture_sum"
+        ]
+      },
+      "evidence": "verification/codebuddy.txt"
+    }
+  },
+  "automated_checks": {
+    "typecheck": "pass",
+    "lint": "pass",
+    "tests": {
+      "status": "pass",
+      "passed": 85,
+      "failed": 0
+    },
+    "evaluation": {
+      "status": "pass",
+      "passed_cases": 10,
+      "total_cases": 10,
+      "true_positive_rules": 24,
+      "false_positive_rules": 0,
+      "false_negative_rules": 0
+    },
+    "delivery_verifier": "pass",
+    "offline_demo": "pass",
+    "demo_gif": {
+      "path": "assets/client-demo.gif",
+      "sha256": "b33b1078eebfbef301e59826fcfad8d349c5eacd9eba17e29ba7a8f0bc4a6732",
+      "width": 840,
+      "height": 480,
+      "frame_count": 6
+    }
+  },
+  "security_audit": {
+    "committed_credentials_found": 0,
+    "committed_personal_paths_found": 0,
+    "raw_provider_conversations_committed": 0,
+    "real_target_registries_committed": 0
+  }
+}
