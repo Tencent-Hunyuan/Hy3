@@ -36,6 +36,7 @@
 - [Benchmark Appendix](#benchmark-appendix)
 - [News](#news)
 - [Model Links](#model-links)
+- [MCP Servers](#mcp-servers)
 - [Quickstart](#quickstart)
 - [Deployment](#deployment)
   - [vLLM](#vllm)
@@ -109,6 +110,14 @@ Model usefulness is not fully captured by benchmarks. Based on extensive product
 |:---|:---|:---:|:---:|:---:|:---:|
 | Hy3 | Instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3) | [Model](https://cnb.cool/ai-models/tencent/Hy3) |
 | Hy3-FP8 | FP8 quantized instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3-FP8) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3-FP8) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3-FP8) | [Model](https://cnb.cool/ai-models/tencent/Hy3-FP8) |
+
+## MCP Servers
+
+- [Hy3 MCP Quality Gate](mcp_servers/mcp_quality_gate/README.md) — an
+  evidence-based local stdio MCP Server that inspects, audits, compares, and
+  generates inert probes for pre-registered MCP Server contracts. Includes
+  Cursor and CodeBuddy project configurations, bilingual documentation, and a
+  reproducible fixture evaluation.
 
 ## Quickstart
 

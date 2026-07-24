@@ -1,0 +1,24 @@
+CodeBuddy Code CLI 2.125.5
+Platform: macOS 26.3.2 arm64
+Artifact: clean tarball installation
+
+$ codebuddy mcp get hy3-mcp-quality-gate-clean
+Scope: project
+Status: Connected
+Type: stdio
+Command: node
+Args: <clean-install>/dist/src/index.js
+Environment:
+  MCPQ_TARGETS_FILE=<clean-install>/examples/targets.example.json
+
+Paths were normalized before commit. No environment value or provider
+conversation is recorded.
+
+Model-mediated fixture call:
+  artifact: clean tarball installation
+  tool: mcpq_inspect_server
+  target_id: fixture-good
+  include_schemas: false
+  status: pass
+  discovered tools: fixture_echo, fixture_sum
+  permission: session-only allowlist for the read-only MCP call

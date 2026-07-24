@@ -12,21 +12,26 @@
     "hy3-mcp-quality-gate": "dist/src/index.js"
   },
   "files": [
+    "assets",
     "dist/fixtures",
     "dist/src",
     "docs",
     "evaluation",
     "examples",
-    "README.md"
+    "README.md",
+    "README_CN.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "demo": "npm run build && node scripts/demo.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "node scripts/lint.mjs",
     "evaluate": "npm run build && node dist/src/evaluation/cli.js",
     "pretest": "npm run build",
     "test": "node --test dist/tests/*.test.js",
-    "start": "node dist/src/index.js"
+    "start": "node dist/src/index.js",
+    "verify:delivery": "npm run build && node scripts/verify-delivery.mjs",
+    "verify:release": "node scripts/verify-release.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",

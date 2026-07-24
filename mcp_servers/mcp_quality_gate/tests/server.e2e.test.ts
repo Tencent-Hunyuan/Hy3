@@ -73,6 +73,69 @@ describe('stdio server', () => {
     }
   });
 
+  it('publishes comparison arguments at the JSON Schema top level', async () => {
+    const client = new Client({ name: 'quality-gate-test', version: '0.1.0' });
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [serverEntry],
+      stderr: 'pipe',
+    });
+
+    try {
+      await client.connect(transport);
+      const { tools } = await client.listTools();
+      const comparison = tools.find(
+        (tool) => tool.name === 'mcpq_compare_contracts',
+      );
+
+      assert.ok(comparison);
+      assert.equal(comparison.inputSchema.type, 'object');
+      assert.deepEqual(comparison.inputSchema.required, [
+        'baseline_target_id',
+        'current_target_id',
+      ]);
+      assert.ok(
+        comparison.inputSchema.properties &&
+          'baseline_target_id' in comparison.inputSchema.properties &&
+          'current_target_id' in comparison.inputSchema.properties,
+      );
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('rejects a comparison of the same registered target', async () => {
+    const client = new Client({ name: 'quality-gate-test', version: '0.1.0' });
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [serverEntry],
+      env: { MCPQ_TARGETS_FILE: exampleRegistry },
+      stderr: 'pipe',
+    });
+
+    try {
+      await client.connect(transport);
+      const result = await client.callTool({
+        name: 'mcpq_compare_contracts',
+        arguments: {
+          baseline_target_id: 'fixture-good',
+          current_target_id: 'fixture-good',
+          include_hy3: false,
+        },
+      });
+
+      assert.equal(result.isError, true);
+      assert.ok(Array.isArray(result.content));
+      const firstContent = result.content[0] as
+        | { type?: unknown; text?: unknown }
+        | undefined;
+      assert.equal(firstContent?.type, 'text');
+      assert.match(String(firstContent?.text), /must differ/);
+    } finally {
+      await client.close();
+    }
+  });
+
   it('calls the working inspector through the complete MCP stdio chain', async () => {
     const client = new Client({ name: 'quality-gate-test', version: '0.1.0' });
     const transport = new StdioClientTransport({

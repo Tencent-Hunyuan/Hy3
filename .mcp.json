@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "hy3-mcp-quality-gate": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "mcp_servers/mcp_quality_gate/dist/src/index.js"
+      ],
+      "env": {
+        "MCPQ_TARGETS_FILE": "mcp_servers/mcp_quality_gate/examples/targets.example.json"
+      },
+      "description": "Inspect, audit, compare, and generate inert probes for pre-registered local MCP servers."
+    }
+  },
+  "disabledMcpServers": []
+}

@@ -9,8 +9,10 @@ import {
 import { diffContracts } from './diff.js';
 
 export class ContractComparisonError extends Error {
-  constructor() {
-    super('contract comparison requires two complete target snapshots');
+  constructor(
+    message = 'contract comparison requires two complete target snapshots',
+  ) {
+    super(message);
     this.name = 'ContractComparisonError';
   }
 }

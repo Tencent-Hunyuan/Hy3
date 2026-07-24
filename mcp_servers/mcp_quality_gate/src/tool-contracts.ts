@@ -167,22 +167,17 @@ export const auditOutputSchema = z.object({
   model_metadata: semanticModelMetadataSchema.nullable(),
 });
 
-export const compareInputSchema = z
-  .object({
-    baseline_target_id: targetIdSchema.describe(
-      'Registered target representing the baseline contract.',
-    ),
-    current_target_id: targetIdSchema.describe(
-      'Registered target representing the current contract.',
-    ),
-    include_non_breaking: z.boolean().default(true),
-    reasoning_effort: reasoningEffortSchema,
-    include_hy3: z.boolean().default(true),
-  })
-  .refine(
-    (value) => value.baseline_target_id !== value.current_target_id,
-    'baseline_target_id and current_target_id must differ',
-  );
+export const compareInputSchema = z.object({
+  baseline_target_id: targetIdSchema.describe(
+    'Registered target representing the baseline contract.',
+  ),
+  current_target_id: targetIdSchema.describe(
+    'Registered target representing the current contract.',
+  ),
+  include_non_breaking: z.boolean().default(true),
+  reasoning_effort: reasoningEffortSchema,
+  include_hy3: z.boolean().default(true),
+});
 
 export type JsonValue =
   | boolean

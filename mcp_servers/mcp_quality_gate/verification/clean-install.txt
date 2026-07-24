@@ -1,0 +1,15 @@
+Package: hy3-mcp-quality-gate@0.1.0
+Tarball: hy3-mcp-quality-gate-0.1.0.tgz
+SHA-256: 8b40d02667c9103d939810791f24ae38b155578322f3f255ddd08129f347c594
+Packed size: 132775 bytes
+File count: 170
+Installed dependency count: 94
+
+Runtime: clean-install
+MCP handshake: pass
+Discovered tools: 4
+Fixture call:
+  tool: mcpq_inspect_server
+  target_id: fixture-good
+  status: pass
+Credentials or personal paths found: false

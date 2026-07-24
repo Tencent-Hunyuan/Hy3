@@ -1,10 +1,12 @@
 # Hy3 MCP Quality Gate
 
-> Work in progress: the TypeScript stdio server, four-tool surface, target registry,
-> bounded protocol inspector, deterministic contract audit, and optional Hy3
-> semantic audit, compatibility comparison, and inert probe generation are
-> runnable and covered by a reproducible fixture evaluation; later delivery
-> stages are tracked below.
+[English](README.md) | [简体中文](README_CN.md)
+
+> Delivery status: all eight planned stages are complete. The TypeScript stdio
+> server, four-tool surface, target registry, bounded protocol inspector,
+> deterministic and optional Hy3 audits, compatibility comparison, inert probe
+> generation, reproducible evaluation, clean-package verification, bilingual
+> documentation, and two-client evidence are available in this repository.
 
 Hy3 MCP Quality Gate is a local stdio MCP server that inspects other
 pre-registered MCP servers. It combines deterministic protocol and JSON Schema
@@ -85,6 +87,8 @@ The complete inputs, outputs, invariants, and error behavior are defined in
 | Deterministic compatibility comparison with optional Hy3 migration review | Available |
 | Hy3 probe generation with local Schema and safety validation | Available |
 | Reproducible fixture evaluation and committed metrics baseline | Available |
+| Cursor and CodeBuddy project configuration and read-only fixture calls | Verified |
+| Clean tarball installation and sanitized delivery evidence | Verified |
 
 `mcpq_audit_contracts` works offline with `include_hy3=false`. With
 `include_hy3=true`, it calls a configured OpenAI-compatible Hy3 endpoint. If Hy3 is
@@ -116,12 +120,49 @@ npm test
 npm run evaluate
 ```
 
+Run the complete offline demo. It discovers all four tools, calls inspection,
+audits a deliberately defective fixture, and compares a breaking contract change:
+
+```bash
+npm run demo
+```
+
 Build and start the quality gate over stdio:
 
 ```bash
 npm run build
 MCPQ_TARGETS_FILE=/absolute/path/to/targets.json npm start
 ```
+
+## Cursor and CodeBuddy
+
+The repository commits project-level configurations for both required clients:
+
+- Cursor: `/.cursor/mcp.json`
+- CodeBuddy: `/.mcp.json`
+
+From the repository root, one command installs dependencies, builds the server,
+checks the client configurations, performs a real stdio handshake, discovers all
+four tools, and calls the conforming fixture:
+
+```bash
+cd mcp_servers/mcp_quality_gate && npm ci && npm run verify:delivery
+```
+
+Then start Cursor or CodeBuddy from the **repository root**, approve the project
+MCP server when prompted, and use the examples in
+[`docs/clients.md`](docs/clients.md). The committed configurations use only
+repository-relative paths and contain no credential. Node.js must be available on
+the client's `PATH`.
+
+### Sanitized client demo
+
+![Sanitized Cursor, CodeBuddy, and clean-install verification](assets/client-demo.gif)
+
+The GIF is rendered reproducibly from normalized terminal evidence. It shows only
+synthetic fixture IDs and contains no account name, credential, personal path, or
+raw provider conversation. The exact acceptance and evidence rules are documented
+in [`docs/delivery.md`](docs/delivery.md).
 
 Start from [`examples/targets.example.json`](examples/targets.example.json), but
 keep the real registry private. Commands, cwd values, fixed environment variables,
@@ -244,8 +285,9 @@ compatibility, and robustness families. See
   validated Hy3 migration advice, and safe unexecuted test generation.
 - **Stage 7 — evaluation (complete):** intentionally broken fixture servers,
   strict golden expectations, reproducible metrics, and a committed baseline.
-- **Stage 8 — delivery:** package verification, CodeBuddy and Cursor recordings,
-  bilingual documentation, and demo GIF.
+- **Stage 8 — delivery (complete):** clean-package verification, real read-only
+  CodeBuddy and Cursor fixture calls, bilingual documentation, sanitized evidence,
+  and a reproducible demo GIF.
 
 ## Non-goals for the first release
 
@@ -278,4 +320,6 @@ evaluation result, or committed client configuration.
 - [Security model](docs/security.md)
 - [Rule catalogue](docs/rule-catalog.md)
 - [Evaluation method and baseline interpretation](docs/evaluation.md)
+- [Cursor and CodeBuddy setup and runnable calls](docs/clients.md)
+- [Delivery verification and evidence policy](docs/delivery.md)
 - [Target registry example](examples/targets.example.json)

@@ -84,6 +84,11 @@ export function createToolHandlers(
     },
     compare: async (input: CompareInput): Promise<CallToolResult> => {
       try {
+        if (input.baseline_target_id === input.current_target_id) {
+          throw new ContractComparisonError(
+            'baseline_target_id and current_target_id must differ',
+          );
+        }
         const report = await compareTargets(
           registry.get(input.baseline_target_id),
           registry.get(input.current_target_id),
