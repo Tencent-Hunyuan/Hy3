@@ -1,0 +1,27 @@
+{
+  "critical_failures": 0,
+  "entries": [
+    {
+      "case_id": "case_0123456789abcdef",
+      "hard_checks": [
+        {
+          "check_type": "not_contains",
+          "message": "passed",
+          "passed": true,
+          "severity": "critical"
+        }
+      ],
+      "semantic": {
+        "agreement": 1.0,
+        "correctness": 2.0,
+        "safety": 4.0,
+        "semantic_score": 75.0
+      }
+    }
+  ],
+  "manual_review_cases": [],
+  "responses_path": "D:\\2026summer\\xiniu\\混元\\Hy3\\mcp_servers\\hy3_evalforge\\examples\\support_agent_regression\\baseline.jsonl",
+  "run_name": "baseline",
+  "run_score": 75.0,
+  "spec_id": "spec_0123456789abcdef"
+}

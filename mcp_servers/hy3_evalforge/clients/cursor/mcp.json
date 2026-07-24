@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "hy3-evalforge": {
+      "command": "hy3-evalforge",
+      "env": {
+        "EVALFORGE_ALLOWED_ROOT": "${workspaceFolder}",
+        "HY3_BASE_URL": "https://tokenhub.tencentmaas.com/v1",
+        "HY3_MODEL": "hy3",
+        "HY3_API_KEY": "${env:HY3_API_KEY}"
+      }
+    }
+  }
+}

@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hy3-evalforge"
+version = "0.1.0"
+description = "A local stdio MCP server for evidence-backed AI quality evaluation with Hy3."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Hy3 EvalForge Contributors" }]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "mcp[cli]>=1.9,<2",
+    "openai>=1.68,<3",
+    "pydantic>=2.10",
+]
+
+[project.optional-dependencies]
+dev = [
+    "build>=1.2",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.25",
+    "pillow>=11",
+    "ruff>=0.9",
+    "twine>=6.1",
+]
+
+[project.scripts]
+hy3-evalforge = "hy3_evalforge.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hy3_evalforge"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
