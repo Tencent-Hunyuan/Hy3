@@ -204,21 +204,29 @@ deep_research：
 }
 ~~~
 
-## Demo GIF 录制
+## Demo 与轻量验证
 
-仓库提供 [docs/demo.tape](docs/demo.tape) 和
-[scripts/record_codebuddy_demo.sh](scripts/record_codebuddy_demo.sh)。在已安装
-CodeBuddy CLI、VHS 且 Hy3 endpoint 可用的机器上：
+![MCP Inspector CLI demo](docs/demo.gif)
+
+该 GIF 由 [scripts/record_inspector_demo.py](scripts/record_inspector_demo.py)
+实际执行官方 MCP Inspector CLI 后生成，包含 `tools/list` 和
+`analyze_evidence` 的 `tools/call`。录制环境只有 OpenAI-compatible Qwen backend，
+所以它证明的是 MCP stdio 与兼容 API 生产路径可用，不代表已验证 Hy3 模型效果。
+完整边界和其他免 IDE 验证方式见 [docs/VALIDATION.md](docs/VALIDATION.md)。
+
+使用真实 Hy3 endpoint 一键复录：
 
 ~~~bash
 cd mcp_servers/hy3_deep_research
 export HY3_API_KEY="EMPTY"
 export HY3_BASE_URL="http://127.0.0.1:8000/v1"
-vhs docs/demo.tape
+export HY3_MODEL="hy3"
+export HY3_REASONING_EFFORT="high"
+uv run --with pillow scripts/record_inspector_demo.py
 ~~~
 
-生成文件为 docs/demo.gif。录制脚本不会把 Key 打印到终端。提交活动 PR 前，
-请使用真实 Hy3 endpoint 录制并把 GIF 一并提交，以满足活动的客户端实测要求。
+如需录制 CodeBuddy CLI，仍可使用 [docs/demo.tape](docs/demo.tape) 和
+[scripts/record_codebuddy_demo.sh](scripts/record_codebuddy_demo.sh)。
 
 ## 安全边界
 

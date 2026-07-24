@@ -8,6 +8,7 @@ import re
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from typing import ClassVar
 
 import pytest
 from mcp import ClientSession, StdioServerParameters
@@ -15,7 +16,7 @@ from mcp.client.stdio import stdio_client
 
 
 class DummyHy3Handler(BaseHTTPRequestHandler):
-    received_payloads: list[dict] = []
+    received_payloads: ClassVar[list[dict]] = []
 
     def do_POST(self) -> None:  # noqa: N802 - BaseHTTPRequestHandler API
         if self.path != "/v1/chat/completions":
@@ -115,7 +116,7 @@ async def test_stdio_client_calls_analyze_evidence_through_dummy_hy3(
         env=env,
     )
 
-    async with stdio_client(parameters) as (read_stream, write_stream):
+    async with stdio_client(parameters) as (read_stream, write_stream):  # noqa: SIM117
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
             tools = (await session.list_tools()).tools
