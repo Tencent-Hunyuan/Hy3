@@ -194,7 +194,7 @@ The key parameters in the script are as follows:
 - When resuming from a checkpoint, there may be minor differences in loss due to the randomness of some non-deterministic algorithms. This is normal. See: [HuggingFace Transformers Trainer Randomness](https://huggingface.co/docs/transformers/main/en/main_classes/trainer#randomness)
 - When `--model_name_or_path` is specified, all model-related parameters will be ignored.
 - Samples within a batch are padded to the length of the longest sample in the batch, but the maximum length of each sample is `max_seq_length`. Any excess will be truncated.
-- If you see a warning about bias weights not being loaded, you can ignore it. Hunyuan-Large does not use bias.
+- If you see a warning about **linear layer** bias weights not being loaded, you can ignore it; Hy3's linear layers (q_proj / k_proj / v_proj / o_proj, etc.) do not use bias. Note: the MoE router's `e_score_correction_bias` is a buffer and is auto-loaded by the training script, so please do not ignore its loading failure.
 
 ##### What if GPU Memory is Insufficient?
 

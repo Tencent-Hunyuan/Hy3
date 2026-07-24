@@ -41,6 +41,7 @@
   - [vLLM](#使用-vllm-推理)
   - [SGLang](#使用-sglang-推理)
 - [模型微调](#模型微调)
+- [强化学习训练](#强化学习训练)
 - [量化工具](#量化工具)
 - [许可证](#许可证)
 - [联系我们](#联系我们)
@@ -204,6 +205,10 @@ python3 -m sglang.launch_server \
 ## 模型微调
 
 Hy3 提供了完整的模型微调流程，详细的微调文档请参考：[模型微调指南](./finetune/README_CN.md)
+
+## 强化学习训练
+
+Hy3 支持基于 [verl](https://github.com/volcengine/verl) 的 GRPO 强化学习训练，训练侧使用 Megatron-LM（通过 NVIDIA Megatron-Bridge 完成模型转换），rollout 侧使用 vLLM。详细文档请参考：[强化学习训练指南](./rl/README_CN.md)
 
 ## 量化工具
 
