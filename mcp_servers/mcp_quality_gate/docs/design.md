@@ -148,6 +148,41 @@ Hy3 findings remain separate from deterministic findings. They cannot change the
 numeric score, convert a deterministic failure into a pass, authorize tool
 execution, or expose hidden reasoning.
 
+### 6.5 Compatibility evidence
+
+Compatibility comparison inspects both registered targets and requires two
+complete normalized snapshots. Every change receives a stable content-derived ID
+and records:
+
+- a typed change kind and deterministic compatibility class;
+- current and previous tool names where applicable;
+- baseline and current JSON Pointers;
+- bounded normalized before and after values;
+- the applicable `COMPAT-*` rule.
+
+Deterministic findings reference `/changes/<index>`, whose change object contains
+the required two-sided evidence. Hy3 may emit only `COMPAT-008` against an existing
+`text_changed` change ID. It cannot modify a change, remove a deterministic
+finding, or alter `breaking` status.
+
+### 6.6 Probe validation boundary
+
+Probe generation requires Hy3, but acceptance is local. A generated candidate is
+kept only when:
+
+- its category matches the requested profile, unless the profile is `balanced`;
+- its evidence pointer resolves below the selected tool's input schema;
+- ordinary, boundary, adversarial, and domain-error arguments validate against
+  that schema;
+- an explicit `schema_error` case uses category `error` and fails that schema;
+- its arguments contain no credential values, personal paths, absolute paths,
+  traversal, shell composition, destructive command text, or non-example network
+  hosts;
+- its stable local ID is unique and the suite remains within `max_cases`.
+
+Rejected candidates are counted and produce `partial`. Generated cases are never
+executed.
+
 ## 7. Public MCP tool contracts
 
 ### 7.1 `mcpq_inspect_server`
@@ -233,11 +268,13 @@ Structured output:
 | `status` | `compatible \| breaking \| partial` | Deterministic compatibility result or partial semantic review. |
 | `baseline_hash` | string | Stable baseline snapshot hash. |
 | `current_hash` | string | Stable current snapshot hash. |
-| `changes` | array | Added, removed, narrowed, widened, or semantically changed items. |
+| `changes` | ContractChange[] | Stable typed changes with compatibility class, rule ID, baseline/current paths, and normalized before/after values. |
 | `findings` | Finding[] | Compatibility findings with before/after evidence paths. |
 | `migration_plan` | array | Ordered, validated migration steps; empty when Hy3 is disabled. |
 | `model_metadata` | object or null | Sanitized model call metadata. |
 
+`breaking` takes precedence over Hy3 availability. A structurally compatible
+comparison returns `partial` when Hy3 was requested but did not complete.
 Structural compatibility is deterministic. Hy3 may identify semantic risk and
 explain migration impact, but cannot downgrade a deterministic breaking change.
 
@@ -270,9 +307,10 @@ Structured output:
 | `model_metadata` | object | Sanitized model call metadata. |
 
 Each ProbeCase contains a stable local ID, category, purpose, JSON arguments,
-expected outcome class, safety note, and evidence explaining which contract element
+expected outcome (`success`, `schema_error`, `domain_error`, or
+`guarded_rejection`), safety note, and evidence explaining which contract element
 motivated the case. The quality gate rejects cases that violate the target's input
-schema unless their explicit purpose is schema-error testing.
+schema unless they are explicit `error`/`schema_error` tests.
 
 ## 8. Error model
 

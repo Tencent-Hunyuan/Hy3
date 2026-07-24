@@ -93,6 +93,10 @@ business tools merely to produce this rule.
 Hy3 can add migration explanations but cannot downgrade `COMPAT-001`,
 `COMPAT-003`, `COMPAT-004`, `COMPAT-005`, or `COMPAT-006`.
 
+Stage 6 implements `COMPAT-001` through `COMPAT-009`. Deterministic comparison
+creates stable before/after change evidence for all structural rules;
+`COMPAT-008` remains a validated Hy3-only judgment tied to a detected text change.
+
 ## 7. Robustness rules
 
 | ID | Default severity | Source | Condition |

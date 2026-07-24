@@ -50,6 +50,39 @@
       "env": {
         "NODE_ENV": "test"
       }
+    },
+    "fixture-compat-baseline": {
+      "description": "Synthetic baseline contract for deterministic comparison examples.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/compat-baseline-server/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    "fixture-compat-breaking": {
+      "description": "Synthetic contract containing known breaking compatibility changes.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/compat-breaking-server/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    "fixture-compat-compatible": {
+      "description": "Synthetic contract containing compatible additions and widenings.",
+      "command": "node",
+      "args": [
+        "dist/fixtures/compat-compatible-server/index.js"
+      ],
+      "cwd": "..",
+      "env": {
+        "NODE_ENV": "test"
+      }
     }
   }
 }

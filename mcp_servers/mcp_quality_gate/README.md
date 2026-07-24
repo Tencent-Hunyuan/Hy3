@@ -2,7 +2,8 @@
 
 > Work in progress: the TypeScript stdio server, four-tool surface, target registry,
 > bounded protocol inspector, deterministic contract audit, and optional Hy3
-> semantic audit are runnable; later stages are tracked below.
+> semantic audit, compatibility comparison, and inert probe generation are
+> runnable; later delivery stages are tracked below.
 
 Hy3 MCP Quality Gate is a local stdio MCP server that inspects other
 pre-registered MCP servers. It combines deterministic protocol and JSON Schema
@@ -57,7 +58,7 @@ server is harmless at runtime. The initial release never invokes the target's
 business tools, never executes generated probes, and never accepts an arbitrary
 command from an MCP caller.
 
-## Planned MCP tools
+## MCP tools
 
 | Tool | Purpose | Hy3 role |
 | --- | --- | --- |
@@ -80,14 +81,25 @@ The complete inputs, outputs, invariants, and error behavior are defined in
 | Timeout, malformed JSON, stdout pollution, output limit, and process cleanup controls | Available |
 | Deterministic contract rules and reproducible scorecard | Available |
 | Hy3 semantic audit with strict validation and safe degradation | Available |
-| Contract comparison and probe generation | Planned for Stage 6 |
+| Deterministic compatibility comparison with optional Hy3 migration review | Available |
+| Hy3 probe generation with local Schema and safety validation | Available |
 
 `mcpq_audit_contracts` works offline with `include_hy3=false`. With
 `include_hy3=true`, it calls a configured OpenAI-compatible Hy3 endpoint. If Hy3 is
 not configured, unavailable, times out, or returns invalid output, deterministic
 results remain available and a non-failing deterministic audit returns `partial`;
-no semantic findings are fabricated. The comparison and probe tools remain
-registered but return an explicit tool error until their implementation stages.
+no semantic findings are fabricated.
+
+`mcpq_compare_contracts` can run fully offline with `include_hy3=false`. Removed
+tools, new required inputs, narrowed constraints, removed enum values, narrowed
+outputs, and riskier annotations are classified deterministically. Hy3 may add
+`COMPAT-008` semantic-risk findings and migration steps, but cannot downgrade a
+deterministic `breaking` result.
+
+`mcpq_generate_probe_suite` requires Hy3 because generation is its core operation.
+Every candidate is validated locally against the discovered input JSON Schema,
+profile, case limit, evidence pointer, and safety policy. The quality gate returns
+the cases as inert data and never calls the target tool.
 
 ## Development quickstart
 
@@ -131,6 +143,26 @@ process environment, and never commit it. `mcpq_audit_contracts` accepts an
 optional per-call `reasoning_effort`; when omitted it uses
 `HY3_REASONING_EFFORT`.
 
+Example MCP arguments:
+
+```json
+{
+  "baseline_target_id": "fixture-compat-baseline",
+  "current_target_id": "fixture-compat-breaking",
+  "include_non_breaking": true,
+  "include_hy3": false
+}
+```
+
+```json
+{
+  "target_id": "fixture-good",
+  "tool_name": "fixture_echo",
+  "profile": "balanced",
+  "max_cases": 12
+}
+```
+
 ## Design principles
 
 1. **Facts and judgments stay separate.** Every finding declares whether it came
@@ -146,7 +178,7 @@ optional per-call `reasoning_effort`; when omitted it uses
 6. **Scores remain reproducible.** Only deterministic findings change the numeric
    conformance score; Hy3 findings are reported separately with confidence.
 
-## Planned architecture
+## Architecture
 
 ```text
 MCP client
@@ -157,7 +189,9 @@ Hy3 MCP Quality Gate
     |-- target registry (trusted local configuration)
     |-- bounded stdio inspector
     |-- deterministic rule engine
-    |-- Hy3 semantic auditor
+    |-- deterministic compatibility engine
+    |-- Hy3 semantic and migration reviewers
+    |-- locally validated inert probe generator
     `-- structured report composer
              |
              v
@@ -203,7 +237,8 @@ compatibility, and robustness families. See
   rules, versioned deductions, and reproducible score.
 - **Stage 5 — Hy3 audit (complete):** validated structured semantic findings,
   evidence resolution, bounded repair, and safe provider degradation.
-- **Stage 6 — compatibility and probes:** contract diff and safe test generation.
+- **Stage 6 — compatibility and probes (complete):** deterministic contract diff,
+  validated Hy3 migration advice, and safe unexecuted test generation.
 - **Stage 7 — evaluation:** intentionally broken fixture servers and generated
   metrics.
 - **Stage 8 — delivery:** package verification, CodeBuddy and Cursor recordings,

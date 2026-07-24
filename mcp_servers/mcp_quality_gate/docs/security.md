@@ -130,6 +130,19 @@ or execution permissions. The response body is capped at 256 KiB, the complete
 request uses a fixed deadline, and provider bodies or credentials are never copied
 into public errors.
 
+Compatibility and probe paths add the following controls:
+
+- migration findings must reference an existing `text_changed` change ID and are
+  always emitted as Hy3-owned `COMPAT-008` advice;
+- a deterministic breaking comparison remains breaking even if Hy3 succeeds,
+  fails, or proposes a migration;
+- probe IDs and evidence paths are derived or resolved locally;
+- generated arguments are checked against the selected tool's input JSON Schema;
+- schema-invalid cases are accepted only as explicit schema-error tests;
+- absolute paths, traversal, shell composition, destructive command text,
+  credential arguments, and non-example network hosts are rejected;
+- accepted probes are returned as data and are never sent to `tools/call`.
+
 ## 7. Logging and artifacts
 
 - stdout is reserved for MCP JSON-RPC.

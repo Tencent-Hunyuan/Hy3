@@ -184,15 +184,82 @@ export const compareInputSchema = z
     'baseline_target_id and current_target_id must differ',
   );
 
-export const compareOutputSchema = z.object({
-  status: z.enum(['compatible', 'breaking', 'partial']),
-  baseline_hash: z.string(),
-  current_hash: z.string(),
-  changes: z.array(z.record(z.unknown())),
-  findings: z.array(findingSchema),
-  migration_plan: z.array(z.string()),
-  model_metadata: z.record(z.unknown()).nullable(),
-});
+export type JsonValue =
+  | boolean
+  | number
+  | string
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
+export const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
+  z.union([
+    z.boolean(),
+    z.number().finite(),
+    z.string(),
+    z.null(),
+    z.array(jsonValueSchema),
+    z.record(jsonValueSchema),
+  ]),
+);
+
+export const contractChangeKindSchema = z.enum([
+  'tool_added',
+  'tool_removed',
+  'tool_renamed',
+  'input_required_added',
+  'input_required_removed',
+  'input_property_added',
+  'input_property_removed',
+  'input_constraint_narrowed',
+  'input_constraint_widened',
+  'input_enum_value_added',
+  'input_enum_value_removed',
+  'output_property_added',
+  'output_property_removed',
+  'output_constraint_changed',
+  'annotation_changed',
+  'text_changed',
+]);
+
+export const compatibilityRuleIdSchema = z.enum([
+  'COMPAT-001',
+  'COMPAT-002',
+  'COMPAT-003',
+  'COMPAT-004',
+  'COMPAT-005',
+  'COMPAT-006',
+  'COMPAT-007',
+  'COMPAT-008',
+  'COMPAT-009',
+]);
+
+export const contractChangeSchema = z
+  .object({
+    id: z.string().regex(/^change-[a-f0-9]{16}$/),
+    kind: contractChangeKindSchema,
+    compatibility: z.enum(['breaking', 'non_breaking', 'review']),
+    tool_name: z.string().min(1).max(128),
+    previous_tool_name: z.string().min(1).max(128).nullable(),
+    baseline_path: z.string().min(1).nullable(),
+    current_path: z.string().min(1).nullable(),
+    before: jsonValueSchema,
+    after: jsonValueSchema,
+    rule_id: compatibilityRuleIdSchema,
+  })
+  .strict();
+
+export const compareOutputSchema = z
+  .object({
+    status: z.enum(['compatible', 'breaking', 'partial']),
+    baseline_hash: z.string().regex(/^[a-f0-9]{64}$/),
+    current_hash: z.string().regex(/^[a-f0-9]{64}$/),
+    changes: z.array(contractChangeSchema).max(2000),
+    findings: z.array(findingSchema).max(2000),
+    migration_plan: z.array(z.string().min(1).max(600)).max(32),
+    model_metadata: semanticModelMetadataSchema.nullable(),
+  })
+  .strict();
 
 export const probeInputSchema = z.object({
   target_id: targetIdSchema,
@@ -208,26 +275,44 @@ export const probeInputSchema = z.object({
   reasoning_effort: reasoningEffortSchema,
 });
 
-const probeCaseSchema = z.object({
-  id: z.string(),
-  category: z.enum(['normal', 'boundary', 'error', 'adversarial']),
-  purpose: z.string(),
-  arguments: z.record(z.unknown()),
-  expected_outcome: z.string(),
-  safety_note: z.string(),
-  evidence_path: z.string(),
-});
+export const probeCategorySchema = z.enum([
+  'normal',
+  'boundary',
+  'error',
+  'adversarial',
+]);
 
-export const probeOutputSchema = z.object({
-  status: z.enum(['complete', 'partial']),
-  target_id: targetIdSchema,
-  tool_name: z.string(),
-  snapshot_hash: z.string(),
-  cases: z.array(probeCaseSchema),
-  rejected_case_count: z.number().int().nonnegative(),
-  warnings: z.array(z.string()),
-  model_metadata: z.record(z.unknown()),
-});
+export const probeExpectedOutcomeSchema = z.enum([
+  'success',
+  'schema_error',
+  'domain_error',
+  'guarded_rejection',
+]);
+
+export const probeCaseSchema = z
+  .object({
+    id: z.string().regex(/^probe-[a-f0-9]{16}$/),
+    category: probeCategorySchema,
+    purpose: z.string().min(8).max(600),
+    arguments: z.record(jsonValueSchema),
+    expected_outcome: probeExpectedOutcomeSchema,
+    safety_note: z.string().min(8).max(600),
+    evidence_path: z.string().min(1).max(500),
+  })
+  .strict();
+
+export const probeOutputSchema = z
+  .object({
+    status: z.enum(['complete', 'partial']),
+    target_id: targetIdSchema,
+    tool_name: z.string().min(1).max(128),
+    snapshot_hash: z.string().regex(/^[a-f0-9]{64}$/),
+    cases: z.array(probeCaseSchema).max(30),
+    rejected_case_count: z.number().int().nonnegative(),
+    warnings: z.array(z.string().min(1).max(600)).max(32),
+    model_metadata: semanticModelMetadataSchema,
+  })
+  .strict();
 
 export type InspectInput = z.infer<typeof inspectInputSchema>;
 export type AuditInput = z.infer<typeof auditInputSchema>;
@@ -235,9 +320,17 @@ export type CompareInput = z.infer<typeof compareInputSchema>;
 export type ProbeInput = z.infer<typeof probeInputSchema>;
 export type InspectOutput = z.infer<typeof inspectOutputSchema>;
 export type AuditOutput = z.infer<typeof auditOutputSchema>;
+export type CompareOutput = z.infer<typeof compareOutputSchema>;
+export type ContractChange = z.infer<typeof contractChangeSchema>;
+export type ProbeOutput = z.infer<typeof probeOutputSchema>;
+export type ProbeCase = z.infer<typeof probeCaseSchema>;
 export type Finding = z.infer<typeof findingSchema>;
 export type Severity = z.infer<typeof severitySchema>;
 export type ReasoningEffort = z.infer<typeof reasoningEffortValueSchema>;
+export type ProbeCategory = z.infer<typeof probeCategorySchema>;
+export type ProbeExpectedOutcome = z.infer<
+  typeof probeExpectedOutcomeSchema
+>;
 export type SemanticModelMetadata = z.infer<
   typeof semanticModelMetadataSchema
 >;

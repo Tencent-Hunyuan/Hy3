@@ -4,6 +4,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 
 import { loadRuntimeConfig } from './config.js';
 import { Hy3ChatClient } from './hy3/client.js';
+import { Hy3MigrationReviewer } from './hy3/migration-reviewer.js';
+import { Hy3ProbeGenerator } from './hy3/probe-generator.js';
 import { Hy3SemanticReviewer } from './hy3/reviewer.js';
 import { createServer } from './server.js';
 import { TargetRegistry } from './target-registry.js';
@@ -16,20 +18,33 @@ async function main(): Promise<void> {
       ? TargetRegistry.empty()
       : await TargetRegistry.load(config.targetsFile);
   const apiKey = process.env.HY3_API_KEY;
-  const semanticReviewer =
+  const dependencies =
     config.hy3.apiKeyPresent && apiKey !== undefined
-      ? new Hy3SemanticReviewer(
-          new Hy3ChatClient({
+      ? (() => {
+          const client = new Hy3ChatClient({
             apiKey,
             baseUrl: config.hy3.baseUrl,
             model: config.hy3.model,
             timeoutMs: config.hy3.timeoutMs,
-          }),
-          config.hy3.reasoningEffort,
-        )
-      : undefined;
+          });
+          return {
+            semanticReviewer: new Hy3SemanticReviewer(
+              client,
+              config.hy3.reasoningEffort,
+            ),
+            migrationReviewer: new Hy3MigrationReviewer(
+              client,
+              config.hy3.reasoningEffort,
+            ),
+            probeGenerator: new Hy3ProbeGenerator(
+              client,
+              config.hy3.reasoningEffort,
+            ),
+          };
+        })()
+      : {};
   const server = createServer(
-    createToolHandlers(registry, semanticReviewer),
+    createToolHandlers(registry, dependencies),
   );
   const transport = new StdioServerTransport();
 
