@@ -1,0 +1,5 @@
+fastmcp>=2.0.0
+openai>=1.0.0
+python-dotenv>=1.0.0
+pypdf>=4.0.0
+python-docx>=1.0.0
