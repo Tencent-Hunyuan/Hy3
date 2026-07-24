@@ -35,10 +35,8 @@ class Hy3Client:
             ],
             "temperature": 0.9,
             "top_p": 1.0,
-            "extra_body": {
-                "chat_template_kwargs": {
-                    "reasoning_effort": reasoning_effort or self.settings.reasoning_effort,
-                }
+            "chat_template_kwargs": {
+                "reasoning_effort": reasoning_effort or self.settings.reasoning_effort,
             },
         }
         data = json.dumps(payload).encode("utf-8")

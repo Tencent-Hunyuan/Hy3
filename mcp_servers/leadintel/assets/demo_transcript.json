@@ -38,26 +38,31 @@
         "inputSchema": {
           "properties": {
             "company": {
+              "description": "Company or organization name to analyze.",
               "title": "Company",
               "type": "string"
             },
             "industry": {
               "default": "",
+              "description": "Industry, vertical, or market segment for the lead.",
               "title": "Industry",
               "type": "string"
             },
             "website": {
               "default": "",
+              "description": "Official website or public URL for the lead, if available.",
               "title": "Website",
               "type": "string"
             },
             "notes": {
               "default": "",
+              "description": "Free-form sales notes, public profile, buying signals, or CRM context.",
               "title": "Notes",
               "type": "string"
             },
             "product_context": {
               "default": "",
+              "description": "Your product, offer, ICP, or sales context used to judge fit.",
               "title": "Product Context",
               "type": "string"
             }
@@ -85,16 +90,19 @@
         "inputSchema": {
           "properties": {
             "question": {
+              "description": "Question to answer using the local knowledge base.",
               "title": "Question",
               "type": "string"
             },
             "docs_dir": {
               "default": "examples/knowledge_base",
+              "description": "Knowledge-base directory under HY3_LEADINTEL_ROOT.",
               "title": "Docs Dir",
               "type": "string"
             },
             "top_k": {
               "default": 4,
+              "description": "Maximum number of grounded citations to retrieve, from 1 to 8.",
               "title": "Top K",
               "type": "integer"
             }
@@ -122,25 +130,30 @@
         "inputSchema": {
           "properties": {
             "company": {
+              "description": "Target company or account name.",
               "title": "Company",
               "type": "string"
             },
             "objective": {
+              "description": "Desired sales outcome, such as book a call, request RFQ, or send samples.",
               "title": "Objective",
               "type": "string"
             },
             "channel": {
               "default": "email",
+              "description": "Outreach channel, for example email, LinkedIn, WeChat, or phone.",
               "title": "Channel",
               "type": "string"
             },
             "lead_context": {
               "default": "",
+              "description": "Known facts about the lead, pains, objections, or buying stage.",
               "title": "Lead Context",
               "type": "string"
             },
             "evidence": {
               "default": "",
+              "description": "Product proof points, citations, or case facts to include in outreach.",
               "title": "Evidence",
               "type": "string"
             }
@@ -169,16 +182,19 @@
         "inputSchema": {
           "properties": {
             "input_path": {
+              "description": "CSV or JSON lead file path under HY3_LEADINTEL_ROOT.",
               "title": "Input Path",
               "type": "string"
             },
             "focus": {
               "default": "",
+              "description": "Optional scoring focus, such as motor export, medical devices, or robotics.",
               "title": "Focus",
               "type": "string"
             },
             "output_path": {
               "default": "",
+              "description": "Optional JSON report output path under HY3_LEADINTEL_ROOT.",
               "title": "Output Path",
               "type": "string"
             }
