@@ -2,8 +2,14 @@ __pycache__/
 *.pyc
 *.pyo
 .env
-.venv/
-venv/
 *.egg-info/
 dist/
 build/
+.venv/
+venv/
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
