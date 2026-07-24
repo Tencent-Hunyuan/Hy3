@@ -12,12 +12,12 @@ def main() -> int:
     frames = []
     font = ImageFont.load_default()
     slides = [
-        ("Hy3 LeadIntel MCP", "stdio server starts in offline demo mode"),
-        ("initialize", "MCP ClientSession connects successfully"),
-        ("tools/list", "5 tools: analyze, query, outreach, batch, status"),
-        ("hy3_leadintel_status", "mode=offline, model=hy3, key is not exposed"),
-        ("analyze_lead", "Aurora Motion GmbH -> P0, score=100"),
-        ("ready for real Hy3", "set HY3_API_KEY and HY3_API_BASE"),
+        ("Hy3 LeadIntel MCP", "Two real MCP clients verified the stdio server."),
+        ("Claude Code CLI 2.1.146", "claude mcp list -> hy3-leadintel-verify: ✓ Connected"),
+        ("Claude tool call", "claude -p called hy3_leadintel_status and returned JSON."),
+        ("MCP Inspector CLI 1.0.0", "tools/list returned 5 tools from the server."),
+        ("Inspector tool call", "tools/call hy3_leadintel_status -> isError: false"),
+        ("Ready for real Hy3", "Set HY3_API_KEY and HY3_API_BASE to leave offline mode."),
     ]
     for title, body in slides:
         image = Image.new("RGB", (860, 420), "#f7f7f2")
@@ -27,7 +27,7 @@ def main() -> int:
         draw.text((52, 130), title, fill="#17202a", font=font)
         draw.text((52, 190), body, fill="#334155", font=font)
         draw.rounded_rectangle((52, 270, 808, 340), radius=8, outline="#2f855a", width=3)
-        draw.text((78, 296), "MCP stdio flow verified by scripts/sdk_stdio_client.py", fill="#2f855a", font=font)
+        draw.text((78, 296), "Evidence: assets/client_verification.md + demo_transcript.json", fill="#2f855a", font=font)
         frames.append(image)
 
     out = ROOT / "assets" / "demo.gif"

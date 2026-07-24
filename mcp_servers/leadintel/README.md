@@ -92,6 +92,29 @@ Demo prompt:
 Use batch_score_leads on examples/leads/sample_leads.csv and tell me which company should be contacted first.
 ```
 
+### MCP Inspector
+
+Use `clients/inspector.config.json` for the official MCP Inspector CLI. Replace `/ABS/PATH/TO/Hy3/mcp_servers/leadintel` before running:
+
+```bash
+npx --yes @modelcontextprotocol/inspector \
+  --cli \
+  --config clients/inspector.config.json \
+  --server hy3-leadintel \
+  --method tools/list
+```
+
+Tool-call demo:
+
+```bash
+npx --yes @modelcontextprotocol/inspector \
+  --cli \
+  --config clients/inspector.config.json \
+  --server hy3-leadintel \
+  --method tools/call \
+  --tool-name hy3_leadintel_status
+```
+
 ## Local Verification
 
 ```bash
@@ -105,14 +128,26 @@ Expected result:
 
 - tests pass;
 - selfcheck reports `PASS`;
-- raw stdio client initializes the MCP server, lists tools, and calls `hy3_leadintel_status`.
+- MCP SDK stdio client initializes the MCP server, lists tools, and calls `hy3_leadintel_status`.
+
+## Verified MCP Clients
+
+The server was verified in two distinct MCP clients on 2026-07-24:
+
+| Client | Version | Verification |
+|---|---:|---|
+| Claude Code CLI | 2.1.146 | `claude mcp list` reported `✓ Connected`; `claude -p` called `hy3_leadintel_status` and returned the status JSON. |
+| MCP Inspector CLI | 1.0.0 | `tools/list` returned 5 tools; `tools/call --tool-name hy3_leadintel_status` returned `isError: false` with structured content. |
+
+The sanitized command log is in `assets/client_verification.md`.
 
 ## Demo
 
 The repository includes:
 
 - `assets/demo_transcript.json`: a reproducible offline MCP transcript.
-- `assets/demo.gif`: a small GIF showing the stdio demo flow.
+- `assets/demo.gif`: a small GIF showing the Claude Code and MCP Inspector client verification flow.
+- `assets/client_verification.md`: sanitized command log for two real MCP client checks.
 - `scripts/sdk_stdio_client.py`: an MCP SDK stdio client that can regenerate the transcript.
 
 Offline demo output is clearly marked as offline. With a real Hy3 key, the same MCP tools call the configured Hy3 endpoint.
@@ -128,7 +163,7 @@ Offline demo output is clearly marked as offline. With a real Hy3 key, the same 
 | Add 1-2 data sources/tools | Done | Local knowledge-base files and CSV/JSON lead files. |
 | Local stdio mode | Done | `app.run(transport="stdio")`. |
 | No hardcoded API key | Done | Key is read only from `HY3_API_KEY`; status exposes only a boolean. |
-| Verify in 2 MCP clients | Prepared | CodeBuddy/WorkBuddy, Cursor, and Cline configs plus demo prompts are included. |
+| Verify in 2 MCP clients | Done | Claude Code CLI and MCP Inspector CLI both connected and called/listed MCP tools; see `assets/client_verification.md`. |
 | One-command install | Done | `uvx --from ... hy3-leadintel-mcp` and `pip install -e .`. |
 | Complete README | Done | Install, config, tools, demos, tests, and acceptance mapping are documented here. |
 | Demo video/GIF | Done | `assets/demo.gif` and transcript included. |
