@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "hy3-leadintel": {
+      "command": "python3",
+      "args": [
+        "-m",
+        "hy3_leadintel_mcp.server"
+      ],
+      "env": {
+        "HY3_OFFLINE": "1",
+        "HY3_LEADINTEL_ROOT": "/ABS/PATH/TO/Hy3/mcp_servers/leadintel",
+        "PYTHONPATH": "/ABS/PATH/TO/Hy3/mcp_servers/leadintel/src"
+      }
+    }
+  }
+}
