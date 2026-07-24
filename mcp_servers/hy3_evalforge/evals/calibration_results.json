@@ -1,0 +1,186 @@
+{
+  "case_count": 30,
+  "pairwise_accuracy": 0.9,
+  "results": [
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_01"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_02"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": false,
+      "expected_winner": "tie",
+      "id": "cal_03"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_04"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_05"
+    },
+    {
+      "actual_winner": "tie",
+      "correct": true,
+      "expected_winner": "tie",
+      "id": "cal_06"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_07"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_08"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_09"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_10"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_11"
+    },
+    {
+      "actual_winner": "tie",
+      "correct": true,
+      "expected_winner": "tie",
+      "id": "cal_12"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_13"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_14"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_15"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": false,
+      "expected_winner": "tie",
+      "id": "cal_16"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_17"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_18"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_19"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_20"
+    },
+    {
+      "actual_winner": "tie",
+      "correct": true,
+      "expected_winner": "tie",
+      "id": "cal_21"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_22"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_23"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_24"
+    },
+    {
+      "actual_winner": "tie",
+      "correct": true,
+      "expected_winner": "tie",
+      "id": "cal_25"
+    },
+    {
+      "actual_winner": "baseline",
+      "correct": true,
+      "expected_winner": "baseline",
+      "id": "cal_26"
+    },
+    {
+      "actual_winner": "baseline",
+      "correct": true,
+      "expected_winner": "baseline",
+      "id": "cal_27"
+    },
+    {
+      "actual_winner": "baseline",
+      "correct": true,
+      "expected_winner": "baseline",
+      "id": "cal_28"
+    },
+    {
+      "actual_winner": "candidate",
+      "correct": true,
+      "expected_winner": "candidate",
+      "id": "cal_29"
+    },
+    {
+      "actual_winner": "baseline",
+      "correct": false,
+      "expected_winner": "tie",
+      "id": "cal_30"
+    }
+  ]
+}
