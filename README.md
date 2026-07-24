@@ -1,232 +1,128 @@
-<p align="left">
-    <a href="README_CN.md">中文</a>&nbsp;｜&nbsp;English
-</p>
-<br>
+# Hy3 研究助手
 
-<p align="center">
- <img src="assets/logo-en.png" width="400"/> <br>
-</p>
+基于腾讯混元 Hy3 大模型的智能研究助手，提供**深度研究**、**代码分析**、**文档问答**三大核心功能。
 
-<div align="center" style="line-height: 1;">
+## 项目简介
 
+本项目是腾讯犀牛鸟实战计划 [Issue #4](https://github.com/Tencent-Hunyuan/Hy3/issues/4) 的完整实现。所有智能任务（研究规划、报告生成、代码分析、文档问答）均通过调用 **Hy3 API**（OpenAI 兼容接口）完成，不涉及模型训练、微调或本地推理。
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](#license)
-&nbsp;&nbsp;
-[![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Tencent%20Hy-ffc107?color=ffc107&logoColor=white)](https://huggingface.co/tencent/Hy3)
-&nbsp;&nbsp;
-[![ModelScope](https://img.shields.io/badge/ModelScope-Tencent%20Hy-624aff)](https://modelscope.cn/models/Tencent-Hunyuan/Hy3)
-&nbsp;&nbsp;
-[![cnb.cool](https://img.shields.io/badge/cnb.cool-Tencent%20Hy-blue?logoColor=white)](https://cnb.cool/ai-models/tencent/Hy3)
-&nbsp;&nbsp;
-[![GitCode](https://img.shields.io/badge/GitCode-Tencent%20Hy-red?logoColor=white)](https://ai.gitcode.com/tencent_hunyuan/Hy3)
+### Hy3 在项目中的角色
 
-</div>
+| 功能模块 | Hy3 的角色 |
+|---------|-----------|
+| 深度研究 | 研究计划制定 → 搜索关键词生成 → 长文报告撰写 → 执行摘要提炼 |
+| 代码分析 | 代码理解、Bug 检测、性能优化建议、安全审计、质量评分 |
+| 文档问答 | 多文档阅读理解、证据驱动的精准问答 |
 
-<p align="center">
-    🖥️&nbsp;<a href="https://aistudio.tencent.com/"><b>Official Website</b></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    💬&nbsp;<a href="https://github.com/Tencent-Hunyuan/Hy3"><b>GitHub</b></a></p>
+## 项目结构
 
----
-
-## Table of Contents
-
-- [Model Introduction](#model-introduction)
-- [Stronger Agent Capabilities](#stronger-agent-capabilities)
-- [More Reliable Product Experiences](#more-reliable-product-experiences)
-- [Benchmark Appendix](#benchmark-appendix)
-- [News](#news)
-- [Model Links](#model-links)
-- [Quickstart](#quickstart)
-- [Deployment](#deployment)
-  - [vLLM](#vllm)
-  - [SGLang](#sglang)
-- [Finetuning](#finetuning)
-- [RL Post-training](#rl-post-training)
-- [Quantization](#quantization)
-- [License](#license)
-- [Contact Us](#contact-us)
-
----
-
-## Model Introduction
-
-**Hy3** is a 295B-parameter Mixture-of-Experts (MoE) model with 21B active parameters and 3.8B MTP layer parameters, developed by the Tencent Hy Team. Following the Hy3 Preview launch in late April, we gathered feedback from 50+ products and scaled up post-training with higher quality data. Today, we introduce Hy3, which outperforms similar-size models and rivals flagship open-source models with 2-5x parameters. It also shows significant gains in utility across various products and productivity tasks.
-
-
-| Property | Value |
-|:---|:---|
-| Architecture | Mixture-of-Experts (MoE) |
-| Total Parameters | 295B |
-| Activated Parameters | 21B |
-| MTP Layer Parameters | 3.8B |
-| Number of Layers (excluding MTP layer) | 80 |
-| Number of MTP Layers | 1 |
-| Attention Heads | 64 (GQA, 8 KV heads, head dim 128) |
-| Hidden Size | 4096 |
-| Intermediate Size | 13312 |
-| Context Length | 256K |
-| Vocabulary Size | 120832 |
-| Number of Experts | 192 experts, top-8 activated |
-| Supported Precisions | BF16 |
-
-## Stronger Agent Capabilities
-
-Building on Hy3 Preview, we further improved the quality and diversity of post-training data while scaling up RL training. Hy3 shows solid gains across reasoning, agentic, and long-context tasks, competitive with much larger flagship models.
-
-<p align="center">
-  <img src="assets/benchmark.png" width="100%"/>
-</p>
-
-In productivity scenarios such as coding, office work, financial modeling, frontend design, and game development, Hy3 has made remarkable progress and can now serve as a reliable, cost-effective model option.
-
-We don't think public benchmark scores tell the full story. So we ran a blind evaluation with 270 experts using tasks from their work, and Hy3 scored 2.67/4, outperforming GLM-5.1 at 2.51/4. The advantage was most substantial in frontend development, data & storage, and CI/CD tasks.
-
-## More Reliable Product Experiences
-
-Model usefulness is not fully captured by benchmarks. Based on extensive product feedback, we identified and fixed the following issues, receiving consistently positive feedback from product teams.
-
-**Stability of tool calls and output formats**: We fixed multiple baseline reliability issues, bringing the model to production-grade standards across tool configurations and output constraints. Tool-call error recovery and overall efficiency improved. Hy3 also generalizes across different agent scaffoldings. On SWE-Bench Verified, accuracy variance across scaffoldings like CodeBuddy, Cline, and KiloCode remains within 4%.
-
-**Knowledge and anti-hallucination**: Guided by the ideal of "answer when grounded, state when evidence is missing, do not conflate sources or fabricate data," we implemented fine-grained data cleaning and training constraints. In internal evaluations based on real-world scenarios, Hy3's hallucination rate dropped from 12.5% to 5.4%, and commonsense error rates fell from 25.4% to 12.7%. These improvements materially reduce fact conflation, fabrication, and logical contradiction.
-
-**Complex context retention and multi-turn intent tracking**: Through joint optimization of SFT and RL, Hy3 improved on operational pain points like coreference resolution, ellipsis recovery, and multi-turn constraint inheritance. On internal comprehensive multi-turn tests, the issue rate dropped from 17.4% to 7.9%. Hy3 also improved markedly on long-dialogue evals like MRCR. Its outputs are more concise while ensuring complex intents do not decay or drift over long-horizon interactions.
-
-## Benchmark Appendix
-
-<p align="center">
-  <img src="assets/benchmark-appendix.png" width="100%"/>
-</p>
-
-## News
-
-
-* 🔥 We open-source **Hy3** and **Hy3-FP8** model weights on [Hugging Face](https://huggingface.co/tencent/Hy3), [ModelScope](https://modelscope.cn/models/Tencent-Hunyuan/Hy3), [GitCode](https://ai.gitcode.com/tencent_hunyuan/Hy3), and [CNB](https://cnb.cool/ai-models/tencent/Hy3).
-
-## Model Links
-
-
-| Model Name | Description | Hugging Face | ModelScope | GitCode | CNB |
-|:---|:---|:---:|:---:|:---:|:---:|
-| Hy3 | Instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3) | [Model](https://cnb.cool/ai-models/tencent/Hy3) |
-| Hy3-FP8 | FP8 quantized instruct model | 🤗 [Model](https://huggingface.co/tencent/Hy3-FP8) | [Model](https://modelscope.cn/models/Tencent-Hunyuan/Hy3-FP8) | [Model](https://ai.gitcode.com/tencent_hunyuan/Hy3-FP8) | [Model](https://cnb.cool/ai-models/tencent/Hy3-FP8) |
-
-## Quickstart
-
-Deploy Hy3 with [vLLM](#vllm) or [SGLang](#sglang) first, then call the OpenAI-compatible API:
-
-```python
-from openai import OpenAI
-
-client = OpenAI(base_url="http://127.0.0.1:8000/v1", api_key="EMPTY")
-
-response = client.chat.completions.create(
-    model="hy3",
-    messages=[
-        {"role": "user", "content": "Hello! Can you briefly introduce yourself?"},
-    ],
-    temperature=0.9,
-    top_p=1.0,
-    # reasoning_effort: "no_think" (default, direct response), "low", "high" (deep chain-of-thought)
-    extra_body={"chat_template_kwargs": {"reasoning_effort": "no_think"}},
-)
-print(response.choices[0].message.content)
+```
+hy3-research-assistant/
+├── backend/
+│   ├── main.py            # FastAPI 服务器（6 个 API 端点，全部支持 SSE 流式输出）
+│   ├── hy3_client.py      # Hy3 API 客户端封装（OpenAI 兼容接口）
+│   ├── tools.py            # 工具函数（网页搜索、PDF/DOCX/代码文件解析）
+│   └── requirements.txt   # Python 依赖
+├── frontend/
+│   └── index.html          # 现代化 Web 前端（暗色主题、流式渲染、Markdown 展示）
+├── .env.example            # 环境变量配置模板
+├── .gitignore
+├── start.bat               # Windows 一键启动脚本
+└── README.md
 ```
 
-> **Recommended parameters**: `temperature=0.9`, `top_p=1.0`.
->
-> **Reasoning mode**: Set `reasoning_effort` to `"high"` for complex tasks (math, coding, reasoning) or `"no_think"` for direct responses.
+## 快速开始
 
-See the [Deployment](#deployment) section below for how to start the API server.
+### 环境要求
 
-## Deployment
+- Python 3.9+
+- 有效的 Hy3 API Key
 
-Hy3 has 295B parameters in total. To serve it on 8 GPUs, we recommend using H20-3e or other GPUs with larger memory capacity.
-
-For production serving, we recommend using vLLM or SGLang, both of which provide dedicated recipes for Hy3:
-
-- [vLLM](https://github.com/vllm-project/vllm) - see [vLLM recipes](https://recipes.vllm.ai/tencent/Hy3)
-
-- [SGLang](https://docs.sglang.io/) - see [SGLang cookbook](https://lmsysorg.mintlify.app/cookbook/autoregressive/Tencent/Hy3)
-
-### vLLM
-
-Build vLLM from source:
-```bash
-uv venv --python 3.12 --seed --managed-python
-source .venv/bin/activate
-git clone https://github.com/vllm-project/vllm.git
-cd vllm
-uv pip install --editable . --torch-backend=auto
-```
-
-Start the vLLM server with MTP enabled:
+### 安装与启动
 
 ```bash
-# Switch to trtllm backend to work-around mnnvl workspace size issue.
-export VLLM_FLASHINFER_ALLREDUCE_BACKEND=trtllm
-vllm serve tencent/Hy3 \
-  --tensor-parallel-size 8 \
-  --speculative-config.method mtp \
-  --speculative-config.num_speculative_tokens 2 \
-  --tool-call-parser hy_v3 \
-  --reasoning-parser hy_v3 \
-  --enable-auto-tool-choice \
-  --port 8000 \
-  --served-model-name hy3
+# 1. 克隆项目
+cd hy3-research-assistant
+
+# 2. 配置 API 密钥
+# Windows
+set HY3_API_KEY=你的API密钥
+# 或复制 .env.example 为 .env 并填入密钥
+
+# 3. 安装依赖
+cd backend
+pip install -r requirements.txt
+
+# 4. 启动服务
+python main.py
+# 服务运行在 http://localhost:8000
 ```
 
-### SGLang
+打开浏览器访问 `http://localhost:8000` 即可使用。
 
-Build SGLang from source:
-```bash
-git clone https://github.com/sgl-project/sglang
-cd sglang
-pip3 install pip --upgrade
-pip3 install "transformers>=5.6.0"
-pip3 install -e "python"
-```
+### 可选环境变量
 
-Launch SGLang server with MTP enabled:
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| `HY3_API_KEY` | Hy3 API 密钥（必填） | - |
+| `HY3_BASE_URL` | API 端点地址 | `https://api.hunyuan.cloud.tencent.com/v1` |
+| `HY3_MODEL` | 模型名称 | `hunyuan-pro` |
+| `PORT` | 服务端口 | `8000` |
 
-```bash
-python3 -m sglang.launch_server \
-  --model tencent/Hy3 \
-  --tp-size 8 \
-  --tool-call-parser hunyuan \
-  --reasoning-parser hunyuan \
-  --speculative-num-steps 2 \
-  --speculative-eagle-topk 1 \
-  --speculative-num-draft-tokens 3 \
-  --speculative-algorithm EAGLE \
-  --port 8000 \
-  --served-model-name hy3
-```
+## 三大功能
 
-## Finetuning
+### 🔬 深度研究 (Deep Research)
 
-Hy3 provides a complete model finetuning pipeline. For detailed documentation, please refer to: [Finetuning Guide](./finetune/README.md)
+输入研究主题，Hy3 将自动完成：
 
-## RL Post-training
+1. **研究规划** — 将主题拆解为子问题，生成搜索关键词
+2. **资料搜索** — 自动搜索相关网页资料
+3. **报告撰写** — 基于搜索结果生成 1500-3000 字专业研究报告
+4. **执行摘要** — 提炼核心发现的简明摘要
 
-Hy3 supports GRPO reinforcement learning training with [verl](https://github.com/volcengine/verl), training on Megatron-LM (model conversion via NVIDIA Megatron-Bridge) with vLLM rollout. For detailed documentation, please refer to: [RL Training Guide](./rl/README.md)
+### 💻 代码分析 (Code Analysis)
 
-## Quantization
+粘贴代码或上传代码文件，Hy3 将提供：
 
-We provide [AngelSlim](https://github.com/tencent/AngelSlim), a more accessible, comprehensive, and efficient toolkit for large model compression. AngelSlim supports a comprehensive suite of compression tools for large-scale multimodal models, including common quantization algorithms, low-bit quantization, and speculative sampling.
+- 代码概览与核心功能解读
+- 执行逻辑与关键流程分析
+- 潜在 Bug、性能隐患、安全问题诊断
+- 具体优化建议与最佳实践
+- 1-10 分代码质量评分
 
-## License
+### 📚 文档问答 (Document Q&A)
 
+上传多个文档（支持 PDF、DOCX、TXT、代码文件等），向 Hy3 提问：
 
-Hy3 is released under the **Apache License 2.0**. See [LICENSE](./LICENSE) for details.
+- 基于文档内容精准回答
+- 引用原始段落作为证据
+- 明确标注信息缺失情况
 
-## Contact Us
+## API 端点
 
-If you would like to leave a message for our R&D and product teams, welcome to contact us. You can also reach us via email:
+| 端点 | 方法 | 说明 |
+|------|------|------|
+| `/` | GET | 前端页面 |
+| `/health` | GET | 服务健康检查 |
+| `/api/research` | POST | 深度研究（流式） |
+| `/api/analyze-code` | POST | 粘贴代码分析（流式） |
+| `/api/analyze-code-file` | POST | 上传代码文件分析（流式） |
+| `/api/qa-documents` | POST | 多文档问答（流式） |
 
-📧 **hunyuan_opensource@tencent.com**
+所有智能端点均使用 Server-Sent Events (SSE) 实现流式输出，支持前端实时渲染。
 
----
+## 技术栈
 
-<p align="center">
-  <i>Hy3 is developed by the Tencent Hy Team.</i>
-</p>
+- **后端**: FastAPI + OpenAI SDK + Uvicorn
+- **前端**: 原生 HTML/CSS/JS + marked.js（Markdown 渲染）
+- **模型**: 腾讯混元 Hy3（通过 OpenAI 兼容接口调用）
+- **工具**: DuckDuckGo 网页搜索、PyPDF2、python-docx
+
+## CodeBuddy 协作说明
+
+本项目借助 CodeBuddy AI 编程助手完成：
+
+- **协同设计**：AI 参与整体架构规划、功能模块拆解、前后端交互设计
+- **代码生成**：AI 编写了 `backend/main.py`（服务器和所有提示词工程）、`backend/hy3_client.py`（API 客户端封装）、`backend/tools.py`（搜索和文件解析）、`frontend/index.html`（完整前端界面）
+- **文档撰写**：AI 生成了 README、配置模板、启动脚本
+- **代码审查与打磨**：AI 辅助进行了语法检查、中英文翻译、结构优化
