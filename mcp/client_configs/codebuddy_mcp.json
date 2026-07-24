@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "hy3-deep-research": {
+      "command": "uvx",
+      "args": ["--from", "/path/to/Hy3/mcp", "hy3-deep-research"],
+      "env": {
+        "HUNYUAN_API_KEY": "your-tokenhub-api-key-here",
+        "HUNYUAN_BASE_URL": "https://tokenhub.tencentmaas.com/v1",
+        "HUNYUAN_MODEL": "hy3",
+        "HUNYUAN_REASONING_FORMAT": "top"
+      }
+    }
+  }
+}
