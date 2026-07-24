@@ -1,10 +1,9 @@
-.cache/
-.huggingface/
-.modelscope/
-.ms*
-*.swp
-*.log
-.DS_Store
-Thumbs.db
 __pycache__/
 *.pyc
+*.pyo
+.env
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
