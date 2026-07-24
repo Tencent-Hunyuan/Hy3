@@ -37,6 +37,7 @@
 - [News](#news)
 - [Model Links](#model-links)
 - [Quickstart](#quickstart)
+- [Deep Research MCP Server](#deep-research-mcp-server)
 - [Deployment](#deployment)
   - [vLLM](#vllm)
   - [SGLang](#sglang)
@@ -136,6 +137,14 @@ print(response.choices[0].message.content)
 > **Reasoning mode**: Set `reasoning_effort` to `"high"` for complex tasks (math, coding, reasoning) or `"no_think"` for direct responses.
 
 See the [Deployment](#deployment) section below for how to start the API server.
+
+## Deep Research MCP Server
+
+A ready-to-install deep research MCP Server is available at
+[`mcp_servers/hy3_deep_research`](./mcp_servers/hy3_deep_research). It exposes web
+search, evidence analysis, cited report generation, and claim verification tools powered by
+an OpenAI-compatible Hy3 API. The package includes CodeBuddy and Cursor configurations,
+protocol tests, and a reproducible demo workflow.
 
 ## Deployment
 

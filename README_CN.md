@@ -37,6 +37,7 @@
 - [新闻](#新闻)
 - [模型链接](#模型链接)
 - [快速开始](#快速开始)
+- [深度研究 MCP Server](#深度研究-mcp-server)
 - [推理和部署](#推理和部署)
   - [vLLM](#使用-vllm-推理)
   - [SGLang](#使用-sglang-推理)
@@ -133,6 +134,12 @@ print(response.choices[0].message.content)
 > **推理模式**：复杂任务（数学、编程、推理）建议设置 `reasoning_effort="high"`，日常对话可使用默认的 `"no_think"` 直接回复。
 
 具体部署方式请参考下方[推理和部署](#推理和部署)章节。
+
+## 深度研究 MCP Server
+
+仓库提供可一键安装的[深度研究 MCP Server](./mcp_servers/hy3_deep_research)，
+通过 OpenAI-compatible Hy3 API 实现网页搜索、证据分析、带引用报告生成与事实核验。
+该包附带 CodeBuddy 和 Cursor 项目级配置、协议测试以及可复现的 demo 录制流程。
 
 ## 推理和部署
 
