@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "manifest_version": 1,
+  "case_count": 10,
+  "results": [
+    {
+      "id": "inspect-good",
+      "kind": "inspection",
+      "expected_status": "pass",
+      "actual_status": "pass",
+      "status_match": true,
+      "expected_rules": [],
+      "actual_rules": [],
+      "exact_rule_match": true,
+      "accepted_cases": null,
+      "rejected_cases": null,
+      "probe_policy_match": null
+    },
+    {
+      "id": "inspect-stdout-pollution",
+      "kind": "inspection",
+      "expected_status": "fail",
+      "actual_status": "fail",
+      "status_match": true,
+      "expected_rules": [
+        "PROTO-002"
+      ],
+      "actual_rules": [
+        "PROTO-002"
+      ],
+      "exact_rule_match": true,
+      "accepted_cases": null,
+      "rejected_cases": null,
+      "probe_policy_match": null
+    },
+    {
+      "id": "inspect-malformed-json",
+      "kind": "inspection",
+      "expected_status": "fail",
+      "actual_status": "fail",
+      "status_match": true,
+      "expected_rules": [
+        "PROTO-003"
+      ],
+      "actual_rules": [
+        "PROTO-003"
+      ],
+      "exact_rule_match": true,
+      "accepted_cases": null,
+      "rejected_cases": null,
+      "probe_policy_match": null
+    },
+    {
+      "id": "inspect-excess-output",
+      "kind": "inspection",
+      "expected_status": "fail",
+      "actual_status": "fail",
+      "status_match": true,
+      "expected_rules": [
+        "ROBUST-002"
+      ],
+      "actual_rules": [
+        "ROBUST-002"
+      ],
+      "exact_rule_match": true,
+      "accepted_cases": null,
+      "rejected_cases": null,
+      "probe_policy_match": null
+    },
+    {
+      "id": "inspect-early-exit",
+      "kind": "inspection",
+      "expected_status": "fail",
+      "actual_status": "fail",
+      "status_match": true,
+      "expected_rules": [
+        "ROBUST-004"
+      ],
+      "actual_rules": [
+        "ROBUST-004"
+      ],
+      "exact_rule_match": true,
+      "accepted_cases": null,
+      "rejected_cases": null,
+      "probe_policy_match": null
+    },
+    {
+      "id": "audit-contract-defects",
+      "kind": "audit",
+      "expected_status": "fail",
+      "actual_status": "fail",
+      "status_match": true,
+      "expected_rules": [
+        "DOC-001",
+        "DOC-002",
+        "DOC-006",
+        "SAFETY-001",
+        "SAFETY-002",
+        "SAFETY-005",
+        "SCHEMA-002",
+        "SCHEMA-003",
+        "SCHEMA-004",
+        "SCHEMA-006",
+        "SCHEMA-007"
+      ],
+      "actual_rules": [
+        "DOC-001",
+        "DOC-002",
+        "DOC-006",
+        "SAFETY-001",
+        "SAFETY-002",
+        "SAFETY-005",
+        "SCHEMA-002",
+        "SCHEMA-003",
+        "SCHEMA-004",
+        "SCHEMA-006",
+        "SCHEMA-007"
+      ],
+      "exact_rule_match": true,
+      "accepted_cases": null,
+      "rejected_cases": null,
+      "probe_policy_match": null
+    },
+    {
+      "id": "audit-contract-limit",
+      "kind": "audit",
+      "expected_status": "pass",
+      "actual_status": "pass",
+      "status_match": true,
+      "expected_rules": [
+        "ROBUST-005"
+      ],
+      "actual_rules": [
+        "ROBUST-005"
+      ],
+      "exact_rule_match": true,
+      "accepted_cases": null,
+      "rejected_cases": null,
+      "probe_policy_match": null
+    },
+    {
+      "id": "compare-compatible",
+      "kind": "comparison",
+      "expected_status": "compatible",
+      "actual_status": "compatible",
+      "status_match": true,
+      "expected_rules": [
+        "COMPAT-009"
+      ],
+      "actual_rules": [
+        "COMPAT-009"
+      ],
+      "exact_rule_match": true,
+      "accepted_cases": null,
+      "rejected_cases": null,
+      "probe_policy_match": null
+    },
+    {
+      "id": "compare-breaking",
+      "kind": "comparison",
+      "expected_status": "breaking",
+      "actual_status": "breaking",
+      "status_match": true,
+      "expected_rules": [
+        "COMPAT-001",
+        "COMPAT-002",
+        "COMPAT-003",
+        "COMPAT-004",
+        "COMPAT-005",
+        "COMPAT-006",
+        "COMPAT-007"
+      ],
+      "actual_rules": [
+        "COMPAT-001",
+        "COMPAT-002",
+        "COMPAT-003",
+        "COMPAT-004",
+        "COMPAT-005",
+        "COMPAT-006",
+        "COMPAT-007"
+      ],
+      "exact_rule_match": true,
+      "accepted_cases": null,
+      "rejected_cases": null,
+      "probe_policy_match": null
+    },
+    {
+      "id": "probe-local-policy",
+      "kind": "probe",
+      "expected_status": "partial",
+      "actual_status": "partial",
+      "status_match": true,
+      "expected_rules": [],
+      "actual_rules": [],
+      "exact_rule_match": true,
+      "accepted_cases": 1,
+      "rejected_cases": 3,
+      "probe_policy_match": true
+    }
+  ],
+  "metrics": {
+    "status_accuracy": 1,
+    "exact_rule_set_accuracy": 1,
+    "rule_precision": 1,
+    "rule_recall": 1,
+    "rule_f1": 1,
+    "probe_policy_accuracy": 1,
+    "true_positive_rules": 24,
+    "false_positive_rules": 0,
+    "false_negative_rules": 0
+  },
+  "minimums": {
+    "status_accuracy": 1,
+    "exact_rule_set_accuracy": 1,
+    "rule_precision": 1,
+    "rule_recall": 1,
+    "rule_f1": 1,
+    "probe_policy_accuracy": 1
+  },
+  "passed": true
+}

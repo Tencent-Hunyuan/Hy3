@@ -3,7 +3,8 @@
 > Work in progress: the TypeScript stdio server, four-tool surface, target registry,
 > bounded protocol inspector, deterministic contract audit, and optional Hy3
 > semantic audit, compatibility comparison, and inert probe generation are
-> runnable; later delivery stages are tracked below.
+> runnable and covered by a reproducible fixture evaluation; later delivery
+> stages are tracked below.
 
 Hy3 MCP Quality Gate is a local stdio MCP server that inspects other
 pre-registered MCP servers. It combines deterministic protocol and JSON Schema
@@ -83,6 +84,7 @@ The complete inputs, outputs, invariants, and error behavior are defined in
 | Hy3 semantic audit with strict validation and safe degradation | Available |
 | Deterministic compatibility comparison with optional Hy3 migration review | Available |
 | Hy3 probe generation with local Schema and safety validation | Available |
+| Reproducible fixture evaluation and committed metrics baseline | Available |
 
 `mcpq_audit_contracts` works offline with `include_hy3=false`. With
 `include_hy3=true`, it calls a configured OpenAI-compatible Hy3 endpoint. If Hy3 is
@@ -111,6 +113,7 @@ npm ci
 npm run typecheck
 npm run lint
 npm test
+npm run evaluate
 ```
 
 Build and start the quality gate over stdio:
@@ -239,8 +242,8 @@ compatibility, and robustness families. See
   evidence resolution, bounded repair, and safe provider degradation.
 - **Stage 6 — compatibility and probes (complete):** deterministic contract diff,
   validated Hy3 migration advice, and safe unexecuted test generation.
-- **Stage 7 — evaluation:** intentionally broken fixture servers and generated
-  metrics.
+- **Stage 7 — evaluation (complete):** intentionally broken fixture servers,
+  strict golden expectations, reproducible metrics, and a committed baseline.
 - **Stage 8 — delivery:** package verification, CodeBuddy and Cursor recordings,
   bilingual documentation, and demo GIF.
 
@@ -274,4 +277,5 @@ evaluation result, or committed client configuration.
 - [Architecture and tool contracts](docs/design.md)
 - [Security model](docs/security.md)
 - [Rule catalogue](docs/rule-catalog.md)
+- [Evaluation method and baseline interpretation](docs/evaluation.md)
 - [Target registry example](examples/targets.example.json)

@@ -4,5 +4,6 @@ dist/
 node_modules/
 *.tgz
 targets.json
+!evaluation/targets.json
 *.raw.log
 *.raw.json

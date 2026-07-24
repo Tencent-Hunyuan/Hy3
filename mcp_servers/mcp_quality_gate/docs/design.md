@@ -357,5 +357,7 @@ in [`rule-catalog.md`](rule-catalog.md).
 - **Hy3 gate:** semantic output validates against its schema and degrades cleanly on
   provider failure.
 - **Compatibility gate:** known breaking changes cannot be downgraded by Hy3.
+- **Evaluation gate:** committed synthetic fixtures reproduce the exact expected
+  statuses, rule sets, probe-policy counts, and metrics without a live Hy3 key.
 - **Delivery gate:** a clean package install works in CodeBuddy and Cursor and the
   committed verification record contains no credential or personal path.

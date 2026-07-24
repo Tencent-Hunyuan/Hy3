@@ -149,8 +149,12 @@ Compatibility and probe paths add the following controls:
 - operational logs go to stderr and are redacted.
 - API request headers and environment dumps are never logged.
 - fixtures contain synthetic values only.
+- recorded evaluation model responses contain synthetic values only and still pass
+  through production output, Schema, evidence, and safety validators.
 - demo transcripts are sanitized before commit.
 - evaluation outputs store normalized target IDs instead of absolute paths.
+- evaluation manifests accept only package-relative JSON paths without traversal,
+  and duplicate case IDs are rejected.
 - generated tarballs, local registries, `.env` files, and raw recordings are ignored.
 
 ## 8. Safe degradation
