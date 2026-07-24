@@ -1,35 +1,49 @@
-# Hy3 研究助手
+# Hy3 MCP Server
 
-基于腾讯混元 Hy3 大模型的智能研究助手，提供**深度研究**、**代码分析**、**文档问答**三大核心功能。
+基于 **MCP (Model Context Protocol)** 协议，封装**腾讯混元 Hy3** 大模型能力的智能工具集。
+
+可一键安装、即插即用到任何支持 MCP 的 AI 客户端（CodeBuddy / WorkBuddy / Cursor / Cline / Claude Desktop 等）。
+
+---
 
 ## 项目简介
 
-本项目是腾讯犀牛鸟实战计划 [Issue #4](https://github.com/Tencent-Hunyuan/Hy3/issues/4) 的完整实现。所有智能任务（研究规划、报告生成、代码分析、文档问答）均通过调用 **Hy3 API**（OpenAI 兼容接口）完成，不涉及模型训练、微调或本地推理。
+本项目是**腾讯犀牛鸟实战计划 [Issue #3](https://github.com/Tencent-Hunyuan/Hy3/issues/3)** 的完整实现。通过 MCP 协议将 Hy3 大模型的能力暴露为标准化工具（Tools），让支持 MCP 的 AI 客户端可以直接调用 Hy3 完成深度研究、代码评审、文档问答、数据分析等任务。
 
-### Hy3 在项目中的角色
+### Hy3 在本项目中的角色
 
-| 功能模块 | Hy3 的角色 |
-|---------|-----------|
-| 深度研究 | 研究计划制定 → 搜索关键词生成 → 长文报告撰写 → 执行摘要提炼 |
-| 代码分析 | 代码理解、Bug 检测、性能优化建议、安全审计、质量评分 |
-| 文档问答 | 多文档阅读理解、证据驱动的精准问答 |
+所有工具的**核心推理、分析、生成能力**均由 Hy3 API 提供：
+
+| 工具 | Hy3 的角色 |
+|------|-----------|
+| `hy3_research` | 搜索资料整合 → 报告规划 → 长文撰写 → 执行摘要提炼 |
+| `hy3_code_review` | 代码理解 → Bug 检测 → 性能分析 → 安全审计 → 优化建议 |
+| `hy3_doc_qa` | 文档阅读理解 → 证据驱动的精准问答 |
+| `hy3_data_analyze` | 数据模式识别 → 趋势分析 → 洞察生成 → 行动建议 |
+| `hy3_chat` | 自由对话、创意写作、翻译、解释等通用场景 |
+
+---
 
 ## 项目结构
 
 ```
-hy3-research-assistant/
-├── backend/
-│   ├── main.py            # FastAPI 服务器（6 个 API 端点，全部支持 SSE 流式输出）
-│   ├── hy3_client.py      # Hy3 API 客户端封装（OpenAI 兼容接口）
-│   ├── tools.py            # 工具函数（网页搜索、PDF/DOCX/代码文件解析）
-│   └── requirements.txt   # Python 依赖
-├── frontend/
-│   └── index.html          # 现代化 Web 前端（暗色主题、流式渲染、Markdown 展示）
-├── .env.example            # 环境变量配置模板
-├── .gitignore
-├── start.bat               # Windows 一键启动脚本
-└── README.md
+hy3-mcp-server/
+├── src/
+│   ├── server.py          # MCP Server 主程序（5 个 Tool）
+│   ├── hy3_client.py      # Hy3 API 客户端（OpenAI 兼容封装）
+│   └── __init__.py
+├── configs/
+│   ├── codebuddy-mcp.json # CodeBuddy / WorkBuddy 配置示例
+│   ├── cursor-mcp.json    # Cursor 配置示例
+│   ├── claude-mcp.json    # Claude Desktop 配置示例
+│   └── cline-mcp.json     # Cline 配置示例
+├── requirements.txt        # Python 依赖
+├── setup.bat               # Windows 一键安装脚本
+├── setup.sh                # Linux/macOS 一键安装脚本
+└── README.md               # 本文档
 ```
+
+---
 
 ## 快速开始
 
@@ -38,91 +52,185 @@ hy3-research-assistant/
 - Python 3.9+
 - 有效的 Hy3 API Key
 
-### 安装与启动
+### 一键安装
 
-```bash
-# 1. 克隆项目
-cd hy3-research-assistant
-
-# 2. 配置 API 密钥
-# Windows
+**Windows：**
+```batch
+cd hy3-mcp-server
 set HY3_API_KEY=你的API密钥
-# 或复制 .env.example 为 .env 并填入密钥
-
-# 3. 安装依赖
-cd backend
-pip install -r requirements.txt
-
-# 4. 启动服务
-python main.py
-# 服务运行在 http://localhost:8000
+setup.bat
 ```
 
-打开浏览器访问 `http://localhost:8000` 即可使用。
+**Linux / macOS：**
+```bash
+cd hy3-mcp-server
+export HY3_API_KEY=你的API密钥
+bash setup.sh
+```
 
-### 可选环境变量
+或手动安装：
+```bash
+pip install -r requirements.txt
+```
 
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `HY3_API_KEY` | Hy3 API 密钥（必填） | - |
-| `HY3_BASE_URL` | API 端点地址 | `https://api.hunyuan.cloud.tencent.com/v1` |
-| `HY3_MODEL` | 模型名称 | `hunyuan-pro` |
-| `PORT` | 服务端口 | `8000` |
+---
 
-## 三大功能
+## 在 AI 客户端中配置
 
-### 🔬 深度研究 (Deep Research)
+### 1. CodeBuddy / WorkBuddy
 
-输入研究主题，Hy3 将自动完成：
+将以下配置添加到 CodeBuddy 的 MCP 设置中：
 
-1. **研究规划** — 将主题拆解为子问题，生成搜索关键词
-2. **资料搜索** — 自动搜索相关网页资料
-3. **报告撰写** — 基于搜索结果生成 1500-3000 字专业研究报告
-4. **执行摘要** — 提炼核心发现的简明摘要
+```json
+{
+  "mcpServers": {
+    "hy3-assistant": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["src/server.py"],
+      "cwd": "你的hy3-mcp-server项目路径",
+      "env": {
+        "HY3_API_KEY": "你的API密钥",
+        "HY3_MODEL": "hunyuan-pro"
+      }
+    }
+  }
+}
+```
 
-### 💻 代码分析 (Code Analysis)
+配置完成后，在 CodeBuddy 对话中即可直接调用 Hy3 工具，例如：
+> "请用 hy3_research 帮我研究一下大模型在医疗领域的应用"
 
-粘贴代码或上传代码文件，Hy3 将提供：
+### 2. Cursor
 
-- 代码概览与核心功能解读
-- 执行逻辑与关键流程分析
-- 潜在 Bug、性能隐患、安全问题诊断
-- 具体优化建议与最佳实践
-- 1-10 分代码质量评分
+将 `configs/cursor-mcp.json` 的内容复制到 `.cursor/mcp.json`（项目级）或 `~/.cursor/mcp.json`（全局级）。
 
-### 📚 文档问答 (Document Q&A)
+### 3. Claude Desktop
 
-上传多个文档（支持 PDF、DOCX、TXT、代码文件等），向 Hy3 提问：
+将 `configs/claude-mcp.json` 的内容添加到 Claude Desktop 的配置文件中：
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-- 基于文档内容精准回答
-- 引用原始段落作为证据
-- 明确标注信息缺失情况
+### 4. Cline (VS Code 插件)
 
-## API 端点
+将 `configs/cline-mcp.json` 的内容添加到 Cline 的 MCP 设置中。
 
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/` | GET | 前端页面 |
-| `/health` | GET | 服务健康检查 |
-| `/api/research` | POST | 深度研究（流式） |
-| `/api/analyze-code` | POST | 粘贴代码分析（流式） |
-| `/api/analyze-code-file` | POST | 上传代码文件分析（流式） |
-| `/api/qa-documents` | POST | 多文档问答（流式） |
+---
 
-所有智能端点均使用 Server-Sent Events (SSE) 实现流式输出，支持前端实时渲染。
+## 工具说明
 
-## 技术栈
+### 🔬 hy3_research — 深度研究助手
 
-- **后端**: FastAPI + OpenAI SDK + Uvicorn
-- **前端**: 原生 HTML/CSS/JS + marked.js（Markdown 渲染）
-- **模型**: 腾讯混元 Hy3（通过 OpenAI 兼容接口调用）
-- **工具**: DuckDuckGo 网页搜索、PyPDF2、python-docx
+自动搜索网络资料，由 Hy3 大模型分析并生成结构化研究报告。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `topic` | string | ✅ | 研究主题 |
+| `depth` | string | ❌ | 研究深度：`"detailed"`(默认) 或 `"brief"` |
+
+**示例调用：**
+```
+请用 hy3_research 研究"新能源汽车电池回收技术的现状与挑战"，depth=detailed
+```
+
+### 💻 hy3_code_review — 代码评审助手
+
+对代码进行多维度审查：Bug 检测、性能分析、安全审计、优化建议。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `code` | string | ✅ | 需审查的完整代码 |
+| `language` | string | ❌ | 编程语言，默认 `"auto"` |
+| `review_focus` | string | ❌ | 审查重点：`"comprehensive"`(默认)、`"security"`、`"performance"`、`"bugs"` |
+
+**示例调用：**
+```
+请用 hy3_code_review 审查以下代码，重点关注安全问题：
+[贴入代码]
+```
+
+### 📚 hy3_doc_qa — 文档问答助手
+
+读取本地文档，由 Hy3 基于文档内容精准回答。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `file_path` | string | ✅ | 文档的本地路径 |
+| `question` | string | ✅ | 你想问的问题 |
+
+支持格式：`.txt` `.md` `.py` `.js` `.ts` `.json` `.csv` `.html` `.css` `.yaml`
+
+**示例调用：**
+```
+请用 hy3_doc_qa 读取 /path/to/report.md，回答"报告中有哪些关键数据指标？"
+```
+
+### 📊 hy3_data_analyze — 数据分析助手
+
+读取 CSV 或 JSON 数据，由 Hy3 进行深度分析和洞察输出。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `file_path` | string | ✅ | 数据文件路径（.csv/.json） |
+| `analysis_goal` | string | ❌ | 分析目标，默认 `"全面分析"` |
+
+**示例调用：**
+```
+请用 hy3_data_analyze 分析 /path/to/sales.csv，"分析各季度的销售趋势并找出异常数据"
+```
+
+### 💬 hy3_chat — 通用对话助手
+
+与 Hy3 自由对话，适用于其他工具未覆盖的灵活场景。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `message` | string | ✅ | 你想说的话或问题 |
+| `system_prompt` | string | ❌ | 设定 AI 角色与行为 |
+
+---
+
+## 技术细节
+
+- **MCP 协议**: 使用 Python FastMCP 框架，遵循标准 stdio 传输模式
+- **Hy3 调用**: 通过 OpenAI 兼容接口，支持 `HY3_API_KEY`、`HY3_BASE_URL`、`HY3_MODEL` 环境变量
+- **数据源**: DuckDuckGo 网页搜索（无需额外 API Key）、本地文件读取
+- **安全**: API Key 仅通过环境变量传入，代码中无硬编码
+
+---
+
+## 环境变量
+
+| 变量名 | 必填 | 默认值 | 说明 |
+|--------|------|--------|------|
+| `HY3_API_KEY` | ✅ | - | Hy3 API 密钥 |
+| `HY3_BASE_URL` | ❌ | `https://api.hunyuan.cloud.tencent.com/v1` | API 端点 |
+| `HY3_MODEL` | ❌ | `hunyuan-pro` | 模型名称 |
+
+---
+
+## 手动测试
+
+启动 MCP Server 进行本地验证：
+```bash
+cd src
+export HY3_API_KEY=你的API密钥
+python server.py
+```
+
+或使用 MCP Inspector 调试：
+```bash
+npx @modelcontextprotocol/inspector python src/server.py
+```
+
+---
 
 ## CodeBuddy 协作说明
 
 本项目借助 CodeBuddy AI 编程助手完成：
 
-- **协同设计**：AI 参与整体架构规划、功能模块拆解、前后端交互设计
-- **代码生成**：AI 编写了 `backend/main.py`（服务器和所有提示词工程）、`backend/hy3_client.py`（API 客户端封装）、`backend/tools.py`（搜索和文件解析）、`frontend/index.html`（完整前端界面）
-- **文档撰写**：AI 生成了 README、配置模板、启动脚本
-- **代码审查与打磨**：AI 辅助进行了语法检查、中英文翻译、结构优化
+- **架构设计**: AI 参与 MCP Server 整体架构、工具拆解和接口设计
+- **代码生成**: AI 编写了 `server.py`（5 个 MCP Tool + Hy3 调用逻辑）、`hy3_client.py`（API 客户端封装）
+- **多客户端适配**: AI 生成了 CodeBuddy、Cursor、Claude Desktop、Cline 四种客户端的配置示例
+- **文档撰写**: AI 编写了 README、安装脚本、配置说明
+- **代码审查**: AI 辅助进行了语法验证和结构优化
