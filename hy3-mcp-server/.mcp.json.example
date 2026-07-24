@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "hy3-knowledge-base": {
+      "command": "python",
+      "args": ["-m", "hy3_mcp_server.server"],
+      "env": {
+        "HY3_API_KEY": "your_api_key_here",
+        "HY3_BASE_URL": "https://tokenhub.tencentmaas.com/v1",
+        "HY3_MODEL": "hy3",
+        "TAVILY_API_KEY": "your_tavily_api_key_here"
+      }
+    }
+  }
+}

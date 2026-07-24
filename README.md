@@ -41,6 +41,7 @@
   - [vLLM](#vllm)
   - [SGLang](#sglang)
 - [Finetuning](#finetuning)
+- [RL Post-training](#rl-post-training)
 - [Quantization](#quantization)
 - [License](#license)
 - [Contact Us](#contact-us)
@@ -204,6 +205,10 @@ python3 -m sglang.launch_server \
 ## Finetuning
 
 Hy3 provides a complete model finetuning pipeline. For detailed documentation, please refer to: [Finetuning Guide](./finetune/README.md)
+
+## RL Post-training
+
+Hy3 supports GRPO reinforcement learning training with [verl](https://github.com/volcengine/verl), training on Megatron-LM (model conversion via NVIDIA Megatron-Bridge) with vLLM rollout. For detailed documentation, please refer to: [RL Training Guide](./rl/README.md)
 
 ## Quantization
 

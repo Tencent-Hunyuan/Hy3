@@ -1,0 +1,24 @@
+[project]
+name = "hy3-mcp-server"
+version = "0.1.0"
+description = "MCP Server for Hy3 Knowledge Base Q&A - Powered by Tencent Hunyuan Hy3"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+    "fastmcp>=2.0.0",
+    "openai>=1.0.0",
+    "python-dotenv>=1.0.0",
+    "pypdf>=4.0.0",
+    "python-docx>=1.0.0",
+]
+
+[project.scripts]
+hy3-mcp-server = "hy3_mcp_server.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hy3_mcp_server"]
